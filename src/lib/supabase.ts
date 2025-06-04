@@ -20,23 +20,7 @@ export interface Category {
   updated_at: string;
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  currency: string;
-  image_url: string | null;
-  stripe_price_id: string | null;
-  stock_quantity: number;
-  category: string | null;
-  rating: number | null;
-  reviews_count: number;
-  is_active: boolean;
-  metadata: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
+export type Product = Database["public"]["Tables"]["products"]["Row"];
 
 export interface CartItem {
   cart_item_id: string;
@@ -57,24 +41,7 @@ export interface CartSummary {
   discount: number;
 }
 
-export interface Order {
-  id: string;
-  stripe_session_id: string | null;
-  stripe_payment_intent_id: string | null;
-  stripe_payment_intent_secret: string | null;
-  status: string;
-  total_amount: number;
-  subtotal: number;
-  tax_amount: number;
-  shipping_amount: number;
-  customer_email: string | null;
-  customer_name: string | null;
-  customer_phone: string | null;
-  shipping_address: Record<string, any> | null;
-  billing_address: Record<string, any> | null;
-  created_at: string;
-  updated_at: string;
-}
+export type Order = Database["public"]["Tables"]["orders"]["Row"];
 
 export interface Review {
   id: string;
@@ -145,7 +112,7 @@ export class SupabaseAPI {
   }
 
   // Products
-  static async getProducts(params: ProductFilters = {}): Promise<Product[]> {
+  static async getProducts(params: ProductFilters = {}) {
     const {
       categorySlug,
       searchTerm,
@@ -167,23 +134,23 @@ export class SupabaseAPI {
     });
 
     if (error) throw new Error(`Failed to fetch products: ${error.message}`);
-    return (data as Product[]) || [];
+    return data || [];
   }
 
-  static async getProductById(productId: string): Promise<Product | null> {
+  static async getProductById(productId: string) {
     const { data, error } = await supabase.rpc("get_product_by_id", {
       product_id_param: productId,
     });
 
     if (error) throw new Error(`Failed to fetch product: ${error.message}`);
-    return (data?.[0] as Product) || null;
+    return data?.[0] || null;
   }
 
-  static async getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  static async getProductsByCategory(categorySlug: string) {
     return this.getProducts({ categorySlug });
   }
 
-  static async searchProducts(searchTerm: string): Promise<Product[]> {
+  static async searchProducts(searchTerm: string) {
     return this.getProducts({ searchTerm });
   }
 

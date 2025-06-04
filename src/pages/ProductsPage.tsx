@@ -28,7 +28,9 @@ const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<
+    (Omit<Product, "category_id"> & { category: string })[]
+  >([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -473,11 +475,12 @@ const ProductsPage: React.FC = () => {
                           <Badge variant="secondary" size="sm">
                             {product.category}
                           </Badge>
-                          {product.reviews_count > 0 && (
-                            <span className="text-sm text-gray-400">
-                              ({product.reviews_count} reviews)
-                            </span>
-                          )}
+                          {product.reviews_count &&
+                            product.reviews_count > 0 && (
+                              <span className="text-sm text-gray-400">
+                                ({product.reviews_count} reviews)
+                              </span>
+                            )}
                         </div>
 
                         <Link to={`/products/${product.id}`}>

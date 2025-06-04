@@ -126,7 +126,7 @@ const SuccessPage: React.FC = () => {
             <div className="inline-flex items-center space-x-2 bg-white rounded-lg px-4 py-2 mt-4">
               <span className="text-sm text-gray-600">Order Number:</span>
               <Badge variant="primary" size="md" className="font-mono">
-                {order?.id || "Loading..."}
+                {order?.external_id || "Loading..."}
               </Badge>
             </div>
           </CardContent>
@@ -344,7 +344,7 @@ const SuccessPage: React.FC = () => {
                   <div className="text-center">
                     <p className="text-sm text-gray-600 mb-1">Order Number</p>
                     <Badge variant="primary" size="lg" className="font-mono">
-                      {order?.id || "Loading..."}
+                      {order?.external_id || "Loading..."}
                     </Badge>
                   </div>
                 </CardContent>

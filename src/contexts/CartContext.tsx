@@ -178,7 +178,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
 
 // Products hook that uses Supabase
 export const useProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Omit<Product, "category_id">[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -197,7 +197,9 @@ export const useProducts = () => {
     }
   };
 
-  const getProductById = async (productId: string): Promise<Product | null> => {
+  const getProductById = async (
+    productId: string
+  ): Promise<Omit<Product, "category_id"> | null> => {
     try {
       setError(null);
       return await SupabaseAPI.getProductById(productId);

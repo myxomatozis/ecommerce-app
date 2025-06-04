@@ -156,6 +156,7 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           discount_amount: number | null
+          external_id: string | null
           id: string
           metadata: Json | null
           notes: string | null
@@ -178,6 +179,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           discount_amount?: number | null
+          external_id?: string | null
           id?: string
           metadata?: Json | null
           notes?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           discount_amount?: number | null
+          external_id?: string | null
           id?: string
           metadata?: Json | null
           notes?: string | null
@@ -338,6 +341,21 @@ export type Database = {
         Args: { session_id_param: string }
         Returns: number
       }
+      create_order: {
+        Args: {
+          p_user_id: string
+          p_total_amount: number
+          p_shipping_amount: number
+          p_tax_amount: number
+          p_shipping_address: Json
+          p_billing_address?: Json
+        }
+        Returns: {
+          id: string
+          external_id: string
+          created_at: string
+        }[]
+      }
       create_order_from_cart: {
         Args: {
           session_id_param: string
@@ -348,6 +366,10 @@ export type Database = {
           shipping_address_param?: Json
           billing_address_param?: Json
         }
+        Returns: string
+      }
+      generate_order_external_id: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_cart_items: {
@@ -373,10 +395,45 @@ export type Database = {
           discount: number
         }[]
       }
+      get_order: {
+        Args: { order_uuid: string }
+        Returns: {
+          id: string
+          external_id: string
+          user_id: string
+          status: string
+          total_amount: number
+          shipping_amount: number
+          tax_amount: number
+          stripe_session_id: string
+          shipping_address: Json
+          billing_address: Json
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_order_by_external_id: {
+        Args: { ext_id: string }
+        Returns: {
+          id: string
+          external_id: string
+          user_id: string
+          status: string
+          total_amount: number
+          shipping_amount: number
+          tax_amount: number
+          stripe_session_id: string
+          shipping_address: Json
+          billing_address: Json
+          created_at: string
+          updated_at: string
+        }[]
+      }
       get_order_by_stripe_session: {
         Args: { stripe_session_id_param: string }
         Returns: {
           id: string
+          external_id: string
           stripe_session_id: string
           stripe_payment_intent_id: string
           stripe_payment_intent_secret: string
@@ -440,6 +497,17 @@ export type Database = {
           metadata: Json
           created_at: string
           updated_at: string
+        }[]
+      }
+      get_user_orders: {
+        Args: { user_uuid: string }
+        Returns: {
+          id: string
+          external_id: string
+          status: string
+          total_amount: number
+          created_at: string
+          item_count: number
         }[]
       }
       remove_cart_item: {
