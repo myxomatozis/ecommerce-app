@@ -86,6 +86,16 @@ export interface Review {
   created_at: string;
 }
 
+export interface ProductFilters {
+  categorySlug?: string;
+  searchTerm?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: "name" | "price_asc" | "price_desc" | "rating" | "newest";
+  limit?: number;
+  offset?: number;
+}
+
 // Session management for cart
 class SessionManager {
   private sessionId: string;
@@ -132,17 +142,7 @@ export class SupabaseAPI {
   }
 
   // Products
-  static async getProducts(
-    params: {
-      categorySlug?: string;
-      searchTerm?: string;
-      minPrice?: number;
-      maxPrice?: number;
-      sortBy?: string;
-      limit?: number;
-      offset?: number;
-    } = {}
-  ): Promise<Product[]> {
+  static async getProducts(params: ProductFilters = {}): Promise<Product[]> {
     const {
       categorySlug,
       searchTerm,

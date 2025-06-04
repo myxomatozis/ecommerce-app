@@ -8,6 +8,8 @@ import {
   Heart,
   SlidersHorizontal,
   X,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import {
@@ -17,13 +19,22 @@ import {
   Input,
   Badge,
   Dropdown,
+  Spinner,
 } from "@/components/UI";
-import { Category, getCategories, getProducts, Product } from "@/lib/supabase";
+import { Product, Category, ProductFilters, SupabaseAPI } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
   const { addToCart, getCartItemQuantity } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // State
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
 
   // Filter and sort states
   const [searchQuery, setSearchQuery] = useState(
@@ -33,64 +44,28 @@ const ProductsPage: React.FC = () => {
     searchParams.get("category") || ""
   );
   const [priceRange, setPriceRange] = useState({ min: 0, max: 500 });
-  const [sortBy, setSortBy] = useState("featured");
+  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const ITEMS_PER_PAGE = 12;
 
+  // Fetch categories on mount
   useEffect(() => {
-    getProducts()
-      .then((data) => {
-        setProducts(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-      });
-    getCategories()
-      .then((data) => {
+    const fetchCategories = async () => {
+      try {
+        const data = await SupabaseAPI.getCategories();
         setCategories(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    fetchCategories();
   }, []);
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = products.filter((product) => {
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        !selectedCategory || product.category === selectedCategory;
-      const matchesPrice =
-        product.price >= priceRange.min && product.price <= priceRange.max;
-
-      return matchesSearch && matchesCategory && matchesPrice;
-    });
-
-    // Sort products
-    switch (sortBy) {
-      case "price-asc":
-        filtered = filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        filtered = filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "name":
-        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "rating":
-        filtered = filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      default:
-        // Keep original order for 'featured'
-        break;
-    }
-
-    return filtered;
+  // Fetch products when filters change
+  useEffect(() => {
+    fetchProducts(true);
   }, [searchQuery, selectedCategory, priceRange, sortBy]);
 
   // Update URL params when filters change
@@ -101,37 +76,127 @@ const ProductsPage: React.FC = () => {
     setSearchParams(params);
   }, [searchQuery, selectedCategory, setSearchParams]);
 
-  // Simulate loading when filters change
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, sortBy]);
+  const fetchProducts = async (reset = false) => {
+    try {
+      if (reset) {
+        setLoading(true);
+        setPage(0);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const currentPage = reset ? 0 : page;
+      const filters: ProductFilters = {
+        categorySlug: selectedCategory || undefined,
+        searchTerm: searchQuery || undefined,
+        minPrice: priceRange.min > 0 ? priceRange.min : undefined,
+        maxPrice: priceRange.max < 500 ? priceRange.max : undefined,
+        sortBy,
+        limit: ITEMS_PER_PAGE,
+        offset: currentPage * ITEMS_PER_PAGE,
+      };
+
+      const data = await SupabaseAPI.getProducts(filters);
+
+      if (reset) {
+        setProducts(data);
+      } else {
+        setProducts((prev) => [...prev, ...data]);
+      }
+
+      // Check if there are more items
+      setHasMore(data.length === ITEMS_PER_PAGE);
+
+      if (!reset) {
+        setPage((prev) => prev + 1);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch products");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchProducts(false);
+    }
+  };
 
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
     setPriceRange({ min: 0, max: 500 });
-    setSortBy("featured");
+    setSortBy("name");
     setSearchParams({});
   };
 
   const handleAddToCart = async (productId: string) => {
-    addToCart(productId);
+    try {
+      await addToCart(productId);
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
+    }
   };
 
-  const categoryOptions = [
-    { value: "", label: "All Categories" },
-    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
-  ];
+  const categoryOptions = useMemo(
+    () => [
+      { value: "", label: "All Categories" },
+      ...categories.map((cat) => ({ value: cat.slug, label: cat.name })),
+    ],
+    [categories]
+  );
 
   const sortOptions = [
-    { value: "featured", label: "Featured" },
     { value: "name", label: "Name A-Z" },
-    { value: "price-asc", label: "Price: Low to High" },
-    { value: "price-desc", label: "Price: High to Low" },
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
     { value: "rating", label: "Highest Rated" },
+    { value: "newest", label: "Newest First" },
   ];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <Spinner size="lg" className="mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Loading Products
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we fetch the latest products...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <Card className="text-center max-w-md mx-auto">
+            <CardContent>
+              <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Something went wrong
+              </h2>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button onClick={() => fetchProducts(true)} variant="primary">
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -190,8 +255,10 @@ const ProductsPage: React.FC = () => {
                 <div className="min-w-[200px]">
                   <Dropdown
                     options={sortOptions}
-                    value={sortBy}
-                    onChange={setSortBy}
+                    value={sortBy || "name"}
+                    onChange={(value) =>
+                      setSortBy(value as ProductFilters["sortBy"])
+                    }
                     placeholder="Sort by"
                   />
                 </div>
@@ -286,7 +353,11 @@ const ProductsPage: React.FC = () => {
                         variant="primary"
                         className="inline-flex items-center"
                       >
-                        Category: {selectedCategory}
+                        Category:{" "}
+                        {
+                          categories.find((c) => c.slug === selectedCategory)
+                            ?.name
+                        }
                         <Button
                           variant="ghost"
                           size="sm"
@@ -315,17 +386,13 @@ const ProductsPage: React.FC = () => {
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
-            Showing {filteredProducts.length} of {products.length} products
+            Showing {products.length} products
+            {hasMore && " (load more available)"}
           </p>
-          {isLoading && (
-            <Badge variant="secondary" className="animate-pulse">
-              Filtering...
-            </Badge>
-          )}
         </div>
 
         {/* Products Grid/List */}
-        {filteredProducts.length === 0 ? (
+        {products.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
               <Search size={48} className="mx-auto text-gray-300 mb-4" />
@@ -341,215 +408,232 @@ const ProductsPage: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "space-y-6"
-            }
-          >
-            {filteredProducts.map((product) => (
-              <Card
-                key={product.id}
-                hover
-                className={
-                  viewMode === "grid"
-                    ? "overflow-hidden group"
-                    : "overflow-hidden flex"
-                }
-              >
-                {viewMode === "grid" ? (
-                  // Grid View
-                  <>
-                    <div className="relative overflow-hidden">
-                      <Link to={`/products/${product.id}`}>
-                        <img
-                          src={product.image_url || "/placeholder.jpg"}
-                          alt={product.name}
-                          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white"
-                      >
-                        <Heart size={18} className="text-gray-600" />
-                      </Button>
-                      {product.rating && (
-                        <Badge
-                          variant="default"
-                          size="sm"
-                          className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-900"
-                        >
-                          <Star
-                            size={14}
-                            className="text-yellow-400 fill-current mr-1"
+          <>
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  : "space-y-6"
+              }
+            >
+              {products.map((product) => (
+                <Card
+                  key={product.id}
+                  hover
+                  className={
+                    viewMode === "grid"
+                      ? "overflow-hidden group"
+                      : "overflow-hidden flex"
+                  }
+                >
+                  {viewMode === "grid" ? (
+                    // Grid View
+                    <>
+                      <div className="relative overflow-hidden">
+                        <Link to={`/products/${product.id}`}>
+                          <img
+                            src={product.image_url || "/placeholder.jpg"}
+                            alt={product.name}
+                            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                          {product.rating}
-                        </Badge>
-                      )}
-                      {getCartItemQuantity(product.id) > 0 && (
-                        <Badge
-                          variant="primary"
+                        </Link>
+                        <Button
+                          variant="ghost"
                           size="sm"
-                          className="absolute bottom-4 left-4"
+                          className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white"
                         >
-                          {getCartItemQuantity(product.id)} in cart
-                        </Badge>
-                      )}
-                    </div>
-
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="secondary" size="sm">
-                          {product.category}
-                        </Badge>
-                        {product.reviews_count && (
-                          <span className="text-sm text-gray-400">
-                            ({product.reviews_count} reviews)
-                          </span>
+                          <Heart size={18} className="text-gray-600" />
+                        </Button>
+                        {product.rating && (
+                          <Badge
+                            variant="default"
+                            size="sm"
+                            className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-900"
+                          >
+                            <Star
+                              size={14}
+                              className="text-yellow-400 fill-current mr-1"
+                            />
+                            {product.rating.toFixed(1)}
+                          </Badge>
+                        )}
+                        {getCartItemQuantity(product.id) > 0 && (
+                          <Badge
+                            variant="primary"
+                            size="sm"
+                            className="absolute bottom-4 left-4"
+                          >
+                            {getCartItemQuantity(product.id)} in cart
+                          </Badge>
                         )}
                       </div>
 
-                      <Link to={`/products/${product.id}`}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
-                          {product.name}
-                        </h3>
-                      </Link>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {product.description}
-                      </p>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-2xl font-bold text-gray-900">
-                            ${product.price.toFixed(2)}
-                          </span>
-                          {product.price > 50 && (
-                            <Badge
-                              variant="success"
-                              size="sm"
-                              className="block mt-1"
-                            >
-                              Free shipping
-                            </Badge>
+                      <CardContent>
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="secondary" size="sm">
+                            {product.category}
+                          </Badge>
+                          {product.reviews_count > 0 && (
+                            <span className="text-sm text-gray-400">
+                              ({product.reviews_count} reviews)
+                            </span>
                           )}
                         </div>
-                        <Button
-                          onClick={() => handleAddToCart(product.id)}
-                          variant="primary"
-                          size="sm"
-                        >
-                          Add to Cart
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </>
-                ) : (
-                  // List View
-                  <>
-                    <div className="w-48 flex-shrink-0 relative">
-                      <Link to={`/products/${product.id}`}>
-                        <img
-                          src={product.image_url || "/placeholder.jpg"}
-                          alt={product.name}
-                          className="w-full h-48 object-cover"
-                        />
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white"
-                      >
-                        <Heart size={16} className="text-gray-600" />
-                      </Button>
-                    </div>
 
-                    <CardContent className="flex-1">
-                      <div className="flex items-start justify-between h-full">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4 mb-2">
-                            <Badge variant="secondary" size="sm">
-                              {product.category}
-                            </Badge>
-                            {product.rating && (
-                              <div className="flex items-center space-x-1">
-                                <Star
-                                  size={14}
-                                  className="text-yellow-400 fill-current"
-                                />
-                                <span className="text-sm text-gray-600">
-                                  {product.rating}
-                                </span>
-                                <span className="text-sm text-gray-400">
-                                  ({product.reviews_count})
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                        <Link to={`/products/${product.id}`}>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {product.description}
+                        </p>
 
-                          <Link to={`/products/${product.id}`}>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors">
-                              {product.name}
-                            </h3>
-                          </Link>
-                          <p className="text-gray-600 mb-4 line-clamp-3">
-                            {product.description}
-                          </p>
-
-                          <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-between">
+                          <div>
                             <span className="text-2xl font-bold text-gray-900">
                               ${product.price.toFixed(2)}
                             </span>
                             {product.price > 50 && (
-                              <Badge variant="success" size="sm">
+                              <Badge
+                                variant="success"
+                                size="sm"
+                                className="block mt-1"
+                              >
                                 Free shipping
                               </Badge>
                             )}
-                            {getCartItemQuantity(product.id) > 0 && (
-                              <Badge variant="primary" size="sm">
-                                {getCartItemQuantity(product.id)} in cart
-                              </Badge>
-                            )}
                           </div>
-                        </div>
-
-                        <div className="ml-6 flex flex-col space-y-2">
                           <Button
                             onClick={() => handleAddToCart(product.id)}
                             variant="primary"
-                            size="md"
-                          >
-                            Add to Cart
-                          </Button>
-                          <Button
-                            as={Link}
-                            to={`/products/${product.id}`}
-                            variant="outline"
                             size="sm"
+                            disabled={product.stock_quantity === 0}
                           >
-                            View Details
+                            {product.stock_quantity === 0
+                              ? "Out of Stock"
+                              : "Add to Cart"}
                           </Button>
                         </div>
+                      </CardContent>
+                    </>
+                  ) : (
+                    // List View
+                    <>
+                      <div className="w-48 flex-shrink-0 relative">
+                        <Link to={`/products/${product.id}`}>
+                          <img
+                            src={product.image_url || "/placeholder.jpg"}
+                            alt={product.name}
+                            className="w-full h-48 object-cover"
+                          />
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white"
+                        >
+                          <Heart size={16} className="text-gray-600" />
+                        </Button>
                       </div>
-                    </CardContent>
-                  </>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
 
-        {/* Load More Button (for pagination in real app) */}
-        {filteredProducts.length > 0 &&
-          filteredProducts.length === products.length && (
-            <div className="text-center mt-12">
-              <Button variant="secondary" size="lg">
-                Load More Products
-              </Button>
+                      <CardContent className="flex-1">
+                        <div className="flex items-start justify-between h-full">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-4 mb-2">
+                              <Badge variant="secondary" size="sm">
+                                {product.category}
+                              </Badge>
+                              {product.rating && (
+                                <div className="flex items-center space-x-1">
+                                  <Star
+                                    size={14}
+                                    className="text-yellow-400 fill-current"
+                                  />
+                                  <span className="text-sm text-gray-600">
+                                    {product.rating.toFixed(1)}
+                                  </span>
+                                  <span className="text-sm text-gray-400">
+                                    ({product.reviews_count})
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            <Link to={`/products/${product.id}`}>
+                              <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors">
+                                {product.name}
+                              </h3>
+                            </Link>
+                            <p className="text-gray-600 mb-4 line-clamp-3">
+                              {product.description}
+                            </p>
+
+                            <div className="flex items-center space-x-4">
+                              <span className="text-2xl font-bold text-gray-900">
+                                ${product.price.toFixed(2)}
+                              </span>
+                              {product.price > 50 && (
+                                <Badge variant="success" size="sm">
+                                  Free shipping
+                                </Badge>
+                              )}
+                              {getCartItemQuantity(product.id) > 0 && (
+                                <Badge variant="primary" size="sm">
+                                  {getCartItemQuantity(product.id)} in cart
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="ml-6 flex flex-col space-y-2">
+                            <Button
+                              onClick={() => handleAddToCart(product.id)}
+                              variant="primary"
+                              size="md"
+                              disabled={product.stock_quantity === 0}
+                            >
+                              {product.stock_quantity === 0
+                                ? "Out of Stock"
+                                : "Add to Cart"}
+                            </Button>
+                            <Button
+                              as={Link}
+                              to={`/products/${product.id}`}
+                              variant="outline"
+                              size="sm"
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </>
+                  )}
+                </Card>
+              ))}
             </div>
-          )}
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="text-center mt-12">
+                <Button
+                  onClick={handleLoadMore}
+                  variant="secondary"
+                  size="lg"
+                  disabled={loadingMore}
+                  leftIcon={
+                    loadingMore ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : undefined
+                  }
+                >
+                  {loadingMore ? "Loading..." : "Load More Products"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

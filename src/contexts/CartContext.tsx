@@ -6,7 +6,13 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { SupabaseAPI, Product, CartItem, CartSummary } from "@/lib/supabase";
+import {
+  SupabaseAPI,
+  Product,
+  CartItem,
+  CartSummary,
+  ProductFilters,
+} from "@/lib/supabase";
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -176,15 +182,7 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProducts = async (params?: {
-    categorySlug?: string;
-    searchTerm?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    sortBy?: string;
-    limit?: number;
-    offset?: number;
-  }) => {
+  const loadProducts = async (params?: ProductFilters) => {
     try {
       setLoading(true);
       setError(null);
