@@ -463,7 +463,7 @@ export type Database = {
         }[]
       }
       get_product_by_id: {
-        Args: { product_id: string }
+        Args: { product_id_param: string }
         Returns: {
           id: string
           name: string
@@ -474,13 +474,13 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
+          category: string
+          rating: number
+          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
-          category: string
-          rating: number
-          reviews_count: number
         }[]
       }
       get_product_images_count: {
@@ -514,34 +514,13 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
+          category: string
+          rating: number
+          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
-          category: string
-          rating: number
-          reviews_count: number
-        }[]
-      }
-      get_products_by_category: {
-        Args: { p_category: string; p_limit?: number; p_offset?: number }
-        Returns: {
-          id: string
-          name: string
-          description: string
-          price: number
-          currency: string
-          image_url: string
-          images_gallery: string[]
-          stripe_price_id: string
-          stock_quantity: number
-          is_active: boolean
-          metadata: Json
-          created_at: string
-          updated_at: string
-          category: string
-          rating: number
-          reviews_count: number
         }[]
       }
       get_storage_public_url: {
