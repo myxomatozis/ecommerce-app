@@ -31,7 +31,23 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
-    const { sessionId, customerInfo, successUrl, cancelUrl } = await req.json();
+    const {
+      sessionId,
+      customerInfo,
+      successUrl,
+      cancelUrl,
+    }: {
+      customerInfo: {
+        email: string;
+        name: string;
+        phone?: string;
+        shippingAddress?: Record<string, string | number | null | undefined>;
+        billingAddress?: Record<string, string | number | null | undefined>;
+      };
+      sessionId: string;
+      successUrl: string;
+      cancelUrl: string;
+    } = await req.json();
 
     if (!sessionId) {
       throw new Error("Session ID is required");
@@ -113,11 +129,9 @@ Deno.serve(async (req) => {
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
-      customer_email: customerInfo?.email,
+      customer_email: customerInfo.email,
       metadata: {
         cart_session_id: sessionId,
-        customer_name: customerInfo?.name || "",
-        customer_phone: customerInfo?.phone || "",
       },
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB"],

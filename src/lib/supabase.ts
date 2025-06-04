@@ -358,6 +358,44 @@ export class SupabaseAPI {
     return data.id;
   }
 
+  static async createCheckoutSession({
+    customerInfo,
+  }: {
+    customerInfo: {
+      email: string;
+      name: string;
+      phone?: string;
+      shippingAddress?: Record<string, any>;
+      billingAddress?: Record<string, any>;
+    };
+  }): Promise<{ url: string }> {
+    const sessionId = sessionManager.getSessionId();
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/create-stripe-checkout`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          customerInfo,
+          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/checkout`,
+        }),
+      }
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Failed to create checkout session: ${errorData.message}`
+      );
+    }
+    const sessionData = response.json();
+    return sessionData;
+  }
+
   // Utility functions
   static async cleanupExpiredCartItems(): Promise<number> {
     const { data, error } = await supabase.rpc("cleanup_expired_cart_items");

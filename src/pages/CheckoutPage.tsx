@@ -13,17 +13,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import {
-  Button,
-  Card,
-  CardContent,
-  Input,
-  Checkbox,
-  Badge,
-} from "@/components/UI";
+import { Button, Card, CardContent, Input, Badge } from "@/components/UI";
+import SupabaseAPI from "@/lib/supabase";
 
 const CheckoutPage: React.FC = () => {
-  const { cartItems, cartSummary, clearCart } = useCart();
+  const { cartItems, cartSummary } = useCart();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Review
@@ -40,10 +34,6 @@ const CheckoutPage: React.FC = () => {
     state: "",
     zipCode: "",
     country: "United States",
-  });
-
-  const [paymentInfo, setPaymentInfo] = useState({
-    sameAsShipping: true,
   });
 
   const subtotal =
@@ -80,60 +70,18 @@ const CheckoutPage: React.FC = () => {
     setStep(3);
   };
 
-  const createStripeCheckout = async () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Supabase configuration missing");
-    }
-
-    // Generate a session ID for the cart (you might want to store this in localStorage)
-    const cartSessionId =
-      localStorage.getItem("cart_session_id") ||
-      `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    if (!localStorage.getItem("cart_session_id")) {
-      localStorage.setItem("cart_session_id", cartSessionId);
-    }
-
-    const customerInfo = {
-      email: shippingInfo.email,
-      name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
-      phone: shippingInfo.phone,
-    };
-
-    const response = await fetch(
-      `${supabaseUrl}/functions/v1/create-stripe-checkout`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${supabaseKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId: cartSessionId,
-          customerInfo,
-          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/checkout`,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to create checkout session");
-    }
-
-    return response.json();
-  };
-
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
     try {
-      const { url } = await createStripeCheckout();
+      const { url } = await SupabaseAPI.createCheckoutSession({
+        customerInfo: {
+          name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+          email: shippingInfo.email,
+          phone: shippingInfo.phone,
+        },
+      });
 
       // Redirect to Stripe Checkout
       window.location.href = url;
