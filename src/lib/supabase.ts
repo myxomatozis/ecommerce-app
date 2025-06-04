@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Database } from "types/database.types";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -7,7 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export interface Category {
   id: string;
@@ -138,7 +139,7 @@ export class SupabaseAPI {
       .order("name");
 
     if (error) throw new Error(`Failed to fetch categories: ${error.message}`);
-    return data || [];
+    return (data as Category[]) || [];
   }
 
   // Products
@@ -154,17 +155,17 @@ export class SupabaseAPI {
     } = params;
 
     const { data, error } = await supabase.rpc("get_products", {
-      category_slug_param: categorySlug || null,
-      search_term: searchTerm || null,
-      min_price: minPrice || null,
-      max_price: maxPrice || null,
+      category_slug_param: categorySlug,
+      search_term: searchTerm,
+      min_price: minPrice,
+      max_price: maxPrice,
       sort_by: sortBy,
       limit_count: limit,
       offset_count: offset,
     });
 
     if (error) throw new Error(`Failed to fetch products: ${error.message}`);
-    return data || [];
+    return (data as Product[]) || [];
   }
 
   static async getProductById(productId: string): Promise<Product | null> {
@@ -173,7 +174,7 @@ export class SupabaseAPI {
     });
 
     if (error) throw new Error(`Failed to fetch product: ${error.message}`);
-    return data?.[0] || null;
+    return (data?.[0] as Product) || null;
   }
 
   static async getProductsByCategory(categorySlug: string): Promise<Product[]> {
@@ -294,7 +295,7 @@ export class SupabaseAPI {
       stripe_session_id_param: orderData.stripeSessionId,
       customer_email_param: orderData.customerEmail,
       customer_name_param: orderData.customerName,
-      customer_phone_param: orderData.customerPhone || null,
+      customer_phone_param: orderData.customerPhone,
       shipping_address_param: orderData.shippingAddress || null,
       billing_address_param: orderData.billingAddress || null,
     });
@@ -316,7 +317,7 @@ export class SupabaseAPI {
     });
 
     if (error) throw new Error(`Failed to fetch order: ${error.message}`);
-    return data?.[0] || null;
+    return (data?.[0] as Order) || null;
   }
 
   // Reviews
@@ -329,7 +330,7 @@ export class SupabaseAPI {
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(`Failed to fetch reviews: ${error.message}`);
-    return data || [];
+    return (data as Review[]) || [];
   }
 
   static async addReview(reviewData: {

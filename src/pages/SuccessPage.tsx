@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
 import SupabaseAPI, { Order } from "@/lib/supabase";
+import { stripe } from "@/lib/stripe";
 
 const SuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -32,10 +33,28 @@ const SuccessPage: React.FC = () => {
       console.error("No session ID found in URL");
       return;
     }
+    if (stripe) {
+      // stripe.retrievePaymentIntent()
+    }
+    // stripe
+    //   ?.retrieveOrder(sessionId)
+    //   .then((result) => {
+    //     console.log("Stripe Order Result:", result);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error retrieving order from Stripe:", error);
+    //   });
     SupabaseAPI.getOrderByStripeSession(sessionId)
       .then((fetchedOrder) => {
         if (fetchedOrder) {
           setOrder(fetchedOrder);
+          stripe
+            ?.retrievePaymentIntent(
+              "pi_3RWKUUIZhaldKdee2BtcTFr7_secret_gQ10lj8ff8kUdfQ3vbTlnFSRr"
+            )
+            .then((result) => {
+              console.log("Payment Intent Result:", result);
+            });
         } else {
           console.error("No order found for session ID:", sessionId);
         }

@@ -4,8 +4,9 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-import Stripe from "npm:stripe@18.2.1";
+import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
+import type { Database } from "../../../types/database.types.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2025-05-28.basil",
@@ -13,7 +14,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 Deno.serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
@@ -40,10 +41,10 @@ Deno.serve(async (req) => {
         console.log("Processing completed checkout session:", session.id);
 
         // Get session details with line items
-        const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
-          session.id,
-          { expand: ["line_items"] }
-        );
+        // const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
+        //   session.id,
+        //   { expand: ["line_items"] }
+        // );
 
         const cartSessionId = session.metadata?.cart_session_id;
         if (!cartSessionId) {
@@ -52,14 +53,21 @@ Deno.serve(async (req) => {
         }
 
         // Prepare shipping address
-        const shippingAddress = session.shipping_details?.address
+        const shippingAddress = session.collected_information?.shipping_details
           ? {
-              line1: session.shipping_details.address.line1,
-              line2: session.shipping_details.address.line2,
-              city: session.shipping_details.address.city,
-              state: session.shipping_details.address.state,
-              postal_code: session.shipping_details.address.postal_code,
-              country: session.shipping_details.address.country,
+              line1:
+                session.collected_information?.shipping_details.address.line1,
+              line2:
+                session.collected_information?.shipping_details.address.line2,
+              city: session.collected_information?.shipping_details.address
+                .city,
+              state:
+                session.collected_information?.shipping_details.address.state,
+              postal_code:
+                session.collected_information?.shipping_details.address
+                  .postal_code,
+              country:
+                session.collected_information?.shipping_details.address.country,
             }
           : null;
 
@@ -82,9 +90,11 @@ Deno.serve(async (req) => {
             session_id_param: cartSessionId,
             stripe_session_id_param: session.id,
             customer_email_param:
-              session.customer_details?.email || session.customer_email,
+              session.customer_details?.email || session.customer_email || "",
             customer_name_param:
-              session.customer_details?.name || session.metadata?.customer_name,
+              session.customer_details?.name ||
+              session.metadata?.customer_name ||
+              "",
             customer_phone_param:
               session.customer_details?.phone ||
               session.metadata?.customer_phone,
@@ -105,7 +115,7 @@ Deno.serve(async (req) => {
           await supabase
             .from("orders")
             .update({
-              stripe_payment_intent_id: session.payment_intent,
+              stripe_payment_intent_id: session.payment_intent as string,
               status: "processing",
             })
             .eq("id", orderId);
@@ -121,7 +131,13 @@ Deno.serve(async (req) => {
         // Update order status
         const { error } = await supabase
           .from("orders")
-          .update({ status: "processing" })
+          .update({
+            status: "processing",
+            metadata: {
+              payment_intent_status: paymentIntent.status,
+              payment_intent_secret: paymentIntent.client_secret,
+            },
+          })
           .eq("stripe_payment_intent_id", paymentIntent.id);
 
         if (error) {
@@ -136,7 +152,13 @@ Deno.serve(async (req) => {
         // Update order status to failed
         const { error } = await supabase
           .from("orders")
-          .update({ status: "cancelled" })
+          .update({
+            status: "cancelled",
+            metadata: {
+              payment_intent_status: paymentIntent.status,
+              payment_intent_secret: paymentIntent.client_secret,
+            },
+          })
           .eq("stripe_payment_intent_id", paymentIntent.id);
 
         if (error) {
@@ -155,7 +177,12 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Webhook error:", error);
-    return new Response(`Webhook error: ${error.message}`, { status: 400 });
+    return new Response(
+      `Webhook error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { status: 400 }
+    );
   }
 });
 

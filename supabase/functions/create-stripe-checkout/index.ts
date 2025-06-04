@@ -4,8 +4,9 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-import Stripe from "npm:stripe@18.2.1";
+import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
+import type { Database } from "../../../types/database.types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
     // Initialize Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
     const { sessionId, customerInfo, successUrl, cancelUrl } = await req.json();
 
@@ -63,7 +64,7 @@ Deno.serve(async (req) => {
     const summary = cartSummary[0];
 
     // Create line items for Stripe
-    const lineItems = cartItems.map((item: any) => ({
+    const lineItems = cartItems.map((item) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -82,6 +83,7 @@ Deno.serve(async (req) => {
           currency: "usd",
           product_data: {
             name: "Shipping",
+            images: [], // You can add a shipping image if needed
           },
           unit_amount: Math.round(summary.shipping * 100),
         },
@@ -96,6 +98,7 @@ Deno.serve(async (req) => {
           currency: "usd",
           product_data: {
             name: "Tax",
+            images: [], // You can add a tax image if needed
           },
           unit_amount: Math.round(summary.tax * 100),
         },
@@ -137,7 +140,13 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Error creating checkout session:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+        ? error
+        : "Unknown error";
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });
