@@ -21,9 +21,4 @@ export default defineConfig({
   define: {
     "process.env": process.env,
   },
-  css: {
-    postcss: {
-      plugins: [require("tailwindcss")],
-    },
-  },
 });
