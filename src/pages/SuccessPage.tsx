@@ -12,16 +12,12 @@ import {
   Heart,
 } from "lucide-react";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
+import SupabaseAPI, { Order } from "@/lib/supabase";
 
 const SuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
-
-  // Generate a random order number for demo
-  const orderNumber = `ORD-${Math.random()
-    .toString(36)
-    .substr(2, 9)
-    .toUpperCase()}`;
+  const [order, setOrder] = React.useState<Order | null>(null);
   const estimatedDelivery = new Date(
     Date.now() + 5 * 24 * 60 * 60 * 1000
   ).toLocaleDateString("en-US", {
@@ -32,11 +28,21 @@ const SuccessPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // In a real app, you would:
-    // 1. Verify the session_id with your backend
-    // 2. Fetch order details
-    // 3. Send confirmation email
-    // 4. Update inventory
+    if (!sessionId) {
+      console.error("No session ID found in URL");
+      return;
+    }
+    SupabaseAPI.getOrderByStripeSession(sessionId)
+      .then((fetchedOrder) => {
+        if (fetchedOrder) {
+          setOrder(fetchedOrder);
+        } else {
+          console.error("No order found for session ID:", sessionId);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching order:", error);
+      });
   }, [sessionId]);
 
   const nextSteps = [
@@ -108,7 +114,7 @@ const SuccessPage: React.FC = () => {
             <div className="inline-flex items-center space-x-2 bg-white rounded-lg px-4 py-2 mt-4">
               <span className="text-sm text-gray-600">Order Number:</span>
               <Badge variant="primary" size="md" className="font-mono">
-                {orderNumber}
+                {order?.id || "Loading..."}
               </Badge>
             </div>
           </CardContent>
@@ -326,7 +332,7 @@ const SuccessPage: React.FC = () => {
                   <div className="text-center">
                     <p className="text-sm text-gray-600 mb-1">Order Number</p>
                     <Badge variant="primary" size="lg" className="font-mono">
-                      {orderNumber}
+                      {order?.id || "Loading..."}
                     </Badge>
                   </div>
                 </CardContent>
