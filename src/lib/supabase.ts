@@ -363,7 +363,7 @@ export class SupabaseAPI {
   }: {
     customerInfo: {
       email: string;
-      name: string;
+      name?: string;
       phone?: string;
       shippingAddress?: Record<string, any>;
       billingAddress?: Record<string, any>;

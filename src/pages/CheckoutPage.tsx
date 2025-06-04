@@ -77,9 +77,9 @@ const CheckoutPage: React.FC = () => {
     try {
       const { url } = await SupabaseAPI.createCheckoutSession({
         customerInfo: {
-          name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+          name: `${shippingInfo?.firstName} ${shippingInfo?.lastName}`,
           email: shippingInfo.email,
-          phone: shippingInfo.phone,
+          phone: shippingInfo?.phone,
         },
       });
 
