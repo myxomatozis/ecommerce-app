@@ -139,7 +139,7 @@ export class SupabaseAPI {
 
   static async getProductById(productId: string) {
     const { data, error } = await supabase.rpc("get_product_by_id", {
-      product_id_param: productId,
+      product_id: productId,
     });
 
     if (error) throw new Error(`Failed to fetch product: ${error.message}`);
@@ -376,10 +376,7 @@ export class SupabaseAPI {
   // Health check
   static async healthCheck(): Promise<boolean> {
     try {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id")
-        .limit(1);
+      const { error } = await supabase.from("categories").select("id").limit(1);
 
       return !error;
     } catch {

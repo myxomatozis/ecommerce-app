@@ -227,6 +227,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          images_gallery: string[] | null
           is_active: boolean | null
           metadata: Json | null
           name: string
@@ -244,6 +245,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          images_gallery?: string[] | null
           is_active?: boolean | null
           metadata?: Json | null
           name: string
@@ -261,6 +263,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          images_gallery?: string[] | null
           is_active?: boolean | null
           metadata?: Json | null
           name?: string
@@ -333,7 +336,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_image_to_gallery: {
+        Args: { product_id: string; image_url: string }
+        Returns: boolean
+      }
       cleanup_expired_cart_items: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      cleanup_orphaned_product_images: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
@@ -452,7 +463,7 @@ export type Database = {
         }[]
       }
       get_product_by_id: {
-        Args: { product_id_param: string }
+        Args: { product_id: string }
         Returns: {
           id: string
           name: string
@@ -460,27 +471,39 @@ export type Database = {
           price: number
           currency: string
           image_url: string
+          images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
-          category: string
-          rating: number
-          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
+          category: string
+          rating: number
+          reviews_count: number
         }[]
       }
+      get_product_images_count: {
+        Args: { product_id: string }
+        Returns: number
+      }
       get_products: {
-        Args: {
-          category_slug_param?: string
-          search_term?: string
-          min_price?: number
-          max_price?: number
-          sort_by?: string
-          limit_count?: number
-          offset_count?: number
-        }
+        Args:
+          | {
+              category_slug_param?: string
+              search_term?: string
+              min_price?: number
+              max_price?: number
+              sort_by?: string
+              limit_count?: number
+              offset_count?: number
+            }
+          | {
+              p_category?: string
+              p_search?: string
+              p_limit?: number
+              p_offset?: number
+            }
         Returns: {
           id: string
           name: string
@@ -488,16 +511,42 @@ export type Database = {
           price: number
           currency: string
           image_url: string
+          images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
-          category: string
-          rating: number
-          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
+          category: string
+          rating: number
+          reviews_count: number
         }[]
+      }
+      get_products_by_category: {
+        Args: { p_category: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          price: number
+          currency: string
+          image_url: string
+          images_gallery: string[]
+          stripe_price_id: string
+          stock_quantity: number
+          is_active: boolean
+          metadata: Json
+          created_at: string
+          updated_at: string
+          category: string
+          rating: number
+          reviews_count: number
+        }[]
+      }
+      get_storage_public_url: {
+        Args: { bucket_name: string; object_path: string }
+        Returns: string
       }
       get_user_orders: {
         Args: { user_uuid: string }
@@ -514,6 +563,18 @@ export type Database = {
         Args: { session_id_param: string; product_id_param: string }
         Returns: boolean
       }
+      remove_image_from_gallery: {
+        Args: { product_id: string; image_url: string }
+        Returns: boolean
+      }
+      reorder_product_images: {
+        Args: { product_id: string; new_order: number[] }
+        Returns: Record<string, unknown>
+      }
+      update_product_images_gallery: {
+        Args: { product_id: string; new_images_gallery: string[] }
+        Returns: boolean
+      }
       update_product_rating: {
         Args: { product_id_param: string }
         Returns: undefined
@@ -525,6 +586,13 @@ export type Database = {
           quantity_param: number
         }
         Returns: string
+      }
+      validate_product_image_urls: {
+        Args: { product_id: string }
+        Returns: {
+          valid_urls: string[]
+          invalid_urls: string[]
+        }[]
       }
     }
     Enums: {
