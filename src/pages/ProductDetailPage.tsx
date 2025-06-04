@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -13,19 +13,36 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { useCart, mockProducts } from "@/contexts/CartContext";
+import { Product, useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
+import { getProductById } from "@/lib/supabase";
 
 const ProductDetailPage: React.FC = () => {
+  const [product, setProduct] = useState<Product | null>(null);
   const { id } = useParams<{ id: string }>();
   const { addToCart, getCartItemQuantity, updateQuantity } = useCart();
+
+  useEffect(() => {
+    if (!id) return;
+    getProductById(id)
+      .then((data) => {
+        if (data) {
+          setProduct(data);
+        } else {
+          setProduct(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching product:", error);
+        setProduct(null);
+      });
+  }, [id]);
 
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const product = mockProducts.find((p) => p.id === id);
   const currentCartQuantity = getCartItemQuantity(id || "");
 
   // Mock additional images for the product
@@ -39,9 +56,7 @@ const ProductDetailPage: React.FC = () => {
     : [];
 
   // Mock related products
-  const relatedProducts = mockProducts
-    .filter((p) => p.id !== id && p.category === product?.category)
-    .slice(0, 4);
+  const relatedProducts: Product[] = [];
 
   if (!product) {
     return (

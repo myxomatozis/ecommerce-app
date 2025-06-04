@@ -9,7 +9,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { useCart, mockProducts } from "@/contexts/CartContext";
+import { useCart } from "@/contexts/CartContext";
 import {
   Button,
   Card,
@@ -18,10 +18,12 @@ import {
   Badge,
   Dropdown,
 } from "@/components/UI";
+import { Category, getCategories, getProducts, Product } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
   const { addToCart, getCartItemQuantity } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
 
   // Filter and sort states
   const [searchQuery, setSearchQuery] = useState(
@@ -36,15 +38,28 @@ const ProductsPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get unique categories
-  const categories = useMemo(() => {
-    const cats = mockProducts.map((p) => p.category).filter(Boolean);
-    return [...new Set(cats)] as string[];
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    getProducts()
+      .then((data) => {
+        setProducts(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching products:", error);
+      });
+    getCategories()
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+      });
   }, []);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = mockProducts.filter((product) => {
+    let filtered = products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -107,7 +122,7 @@ const ProductsPage: React.FC = () => {
 
   const categoryOptions = [
     { value: "", label: "All Categories" },
-    ...categories.map((cat) => ({ value: cat, label: cat })),
+    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
   ];
 
   const sortOptions = [
@@ -300,7 +315,7 @@ const ProductsPage: React.FC = () => {
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
-            Showing {filteredProducts.length} of {mockProducts.length} products
+            Showing {filteredProducts.length} of {products.length} products
           </p>
           {isLoading && (
             <Badge variant="secondary" className="animate-pulse">
@@ -528,7 +543,7 @@ const ProductsPage: React.FC = () => {
 
         {/* Load More Button (for pagination in real app) */}
         {filteredProducts.length > 0 &&
-          filteredProducts.length === mockProducts.length && (
+          filteredProducts.length === products.length && (
             <div className="text-center mt-12">
               <Button variant="secondary" size="lg">
                 Load More Products

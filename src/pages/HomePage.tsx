@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -9,13 +9,26 @@ import {
   Heart,
   Plus,
 } from "lucide-react";
-import { useCart, mockProducts } from "@/contexts/CartContext";
+import { useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
+import { getProducts, Product } from "@/lib/supabase";
 
 const HomePage: React.FC = () => {
   const { addToCart } = useCart();
+  const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
 
-  const featuredProducts = mockProducts.slice(0, 4);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const products = await getProducts({ limit: 4 });
+        setFeaturedProducts(products);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const features = [
     {
