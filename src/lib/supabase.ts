@@ -60,6 +60,8 @@ export interface CartSummary {
 export interface Order {
   id: string;
   stripe_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_payment_intent_secret: string | null;
   status: string;
   total_amount: number;
   subtotal: number;

@@ -48,13 +48,6 @@ const SuccessPage: React.FC = () => {
       .then((fetchedOrder) => {
         if (fetchedOrder) {
           setOrder(fetchedOrder);
-          stripe
-            ?.retrievePaymentIntent(
-              "pi_3RWKUUIZhaldKdee2BtcTFr7_secret_gQ10lj8ff8kUdfQ3vbTlnFSRr"
-            )
-            .then((result) => {
-              console.log("Payment Intent Result:", result);
-            });
         } else {
           console.error("No order found for session ID:", sessionId);
         }

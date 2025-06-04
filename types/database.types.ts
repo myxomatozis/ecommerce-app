@@ -163,6 +163,7 @@ export type Database = {
           shipping_amount: number | null
           status: string | null
           stripe_payment_intent_id: string | null
+          stripe_payment_intent_secret: string | null
           stripe_session_id: string | null
           subtotal: number
           tax_amount: number | null
@@ -184,6 +185,7 @@ export type Database = {
           shipping_amount?: number | null
           status?: string | null
           stripe_payment_intent_id?: string | null
+          stripe_payment_intent_secret?: string | null
           stripe_session_id?: string | null
           subtotal: number
           tax_amount?: number | null
@@ -205,6 +207,7 @@ export type Database = {
           shipping_amount?: number | null
           status?: string | null
           stripe_payment_intent_id?: string | null
+          stripe_payment_intent_secret?: string | null
           stripe_session_id?: string | null
           subtotal?: number
           tax_amount?: number | null
@@ -375,6 +378,8 @@ export type Database = {
         Returns: {
           id: string
           stripe_session_id: string
+          stripe_payment_intent_id: string
+          stripe_payment_intent_secret: string
           status: string
           total_amount: number
           subtotal: number

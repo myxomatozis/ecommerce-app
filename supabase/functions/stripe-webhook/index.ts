@@ -133,10 +133,7 @@ Deno.serve(async (req) => {
           .from("orders")
           .update({
             status: "processing",
-            metadata: {
-              payment_intent_status: paymentIntent.status,
-              payment_intent_secret: paymentIntent.client_secret,
-            },
+            stripe_payment_intent_secret: paymentIntent.client_secret,
           })
           .eq("stripe_payment_intent_id", paymentIntent.id);
 
@@ -154,10 +151,7 @@ Deno.serve(async (req) => {
           .from("orders")
           .update({
             status: "cancelled",
-            metadata: {
-              payment_intent_status: paymentIntent.status,
-              payment_intent_secret: paymentIntent.client_secret,
-            },
+            stripe_payment_intent_secret: paymentIntent.client_secret,
           })
           .eq("stripe_payment_intent_id", paymentIntent.id);
 

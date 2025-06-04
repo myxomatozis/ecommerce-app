@@ -50,6 +50,7 @@ CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stripe_session_id TEXT UNIQUE,
   stripe_payment_intent_id TEXT,
+  stripe_payment_intent_secret TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded')),
   total_amount DECIMAL(10,2) NOT NULL,
   subtotal DECIMAL(10,2) NOT NULL,
