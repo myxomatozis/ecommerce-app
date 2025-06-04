@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import Layout from "@/components/Layout/Layout";
@@ -9,11 +8,13 @@ import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import SuccessPage from "@/pages/SuccessPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 function App() {
   return (
     <CartProvider>
       <Layout>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />

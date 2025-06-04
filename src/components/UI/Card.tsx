@@ -21,7 +21,7 @@ const Card: React.FC<CardProps> = ({
   hover = false,
   ...props
 }) => {
-  const baseClasses = "bg-white rounded-2xl transition-all duration-300";
+  const baseClasses = "bg-white rounded-xl transition-all duration-300";
 
   const variantClasses = {
     default: "border border-gray-200 shadow-sharp",

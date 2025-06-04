@@ -1,62 +1,158 @@
 import React, { HTMLAttributes } from "react";
 
 export interface SpinnerProps extends HTMLAttributes<HTMLDivElement> {
-  size?: "sm" | "md" | "lg" | "xl";
-  color?: "primary" | "gray" | "white";
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+  variant?:
+    | "default"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "warning"
+    | "danger"
+    | "white";
+  speed?: "slow" | "normal" | "fast";
+  type?: "spinner" | "dots" | "pulse" | "bars";
   text?: string;
+  inline?: boolean;
 }
 
 const Spinner: React.FC<SpinnerProps> = ({
   size = "md",
-  color = "primary",
+  variant = "default",
+  speed = "normal",
+  type = "spinner",
   text,
+  inline = false,
   className = "",
   ...props
 }) => {
   const sizeClasses = {
+    xs: "w-3 h-3",
     sm: "w-4 h-4",
     md: "w-6 h-6",
     lg: "w-8 h-8",
     xl: "w-12 h-12",
+    "2xl": "w-16 h-16",
   };
 
-  const colorClasses = {
+  const variantClasses = {
+    default: "text-gray-600",
     primary: "text-primary-600",
-    gray: "text-gray-600",
+    secondary: "text-gray-400",
+    success: "text-green-600",
+    warning: "text-yellow-600",
+    danger: "text-red-600",
     white: "text-white",
   };
 
-  const spinnerClasses = `animate-spin ${sizeClasses[size]} ${colorClasses[color]}`;
+  const speedClasses = {
+    slow: "animate-spin [animation-duration:2s]",
+    normal: "animate-spin",
+    fast: "animate-spin [animation-duration:0.5s]",
+  };
+
+  const textSizeClasses = {
+    xs: "text-xs",
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
+    xl: "text-lg",
+    "2xl": "text-xl",
+  };
+
+  const containerClasses = inline
+    ? "inline-flex items-center space-x-2"
+    : "flex flex-col items-center justify-center space-y-3";
+
+  const renderSpinner = () => {
+    const baseClasses = `${sizeClasses[size]} ${variantClasses[variant]} ${speedClasses[speed]}`;
+
+    switch (type) {
+      case "dots":
+        return (
+          <div className={`flex space-x-1 ${sizeClasses[size]}`}>
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full ${variantClasses[variant]} animate-bounce`}
+                style={{
+                  animationDelay: `${i * 0.15}s`,
+                  backgroundColor: "currentColor",
+                }}
+              />
+            ))}
+          </div>
+        );
+
+      case "pulse":
+        return (
+          <div
+            className={`${baseClasses} animate-pulse rounded-full`}
+            style={{ backgroundColor: "currentColor" }}
+          />
+        );
+
+      case "bars":
+        return (
+          <div className={`flex space-x-1 items-end ${sizeClasses[size]}`}>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`w-1 bg-current animate-pulse`}
+                style={{
+                  height: `${25 + (i % 2) * 25}%`,
+                  animationDelay: `${i * 0.1}s`,
+                  color: variantClasses[variant].replace("text-", ""),
+                }}
+              />
+            ))}
+          </div>
+        );
+
+      default: // spinner
+        return (
+          <svg
+            className={baseClasses}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            role="img"
+            aria-label={text || "Loading"}
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        );
+    }
+  };
 
   return (
-    <div className={`flex items-center justify-center ${className}`} {...props}>
-      <div className="flex flex-col items-center space-y-2">
-        <svg
-          className={spinnerClasses}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
+    <div
+      className={`${containerClasses} ${className}`}
+      role="status"
+      aria-live="polite"
+      {...props}
+    >
+      {renderSpinner()}
+      {text && (
+        <span
+          className={`font-medium ${textSizeClasses[size]} ${variantClasses[variant]}`}
+          aria-label={text}
         >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
-        {text && (
-          <span className={`text-sm font-medium ${colorClasses[color]}`}>
-            {text}
-          </span>
-        )}
-      </div>
+          {text}
+        </span>
+      )}
     </div>
   );
 };
