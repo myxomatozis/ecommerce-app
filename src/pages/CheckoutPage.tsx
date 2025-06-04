@@ -1,3 +1,5 @@
+// src/pages/CheckoutPage.tsx - Updated with Stripe Integration
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -41,10 +43,6 @@ const CheckoutPage: React.FC = () => {
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    nameOnCard: "",
     sameAsShipping: true,
   });
 
@@ -82,22 +80,68 @@ const CheckoutPage: React.FC = () => {
     setStep(3);
   };
 
+  const createStripeCheckout = async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Supabase configuration missing");
+    }
+
+    // Generate a session ID for the cart (you might want to store this in localStorage)
+    const cartSessionId =
+      localStorage.getItem("cart_session_id") ||
+      `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    if (!localStorage.getItem("cart_session_id")) {
+      localStorage.setItem("cart_session_id", cartSessionId);
+    }
+
+    const customerInfo = {
+      email: shippingInfo.email,
+      name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+      phone: shippingInfo.phone,
+    };
+
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/create-stripe-checkout`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId: cartSessionId,
+          customerInfo,
+          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/checkout`,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to create checkout session");
+    }
+
+    return response.json();
+  };
+
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const { url } = await createStripeCheckout();
 
-    // In a real app, this would integrate with Stripe
-    // const { sessionId, url } = await createStripeCheckout(cartItems, {
-    //   successUrl: `${window.location.origin}/success`,
-    //   cancelUrl: `${window.location.origin}/checkout`
-    // });
-    // window.location.href = url;
-
-    clearCart();
-    navigate("/success?session_id=demo_session_123");
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("There was an error processing your checkout. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
   const steps = [
@@ -171,13 +215,13 @@ const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-2">
             <Card>
               <CardContent>
-                {/* Step 1: Shipping Information */}
+                {/* Step 1: Customer Information */}
                 {step === 1 && (
                   <form onSubmit={handleShippingSubmit}>
                     <div className="flex items-center mb-6">
-                      <MapPin className="mr-2 text-primary-600" size={24} />
+                      <User className="mr-2 text-primary-600" size={24} />
                       <h2 className="text-xl font-semibold text-gray-900">
-                        Shipping Information
+                        Customer Information
                       </h2>
                     </div>
 
@@ -236,7 +280,32 @@ const CheckoutPage: React.FC = () => {
                         }
                         leftIcon={<Phone size={20} />}
                       />
+                    </div>
 
+                    <div className="mt-8">
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                      >
+                        Continue to Shipping
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Step 2: Shipping Address */}
+                {step === 2 && (
+                  <form onSubmit={handlePaymentSubmit}>
+                    <div className="flex items-center mb-6">
+                      <MapPin className="mr-2 text-primary-600" size={24} />
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Shipping Address
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="md:col-span-2">
                         <Input
                           label="Address"
@@ -328,102 +397,6 @@ const CheckoutPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-8">
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="lg"
-                        fullWidth
-                      >
-                        Continue to Payment
-                      </Button>
-                    </div>
-                  </form>
-                )}
-
-                {/* Step 2: Payment Information */}
-                {step === 2 && (
-                  <form onSubmit={handlePaymentSubmit}>
-                    <div className="flex items-center mb-6">
-                      <CreditCard className="mr-2 text-primary-600" size={24} />
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        Payment Information
-                      </h2>
-                    </div>
-
-                    <div className="space-y-6">
-                      <Input
-                        label="Card Number"
-                        type="text"
-                        required
-                        placeholder="1234 5678 9012 3456"
-                        value={paymentInfo.cardNumber}
-                        onChange={(e) =>
-                          setPaymentInfo({
-                            ...paymentInfo,
-                            cardNumber: e.target.value,
-                          })
-                        }
-                        leftIcon={<CreditCard size={20} />}
-                      />
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          label="Expiry Date"
-                          type="text"
-                          required
-                          placeholder="MM/YY"
-                          value={paymentInfo.expiryDate}
-                          onChange={(e) =>
-                            setPaymentInfo({
-                              ...paymentInfo,
-                              expiryDate: e.target.value,
-                            })
-                          }
-                        />
-
-                        <Input
-                          label="CVV"
-                          type="text"
-                          required
-                          placeholder="123"
-                          value={paymentInfo.cvv}
-                          onChange={(e) =>
-                            setPaymentInfo({
-                              ...paymentInfo,
-                              cvv: e.target.value,
-                            })
-                          }
-                          leftIcon={<Lock size={20} />}
-                        />
-                      </div>
-
-                      <Input
-                        label="Name on Card"
-                        type="text"
-                        required
-                        value={paymentInfo.nameOnCard}
-                        onChange={(e) =>
-                          setPaymentInfo({
-                            ...paymentInfo,
-                            nameOnCard: e.target.value,
-                          })
-                        }
-                        leftIcon={<User size={20} />}
-                      />
-
-                      <Checkbox
-                        checked={paymentInfo.sameAsShipping}
-                        onChange={(e) =>
-                          setPaymentInfo({
-                            ...paymentInfo,
-                            sameAsShipping: e.target.checked,
-                          })
-                        }
-                        label="Billing address same as shipping"
-                      />
-                    </div>
-
                     <div className="mt-8 flex space-x-4">
                       <Button
                         type="button"
@@ -490,17 +463,29 @@ const CheckoutPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Shipping & Payment Info */}
+                    {/* Customer & Shipping Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                      <Card variant="outlined">
+                        <CardContent padding="sm">
+                          <h3 className="font-medium text-gray-900 mb-2">
+                            Customer Information
+                          </h3>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <p>
+                              {shippingInfo.firstName} {shippingInfo.lastName}
+                            </p>
+                            <p>{shippingInfo.email}</p>
+                            {shippingInfo.phone && <p>{shippingInfo.phone}</p>}
+                          </div>
+                        </CardContent>
+                      </Card>
+
                       <Card variant="outlined">
                         <CardContent padding="sm">
                           <h3 className="font-medium text-gray-900 mb-2">
                             Shipping Address
                           </h3>
                           <div className="text-sm text-gray-600 space-y-1">
-                            <p>
-                              {shippingInfo.firstName} {shippingInfo.lastName}
-                            </p>
                             <p>{shippingInfo.address}</p>
                             {shippingInfo.apartment && (
                               <p>{shippingInfo.apartment}</p>
@@ -513,23 +498,25 @@ const CheckoutPage: React.FC = () => {
                           </div>
                         </CardContent>
                       </Card>
+                    </div>
 
-                      <Card variant="outlined">
-                        <CardContent padding="sm">
-                          <h3 className="font-medium text-gray-900 mb-2">
-                            Payment Method
-                          </h3>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>
-                              **** **** **** {paymentInfo.cardNumber.slice(-4)}
-                            </p>
-                            <p>{paymentInfo.nameOnCard}</p>
-                            <Badge variant="primary" size="sm">
-                              VISA
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-start space-x-3">
+                        <CreditCard
+                          className="text-blue-600 flex-shrink-0 mt-0.5"
+                          size={20}
+                        />
+                        <div>
+                          <h4 className="font-medium text-blue-900 mb-1">
+                            Secure Payment with Stripe
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            You'll be redirected to Stripe's secure checkout to
+                            complete your payment. All payment information is
+                            encrypted and processed securely.
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex space-x-4">
@@ -552,10 +539,8 @@ const CheckoutPage: React.FC = () => {
                         disabled={isProcessing}
                       >
                         {isProcessing
-                          ? "Processing..."
-                          : `Place Order - ${cartSummary.total_amount.toFixed(
-                              2
-                            )}`}
+                          ? "Redirecting to Payment..."
+                          : `Pay $${cartSummary.total_amount.toFixed(2)}`}
                       </Button>
                     </div>
                   </form>
@@ -585,7 +570,7 @@ const CheckoutPage: React.FC = () => {
                           Free
                         </Badge>
                       ) : (
-                        `${cartSummary.shipping.toFixed(2)}`
+                        `$${cartSummary.shipping.toFixed(2)}`
                       )}
                     </span>
                   </div>
@@ -604,8 +589,8 @@ const CheckoutPage: React.FC = () => {
                 </div>
 
                 <div className="text-xs text-gray-500 text-center space-y-2">
-                  <p>🔒 Your payment information is secure</p>
-                  <p>Powered by 256-bit SSL encryption</p>
+                  <p>🔒 Secure checkout powered by Stripe</p>
+                  <p>256-bit SSL encryption</p>
                   <div className="flex justify-center space-x-2">
                     <Badge variant="secondary" size="sm">
                       VISA
