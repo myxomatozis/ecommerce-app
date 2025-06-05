@@ -9,42 +9,42 @@ export default {
       colors: {
         // Bright warm primary - coral/orange
         primary: {
-          50: "#fdf2f8",
-          100: "#fce7f3",
-          200: "#fbcfe8",
-          300: "#f9a8d4",
-          400: "#f472b6",
-          500: "#ec4899", // Main primary - rose/pink
-          600: "#db2777", // Deeper rose
-          700: "#be185d",
-          800: "#9d174d",
-          900: "#831843",
+          50: "#faf7f4",
+          100: "#f4ede6",
+          200: "#e7d6c7",
+          300: "#d6b8a1",
+          400: "#c49577",
+          500: "#b67c5a", // Main primary - sophisticated terracotta
+          600: "#a66a4a", // Deeper warm brown
+          700: "#8b5a3f",
+          800: "#704a37",
+          900: "#5c3d2e",
         },
-        // Warm accent colors
+        // Muted warm accent colors
         accent: {
-          50: "#fefce8",
-          100: "#fef9c3",
-          200: "#fef08a",
-          300: "#fde047",
-          400: "#facc15", // Bright warm yellow
-          500: "#eab308",
-          600: "#ca8a04",
-          700: "#a16207",
-          800: "#854d0e",
-          900: "#713f12",
+          50: "#fefdf8",
+          100: "#fefaf0",
+          200: "#fcf3d9",
+          300: "#f9e8b8",
+          400: "#f4d888", // Muted warm gold
+          500: "#e6c564",
+          600: "#d4b146",
+          700: "#b8973a",
+          800: "#967a32",
+          900: "#7a632c",
         },
-        // Warm success - coral red
+        // Sophisticated warm success - muted green
         success: {
-          50: "#fef2f2",
-          100: "#fee2e2",
-          200: "#fecaca",
-          300: "#fca5a5",
-          400: "#f87171",
-          500: "#ef4444", // Bright warm red
-          600: "#dc2626",
-          700: "#b91c1c",
-          800: "#991b1b",
-          900: "#7f1d1d",
+          50: "#f7faf8",
+          100: "#eef5f0",
+          200: "#d6e7dc",
+          300: "#b5d3c1",
+          400: "#8db89f",
+          500: "#6b9d81", // Sophisticated warm green
+          600: "#578468",
+          700: "#486d56",
+          800: "#3c5847",
+          900: "#33493c",
         },
         // Keep some cooler tones for balance
         secondary: {

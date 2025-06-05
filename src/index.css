@@ -31,14 +31,13 @@
     display: none;
   }
 
-  /* Custom scrollbar for containers */
   .scrollbar-warm::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   .scrollbar-warm::-webkit-scrollbar-track {
-    @apply bg-orange-100 rounded-sm;
+    @apply bg-primary-100 rounded-sm;
   }
 
   .scrollbar-warm::-webkit-scrollbar-thumb {
