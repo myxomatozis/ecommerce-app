@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { useAppData, useCartStore } from "@/stores";
+import { Product, useAppData, useCartStore } from "@/stores";
 import {
   Button,
   Card,
@@ -40,7 +40,7 @@ const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Local UI state
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);

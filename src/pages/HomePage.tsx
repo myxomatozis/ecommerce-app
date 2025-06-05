@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [getProducts]);
 
   const features = [
     {
@@ -56,17 +56,17 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
+      <section className="relative bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Discover Premium
-                <span className="text-primary-600 block">Products</span>
+                Discover the Latest Collection
               </h1>
               <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-lg">
-                Shop the latest collection of premium products with exceptional
-                quality, fast shipping, and outstanding customer service.
+                Step into style with our curated selection of fashion-forward
+                pieces. Explore the newest trends and elevate your wardrobe
+                today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
@@ -78,86 +78,107 @@ const HomePage: React.FC = () => {
                 >
                   Shop Now
                 </Button>
-                <Button as={Link} to="/about" variant="secondary" size="lg">
-                  Learn More
+                <Button
+                  as={Link}
+                  to="/products?sort=newest"
+                  variant="outline"
+                  size="lg"
+                >
+                  New Arrivals
                 </Button>
               </div>
             </div>
 
             <div className="relative">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop"
-                    alt="Premium Headphones"
-                    className="w-full h-48 object-cover rounded-2xl shadow-lg"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop"
-                    alt="Premium T-Shirt"
-                    className="w-full h-32 object-cover rounded-2xl shadow-lg"
-                  />
-                </div>
-                <div className="space-y-4 pt-8">
-                  <img
-                    src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop"
-                    alt="Leather Bag"
-                    className="w-full h-32 object-cover rounded-2xl shadow-lg"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=300&h=300&fit=crop"
-                    alt="Smart Bottle"
-                    className="w-full h-48 object-cover rounded-2xl shadow-lg"
-                  />
-                </div>
+              <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+                <img
+                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop"
+                  alt="Fashion Collection"
+                  className="w-full h-full object-cover"
+                />
               </div>
-
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 bg-white rounded-full p-3 shadow-lg">
-                <Star className="w-6 h-6 text-yellow-500 fill-current" />
-              </div>
-              <div className="absolute top-1/2 -left-4 bg-primary-600 text-white rounded-full p-2 shadow-lg">
-                <Heart className="w-4 h-4 fill-current" />
+              {/* Simple floating badge */}
+              <div className="absolute bottom-4 left-4 bg-white rounded-lg p-4 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  <span className="text-sm font-medium text-gray-900">
+                    4.9 Rating
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-1">10,000+ Reviews</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
+      {/* Featured Categories */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={index} hover className="text-center">
-                  <CardContent>
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 text-primary-600 rounded-full mb-4">
-                      <Icon size={24} />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Shop by Category
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our complete range of fashion essentials
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Clothing",
+                href: "/products?category=clothing",
+                image:
+                  "https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=500&fit=crop",
+              },
+              {
+                name: "Shoes",
+                href: "/products?category=shoes",
+                image:
+                  "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=500&fit=crop",
+              },
+              {
+                name: "Accessories",
+                href: "/products?category=accessories",
+                image:
+                  "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
+              },
+            ].map((category, index) => (
+              <Link
+                key={index}
+                to={category.href}
+                className="group relative overflow-hidden rounded-lg bg-gray-100 aspect-[4/5]"
+              >
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+                <div className="absolute bottom-6 left-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    {category.name}
+                  </h3>
+                  <span className="text-white/90 group-hover:text-white transition-colors">
+                    Shop Now →
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Featured Products
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Discover our handpicked selection of premium products that combine
-              quality, style, and functionality.
+              Discover our handpicked selection of premium products
             </p>
           </div>
 
@@ -165,45 +186,46 @@ const HomePage: React.FC = () => {
             {featuredProducts.map((product) => (
               <Card key={product.id} hover className="overflow-hidden group">
                 <div className="relative overflow-hidden">
-                  <img
-                    src={product.image_url || "/placeholder.jpg"}
-                    alt={product.name}
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white"
-                  >
+                  <Link to={`/products/${product.id}`}>
+                    <img
+                      src={product.image_url || "/placeholder.jpg"}
+                      alt={product.name}
+                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </Link>
+                  <button className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
                     <Heart size={18} className="text-gray-600" />
-                  </Button>
+                  </button>
                   {product.rating && (
                     <div className="absolute top-4 left-4">
                       <Badge
                         variant="default"
-                        className="bg-white/90 backdrop-blur-sm text-gray-900"
+                        size="sm"
+                        className="bg-white/90 text-gray-900"
                       >
                         <Star
                           size={14}
                           className="text-yellow-400 fill-current mr-1"
                         />
-                        {product.rating}
+                        {product.rating.toFixed(1)}
                       </Badge>
                     </div>
                   )}
                 </div>
 
                 <CardContent>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
-                    {product.name}
-                  </h3>
+                  <Link to={`/products/${product.id}`}>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1 hover:text-primary-600 transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                     {product.description}
                   </p>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-xl font-bold text-gray-900">
                         ${product.price.toFixed(2)}
                       </span>
                       {product.price > 50 && (
@@ -222,7 +244,7 @@ const HomePage: React.FC = () => {
                       onClick={() => addToCart(product.id)}
                       leftIcon={<Plus size={16} />}
                     >
-                      Add to Cart
+                      Add
                     </Button>
                   </div>
                 </CardContent>
@@ -244,95 +266,57 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-16 bg-primary-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Stay in the Loop
-          </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Subscribe to our newsletter for exclusive offers, new product
-            announcements, and style inspiration.
-          </p>
-
-          <Card className="max-w-md mx-auto">
-            <CardContent>
-              <form className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  className="flex-1 px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  className="whitespace-nowrap"
-                >
-                  Subscribe
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <p className="text-sm text-primary-200 mt-4">
-            No spam, unsubscribe at any time.
-          </p>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[
-              { number: "10,000+", label: "Happy Customers" },
-              { number: "50+", label: "Premium Products" },
-              { number: "99%", label: "Satisfaction Rate" },
-              { number: "24/7", label: "Customer Support" },
-            ].map((stat, index) => (
-              <Card key={index} className="text-center">
-                <CardContent>
-                  <div className="text-3xl font-bold text-primary-600 mb-2">
-                    {stat.number}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div key={index} className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-lg mb-4">
+                    <Icon size={20} />
                   </div>
-                  <div className="text-gray-600 font-medium">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16 bg-gray-900">
+      {/* Newsletter Section */}
+      <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Start Shopping?
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Stay Updated
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Join thousands of satisfied customers who trust us for quality
-            products and exceptional service.
+          <p className="text-xl text-gray-600 mb-8">
+            Subscribe to our newsletter for exclusive offers and new arrivals
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              as={Link}
-              to="/products"
-              variant="primary"
-              size="lg"
-              rightIcon={<ArrowRight size={20} />}
-            >
-              Browse Products
-            </Button>
-            <Button
-              as={Link}
-              to="/about"
-              variant="outline"
-              size="lg"
-              className="border-white text-white hover:bg-white hover:text-gray-900"
-            >
-              Learn About Us
-            </Button>
+
+          <div className="max-w-md mx-auto">
+            <form className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                className="whitespace-nowrap"
+              >
+                Subscribe
+              </Button>
+            </form>
+            <p className="text-sm text-gray-500 mt-4">
+              No spam, unsubscribe at any time.
+            </p>
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, Heart, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Heart, Menu, X, User } from "lucide-react";
 import { useCartStore } from "@/stores";
 
 const Header: React.FC = () => {
@@ -12,10 +12,11 @@ const Header: React.FC = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "New Arrivals", href: "/products?sort=newest" },
+    { name: "Clothing", href: "/products?category=clothing" },
+    { name: "Shoes", href: "/products?category=shoes" },
+    { name: "Accessories", href: "/products?category=accessories" },
+    { name: "Sale", href: "/products?sale=true" },
   ];
 
   const isActive = (path: string) => {
@@ -33,7 +34,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -54,7 +55,7 @@ const Header: React.FC = () => {
                 to={item.href}
                 className={`text-sm font-medium transition-colors ${
                   isActive(item.href)
-                    ? "text-primary-600 border-b-2 border-primary-600 pb-4"
+                    ? "text-primary-600"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -63,22 +64,32 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Search Bar & Actions */}
+          {/* Right Actions */}
           <div className="flex items-center space-x-4">
             {/* Desktop Search */}
             <form
               onSubmit={handleSearch}
-              className="hidden md:flex items-center space-x-2 bg-gray-50 rounded-full px-4 py-2"
+              className="hidden md:flex items-center"
             >
-              <Search size={20} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm w-48 placeholder-gray-500"
-              />
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+                />
+              </div>
             </form>
+
+            {/* Account */}
+            <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <User size={24} />
+            </button>
 
             {/* Wishlist */}
             <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -92,7 +103,7 @@ const Header: React.FC = () => {
             >
               <ShoppingCart size={24} />
               {cartSummary.item_count > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
                   {cartSummary.item_count}
                 </span>
               )}
@@ -112,18 +123,20 @@ const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
             {/* Mobile Search */}
-            <form
-              onSubmit={handleSearch}
-              className="flex items-center space-x-2 bg-gray-50 rounded-lg px-4 py-3 mb-4"
-            >
-              <Search size={20} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm flex-1 placeholder-gray-500"
-              />
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+              </div>
             </form>
 
             {/* Mobile Navigation */}
@@ -133,7 +146,7 @@ const Header: React.FC = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive(item.href)
                       ? "text-primary-600 bg-primary-50"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
