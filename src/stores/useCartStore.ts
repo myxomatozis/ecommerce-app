@@ -72,6 +72,14 @@ export const useCartStore = create<CartStore>()(
         addToCart: async (productId: string, quantity: number = 1) => {
           try {
             set({ loading: true, error: null });
+            // Check if item already exists in cart, if so, update quantity with increment
+
+            const existingItem = get().cartItems.find(
+              (item) => item.product_id === productId
+            );
+            if (existingItem) {
+              quantity += existingItem.quantity; // Increment existing quantity
+            }
 
             await SupabaseAPI.addToCart(productId, quantity);
             await get().loadCartData(); // Refresh cart data
