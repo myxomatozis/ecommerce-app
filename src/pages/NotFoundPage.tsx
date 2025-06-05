@@ -1,45 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Home,
-  Search,
-  ArrowLeft,
-  ShoppingBag,
-  Package,
-  Users,
-  Headphones,
-} from "lucide-react";
-import { Button, Card, CardContent, Input, Badge } from "@/components/UI";
+import { ArrowLeft, Search } from "lucide-react";
 
 const NotFoundPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const popularPages = [
-    {
-      name: "Home",
-      href: "/",
-      icon: Home,
-      description: "Return to our homepage",
-    },
-    {
-      name: "All Products",
-      href: "/products",
-      icon: ShoppingBag,
-      description: "Browse our full catalog",
-    },
-    {
-      name: "Electronics",
-      href: "/products?category=electronics",
-      icon: Headphones,
-      description: "Tech gadgets and devices",
-    },
-    {
-      name: "New Arrivals",
-      href: "/products?sort=newest",
-      icon: Package,
-      description: "Latest products added",
-    },
-  ];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,251 +14,112 @@ const NotFoundPage: React.FC = () => {
     }
   };
 
+  const popularPages = [
+    { name: "All Products", href: "/products" },
+    { name: "New Arrivals", href: "/products?sort=newest" },
+    { name: "Women", href: "/products?category=women" },
+    { name: "Men", href: "/products?category=men" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* 404 Illustration */}
-        <div className="text-center mb-12">
-          <div className="relative mb-8">
-            <div className="text-9xl font-bold text-primary-600 mb-4 animate-bounce-in">
-              404
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                  <Search size={120} className="text-gray-300" />
-                </div>
-                <div className="relative bg-white rounded-full w-32 h-32 flex items-center justify-center shadow-lg animate-bounce-in">
-                  <ShoppingBag size={48} className="text-gray-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Badge variant="warning" size="lg" className="mb-6">
-            <Users size={16} className="mr-1" />
-            Page Not Found
-          </Badge>
-
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Oops! Lost in the Store?
-          </h1>
-          <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
-            The page you're looking for seems to have wandered off into the
-            digital wilderness. Don't worry, even the best explorers get lost
-            sometimes!
-          </p>
-          <p className="text-gray-500 mb-8">
-            Let's get you back on track with some helpful options below.
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <button
             onClick={() => window.history.back()}
-            variant="primary"
-            size="lg"
-            leftIcon={<ArrowLeft size={20} />}
+            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Go Back
-          </Button>
+            <ArrowLeft size={16} className="mr-2" />
+            Back
+          </button>
+        </div>
+      </header>
 
-          <Button
-            as={Link}
-            to="/"
-            variant="secondary"
-            size="lg"
-            leftIcon={<Home size={20} />}
-          >
-            Go Home
-          </Button>
+      <div className="max-w-2xl mx-auto px-6 py-16">
+        {/* 404 Content */}
+        <div className="text-center mb-16">
+          <div className="text-8xl font-light text-gray-200 mb-8">404</div>
+
+          <h1 className="text-3xl font-light text-gray-900 mb-4">
+            Page Not Found
+          </h1>
+          <p className="text-lg text-gray-500 mb-8">
+            The page you're looking for doesn't exist
+          </p>
         </div>
 
-        {/* Search Suggestion */}
-        <Card className="mb-8 max-w-2xl mx-auto">
-          <CardContent>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
-              Try searching for what you need
-            </h2>
-            <form onSubmit={handleSearch} className="flex gap-3">
-              <Input
+        {/* Search */}
+        <div className="mb-16">
+          <h2 className="text-lg font-medium text-gray-900 mb-6 text-center">
+            Try searching for what you need
+          </h2>
+
+          <form onSubmit={handleSearch} className="flex space-x-4">
+            <div className="flex-1 relative">
+              <Search
+                size={16}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+              <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                leftIcon={<Search size={20} />}
-                fullWidth
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded focus:border-gray-900 focus:ring-0 transition-colors"
               />
-              <Button
-                type="submit"
-                variant="primary"
-                className="whitespace-nowrap"
-              >
-                Search
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Popular Pages */}
-        <Card>
-          <CardContent>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Popular Destinations
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {popularPages.map((page, index) => {
-                const Icon = page.icon;
-                return (
-                  <Card
-                    key={index}
-                    hover
-                    variant="outlined"
-                    className="transition-all duration-200 hover:border-primary-300 hover:shadow-md group"
-                  >
-                    <CardContent padding="sm">
-                      <Link
-                        to={page.href}
-                        className="flex items-start space-x-3 text-left"
-                      >
-                        <div className="flex-shrink-0 w-12 h-12 bg-gray-100 group-hover:bg-primary-100 rounded-lg flex items-center justify-center transition-colors">
-                          <Icon
-                            size={20}
-                            className="text-gray-600 group-hover:text-primary-600 transition-colors"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors mb-1">
-                            {page.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {page.description}
-                          </p>
-                        </div>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                );
-              })}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Help Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <Card>
-            <CardContent>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Need Help?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Our customer support team is here to help you find what you're
-                looking for.
-              </p>
-              <div className="space-y-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  📧 Contact Support
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  💬 Live Chat
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  📞 Call Us
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Quick Links
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Jump to the most commonly visited sections of our store.
-              </p>
-              <div className="space-y-2">
-                <Button
-                  as={Link}
-                  to="/products?sale=true"
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  🏷️ Sale Items
-                </Button>
-                <Button
-                  as={Link}
-                  to="/products?featured=true"
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  ⭐ Featured Products
-                </Button>
-                <Button
-                  as={Link}
-                  to="/about"
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  className="justify-start text-primary-600 hover:text-primary-700"
-                >
-                  ℹ️ About Us
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <button
+              type="submit"
+              className="bg-gray-900 text-white px-6 py-3 hover:bg-gray-800 transition-colors"
+            >
+              Search
+            </button>
+          </form>
         </div>
 
-        {/* Fun Fact */}
-        <Card className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-          <CardContent>
-            <div className="text-center">
-              <Badge variant="info" size="lg" className="mb-3">
-                💡 Fun Fact
-              </Badge>
-              <p className="text-sm text-blue-800 leading-relaxed">
-                The term "404" comes from the room number at CERN where the
-                first web server was located. When a page couldn't be found, it
-                was like saying "it's not in room 404!" Now you know a bit of
-                internet history! 🌐
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Popular Pages */}
+        <div className="mb-16">
+          <h2 className="text-lg font-medium text-gray-900 mb-6 text-center">
+            Popular Destinations
+          </h2>
 
-        {/* Footer Message */}
-        <div className="text-center mt-8">
-          <p className="text-gray-500 text-sm">
+          <div className="grid grid-cols-2 gap-4">
+            {popularPages.map((page, index) => (
+              <Link
+                key={index}
+                to={page.href}
+                className="p-4 text-center border border-gray-200 hover:border-gray-900 transition-colors group"
+              >
+                <span className="text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {page.name}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Home Link */}
+        <div className="text-center">
+          <Link
+            to="/"
+            className="inline-block bg-gray-900 text-white px-8 py-3 hover:bg-gray-800 transition-colors"
+          >
+            Go Home
+          </Link>
+        </div>
+
+        {/* Help */}
+        <div className="text-center mt-16 pt-16 border-t border-gray-100">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Still can't find what you're looking for?
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary-600 hover:text-primary-700 ml-1 p-0 h-auto"
-            >
-              Let us know
-            </Button>
-            and we'll help you out!
-          </p>
+          </h3>
+          <a
+            href="mailto:support@stylehub.com"
+            className="text-gray-900 underline hover:no-underline transition-all"
+          >
+            Contact Support
+          </a>
         </div>
       </div>
     </div>

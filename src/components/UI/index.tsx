@@ -18,7 +18,13 @@ export {
 } from "./Card";
 export type { CardProps } from "./Card";
 
-export { default as Badge } from "./Badge";
+export {
+  default as Badge,
+  StatusBadge,
+  CountBadge,
+  CategoryBadge,
+  IconCounter,
+} from "./Badge";
 export type { BadgeProps } from "./Badge";
 
 export { default as Spinner } from "./Spinner";

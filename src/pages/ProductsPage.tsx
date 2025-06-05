@@ -32,7 +32,11 @@ const ProductsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category") || ""
   );
-  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>("name");
+  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>(
+    searchParams.get("sort")
+      ? (searchParams.get("sort") as ProductFilters["sortBy"])
+      : "name"
+  );
 
   const ITEMS_PER_PAGE = 16;
 
@@ -63,6 +67,8 @@ const ProductsPage: React.FC = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("search", searchQuery);
     if (selectedCategory) params.set("category", selectedCategory);
+    if (sortBy) params.set("sort", sortBy);
+
     setSearchParams(params);
   }, [searchQuery, selectedCategory, setSearchParams]);
 

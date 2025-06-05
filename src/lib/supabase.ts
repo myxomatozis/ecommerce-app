@@ -365,6 +365,30 @@ export class SupabaseAPI {
     return sessionData;
   }
 
+  static async submitContactForm(
+    formData: Record<string, string>
+  ): Promise<void> {
+    const response = await fetch(`${supabaseUrl}/functions/v1/resend`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        templateId: "contact_form",
+        variables: formData,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to submit contact form: ${errorData.message}`);
+    }
+    const result = await response.json();
+    if (!result.sent) {
+      throw new Error("Failed to send contact form email");
+    }
+  }
+
   // Utility functions
   static async cleanupExpiredCartItems(): Promise<number> {
     const { data, error } = await supabase.rpc("cleanup_expired_cart_items");
