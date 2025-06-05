@@ -514,28 +514,13 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
-          category: string
-          rating: number
-          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
-        }[]
-      }
-      get_storage_public_url: {
-        Args: { bucket_name: string; object_path: string }
-        Returns: string
-      }
-      get_user_orders: {
-        Args: { user_uuid: string }
-        Returns: {
-          id: string
-          external_id: string
-          status: string
-          total_amount: number
-          created_at: string
-          item_count: number
+          category: string
+          rating: number
+          reviews_count: number
         }[]
       }
       remove_cart_item: {

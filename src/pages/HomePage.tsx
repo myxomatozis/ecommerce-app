@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
-import { getProducts, Product } from "@/lib/supabase";
+import { Product, useAppData } from "@/stores";
 
 const HomePage: React.FC = () => {
   const { addToCart } = useCart();
   const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
+  const { getProducts } = useAppData();
 
   useEffect(() => {
     const fetchProducts = async () => {

@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAppData } from "@/stores";
 import {
   Button,
   Card,
@@ -21,22 +22,26 @@ import {
   Dropdown,
   Spinner,
 } from "@/components/UI";
-import { Product, Category, ProductFilters, SupabaseAPI } from "@/lib/supabase";
+import { ProductFilters } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
   const { addToCart, getCartItemQuantity } = useCart();
+  const {
+    getProducts,
+    loadMoreProducts,
+    productsError,
+    categories,
+    getCategories,
+    categoriesLoading,
+  } = useAppData();
+
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State
-  const [products, setProducts] = useState<
-    (Omit<Product, "category_id"> & { category: string })[]
-  >([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  // Local UI state
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
 
   // Filter and sort states
   const [searchQuery, setSearchQuery] = useState(
@@ -52,23 +57,29 @@ const ProductsPage: React.FC = () => {
 
   const ITEMS_PER_PAGE = 12;
 
-  // Fetch categories on mount
+  // Load categories on mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await SupabaseAPI.getCategories();
-        setCategories(data);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
-    fetchCategories();
-  }, []);
+    getCategories();
+  }, [getCategories]);
+
+  // Build current filters object
+  const currentFilters = useMemo(
+    (): ProductFilters => ({
+      categorySlug: selectedCategory || undefined,
+      searchTerm: searchQuery || undefined,
+      minPrice: priceRange.min > 0 ? priceRange.min : undefined,
+      maxPrice: priceRange.max < 500 ? priceRange.max : undefined,
+      sortBy,
+      limit: ITEMS_PER_PAGE,
+      offset: 0,
+    }),
+    [selectedCategory, searchQuery, priceRange.min, priceRange.max, sortBy]
+  );
 
   // Fetch products when filters change
   useEffect(() => {
     fetchProducts(true);
-  }, [searchQuery, selectedCategory, priceRange, sortBy]);
+  }, [currentFilters]);
 
   // Update URL params when filters change
   useEffect(() => {
@@ -82,39 +93,31 @@ const ProductsPage: React.FC = () => {
     try {
       if (reset) {
         setLoading(true);
-        setPage(0);
-        setError(null);
+
+        // Check cache first for instant display
+        const cached = await getProducts(currentFilters);
+        if (cached && cached.length > 0) {
+          setProducts(cached);
+          setLoading(false);
+        }
       } else {
         setLoadingMore(true);
       }
 
-      const currentPage = reset ? 0 : page;
-      const filters: ProductFilters = {
-        categorySlug: selectedCategory || undefined,
-        searchTerm: searchQuery || undefined,
-        minPrice: priceRange.min > 0 ? priceRange.min : undefined,
-        maxPrice: priceRange.max < 500 ? priceRange.max : undefined,
-        sortBy,
-        limit: ITEMS_PER_PAGE,
-        offset: currentPage * ITEMS_PER_PAGE,
-      };
-
-      const data = await SupabaseAPI.getProducts(filters);
+      // Fetch fresh/more data
+      const data = reset
+        ? await getProducts(currentFilters)
+        : await loadMoreProducts(currentFilters);
 
       if (reset) {
         setProducts(data);
+        setHasMore(data.length === ITEMS_PER_PAGE);
       } else {
         setProducts((prev) => [...prev, ...data]);
-      }
-
-      // Check if there are more items
-      setHasMore(data.length === ITEMS_PER_PAGE);
-
-      if (!reset) {
-        setPage((prev) => prev + 1);
+        setHasMore(data.length === ITEMS_PER_PAGE);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch products");
+      console.error("Failed to fetch products:", err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -159,8 +162,8 @@ const ProductsPage: React.FC = () => {
     { value: "newest", label: "Newest First" },
   ];
 
-  // Loading state
-  if (loading) {
+  // Loading state (only show spinner if no cached data available)
+  if (loading && products.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -179,7 +182,7 @@ const ProductsPage: React.FC = () => {
   }
 
   // Error state
-  if (error) {
+  if (productsError && products.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -189,7 +192,7 @@ const ProductsPage: React.FC = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Something went wrong
               </h2>
-              <p className="text-gray-600 mb-4">{error}</p>
+              <p className="text-gray-600 mb-4">{productsError}</p>
               <Button onClick={() => fetchProducts(true)} variant="primary">
                 Try Again
               </Button>
@@ -209,6 +212,12 @@ const ProductsPage: React.FC = () => {
           <p className="text-gray-600">
             Discover our complete collection of premium products
           </p>
+          {loading && products.length > 0 && (
+            <div className="mt-2 flex items-center text-sm text-primary-600">
+              <Loader2 size={16} className="animate-spin mr-2" />
+              Updating results...
+            </div>
+          )}
         </div>
 
         {/* Search and Filters Bar */}
@@ -250,6 +259,7 @@ const ProductsPage: React.FC = () => {
                     value={selectedCategory}
                     onChange={setSelectedCategory}
                     placeholder="All Categories"
+                    disabled={categoriesLoading}
                   />
                 </div>
 
@@ -302,7 +312,7 @@ const ProductsPage: React.FC = () => {
                   <input
                     type="range"
                     min="0"
-                    max="500"
+                    max="2000"
                     value={priceRange.min}
                     onChange={(e) =>
                       setPriceRange((prev) => ({
@@ -315,7 +325,7 @@ const ProductsPage: React.FC = () => {
                   <input
                     type="range"
                     min="0"
-                    max="500"
+                    max="2000"
                     value={priceRange.max}
                     onChange={(e) =>
                       setPriceRange((prev) => ({
@@ -330,7 +340,10 @@ const ProductsPage: React.FC = () => {
             )}
 
             {/* Active Filters */}
-            {(searchQuery || selectedCategory) && (
+            {(searchQuery ||
+              selectedCategory ||
+              priceRange.min > 0 ||
+              priceRange.max < 2000) && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
@@ -370,6 +383,22 @@ const ProductsPage: React.FC = () => {
                         </Button>
                       </Badge>
                     )}
+                    {(priceRange.min > 0 || priceRange.max < 2000) && (
+                      <Badge
+                        variant="primary"
+                        className="inline-flex items-center"
+                      >
+                        Price: ${priceRange.min} - ${priceRange.max}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setPriceRange({ min: 0, max: 2000 })}
+                          className="ml-1 p-0 h-4 w-4 hover:bg-primary-200 rounded-full"
+                        >
+                          <X size={12} />
+                        </Button>
+                      </Badge>
+                    )}
                   </div>
                   <Button
                     variant="ghost"
@@ -391,6 +420,12 @@ const ProductsPage: React.FC = () => {
             Showing {products.length} products
             {hasMore && " (load more available)"}
           </p>
+          {productsError && (
+            <div className="text-sm text-red-600 flex items-center">
+              <AlertCircle size={16} className="mr-1" />
+              Error loading products
+            </div>
+          )}
         </div>
 
         {/* Products Grid/List */}
