@@ -6,13 +6,15 @@ import { Button, Card, CardContent, Badge } from "@/components/UI";
 import { useCartStore } from "@/stores";
 
 const CartSidebar: React.FC = () => {
-  const cartItems = useCartStore((state) => state.cartItems);
-  const cartSummary = useCartStore((state) => state.cartSummary);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const removeFromCart = useCartStore((state) => state.removeFromCart);
-  const isCartOpen = useCartStore((state) => state.isCartOpen);
-  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
-  const clearCart = useCartStore((state) => state.clearCart);
+  const {
+    cartItems,
+    cartSummary,
+    updateQuantity,
+    removeFromCart,
+    isCartOpen,
+    setIsCartOpen,
+    clearCart,
+  } = useCartStore();
 
   const subtotal =
     cartSummary.total_amount - cartSummary.shipping - cartSummary.tax;
@@ -46,8 +48,8 @@ const CartSidebar: React.FC = () => {
                 {cartSummary.item_count > 0 && (
                   <Badge
                     variant="primary"
-                    size="sm"
-                    className="absolute -top-2 -right-2 min-w-[1.25rem] h-5"
+                    size="xs"
+                    className="absolute -top-2 -right-2"
                   >
                     {cartSummary.item_count}
                   </Badge>

@@ -1,3 +1,4 @@
+// src/components/UI/Toast.tsx
 import React, { useEffect, useState } from "react";
 import {
   X,
@@ -12,8 +13,8 @@ export interface ToastProps {
   id: string;
   type?: "success" | "error" | "warning" | "info" | "loading";
   variant?: "default" | "filled" | "minimal";
-  title?: string;
-  message: string;
+  title?: string | React.ReactNode;
+  message: string | React.ReactNode;
   duration?: number;
   onClose: (id: string) => void;
   action?: {
@@ -91,7 +92,7 @@ const Toast: React.FC<ToastProps> = ({
     switch (variant) {
       case "filled":
         return {
-          success: `${baseClasses} bg-green-600 border-green-700 text-white`,
+          success: `${baseClasses} bg-primary-600 border-primary-700 text-white`,
           error: `${baseClasses} bg-red-600 border-red-700 text-white`,
           warning: `${baseClasses} bg-yellow-600 border-yellow-700 text-white`,
           info: `${baseClasses} bg-blue-600 border-blue-700 text-white`,
@@ -100,7 +101,7 @@ const Toast: React.FC<ToastProps> = ({
 
       case "minimal":
         return {
-          success: `${baseClasses} bg-white/95 border-green-200 text-gray-900`,
+          success: `${baseClasses} bg-white/95 border-primary-200 text-gray-900`,
           error: `${baseClasses} bg-white/95 border-red-200 text-gray-900`,
           warning: `${baseClasses} bg-white/95 border-yellow-200 text-gray-900`,
           info: `${baseClasses} bg-white/95 border-blue-200 text-gray-900`,
@@ -109,7 +110,7 @@ const Toast: React.FC<ToastProps> = ({
 
       default: // default variant
         return {
-          success: `${baseClasses} bg-green-50/95 border-green-200 text-green-800`,
+          success: `${baseClasses} bg-primary-50/95 border-primary-200 text-primary-800`,
           error: `${baseClasses} bg-red-50/95 border-red-200 text-red-800`,
           warning: `${baseClasses} bg-yellow-50/95 border-yellow-200 text-yellow-800`,
           info: `${baseClasses} bg-blue-50/95 border-blue-200 text-blue-800`,
@@ -123,7 +124,7 @@ const Toast: React.FC<ToastProps> = ({
     if (variant === "minimal") return "text-gray-600";
 
     return {
-      success: "text-green-500",
+      success: "text-primary-500",
       error: "text-red-500",
       warning: "text-yellow-500",
       info: "text-blue-500",
@@ -136,7 +137,7 @@ const Toast: React.FC<ToastProps> = ({
     if (variant === "minimal") return "text-gray-400 hover:text-gray-600";
 
     return {
-      success: "text-green-600 hover:text-green-700",
+      success: "text-primary-600 hover:text-primary-700",
       error: "text-red-600 hover:text-red-700",
       warning: "text-yellow-600 hover:text-yellow-700",
       info: "text-blue-600 hover:text-blue-700",
@@ -150,7 +151,7 @@ const Toast: React.FC<ToastProps> = ({
       return "text-gray-900 underline hover:no-underline";
 
     return {
-      success: "text-green-700 underline hover:no-underline",
+      success: "text-primary-700 underline hover:no-underline",
       error: "text-red-700 underline hover:no-underline",
       warning: "text-yellow-700 underline hover:no-underline",
       info: "text-blue-700 underline hover:no-underline",
@@ -160,6 +161,13 @@ const Toast: React.FC<ToastProps> = ({
 
   const Icon = icons[type];
   const variantClasses = getVariantClasses()[type];
+
+  const renderContent = (content: string | React.ReactNode) => {
+    if (typeof content === "string") {
+      return content;
+    }
+    return content;
+  };
 
   return (
     <div
@@ -199,17 +207,17 @@ const Toast: React.FC<ToastProps> = ({
 
           <div className="flex-1 min-w-0">
             {title && (
-              <p className="text-sm font-semibold mb-1 leading-tight">
-                {title}
-              </p>
+              <div className="text-sm font-semibold mb-1 leading-tight">
+                {renderContent(title)}
+              </div>
             )}
-            <p
+            <div
               className={`text-sm leading-relaxed ${
                 title ? "" : "font-medium"
               }`}
             >
-              {message}
-            </p>
+              {renderContent(message)}
+            </div>
 
             {action && (
               <div className="mt-3">
@@ -233,54 +241,6 @@ const Toast: React.FC<ToastProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-// Toast Container Component
-export interface ToastContainerProps {
-  toasts: ToastProps[];
-  onClose: (id: string) => void;
-  position?:
-    | "top-right"
-    | "top-left"
-    | "bottom-right"
-    | "bottom-left"
-    | "top-center"
-    | "bottom-center";
-  maxToasts?: number;
-}
-
-export const ToastContainer: React.FC<ToastContainerProps> = ({
-  toasts,
-  onClose,
-  position = "top-right",
-  maxToasts = 5,
-}) => {
-  const positionClasses = {
-    "top-right": "top-4 right-4",
-    "top-left": "top-4 left-4",
-    "bottom-right": "bottom-4 right-4",
-    "bottom-left": "bottom-4 left-4",
-    "top-center": "top-4 left-1/2 -translate-x-1/2",
-    "bottom-center": "bottom-4 left-1/2 -translate-x-1/2",
-  };
-
-  const visibleToasts = toasts.slice(0, maxToasts);
-
-  if (visibleToasts.length === 0) return null;
-
-  return (
-    <div
-      className={`fixed z-50 pointer-events-none ${positionClasses[position]}`}
-      aria-live="polite"
-      aria-label="Notifications"
-    >
-      <div className="flex flex-col space-y-3">
-        {visibleToasts.map((toast) => (
-          <Toast key={toast.id} {...toast} onClose={onClose} />
-        ))}
       </div>
     </div>
   );

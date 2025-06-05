@@ -24,8 +24,10 @@ export type { BadgeProps } from "./Badge";
 export { default as Spinner } from "./Spinner";
 export type { SpinnerProps } from "./Spinner";
 
-export { default as Toast, ToastContainer } from "./Toast";
-export type { ToastProps, ToastContainerProps } from "./Toast";
+export { default as Toast } from "./Toast";
+export type { ToastProps } from "./Toast";
+
+export { default as ToastRenderer } from "./ToastRenderer";
 
 export { default as Dropdown } from "./Dropdown";
 export type { DropdownProps, DropdownOption } from "./Dropdown";

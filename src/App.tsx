@@ -9,6 +9,7 @@ import CheckoutPage from "@/pages/CheckoutPage";
 import SuccessPage from "@/pages/SuccessPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { ToastRenderer } from "./components/UI";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/success" element={<SuccessPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <ToastRenderer position="top-right" />
       </Layout>
     </CartProvider>
   );

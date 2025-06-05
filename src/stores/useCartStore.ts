@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { SupabaseAPI, CartItem, CartSummary } from "@/lib/supabase";
+import { successAddToCartMessage } from "@/components/Cart/CartButton";
 
 interface CartStore {
   // State
@@ -70,6 +71,9 @@ export const useCartStore = create<CartStore>()(
 
         // Add item to cart
         addToCart: async (productId: string, quantity: number = 1) => {
+          const product = get().cartItems.find(
+            (item) => item.product_id === productId
+          );
           try {
             set({ loading: true, error: null });
             // Check if item already exists in cart, if so, update quantity with increment
@@ -83,6 +87,9 @@ export const useCartStore = create<CartStore>()(
 
             await SupabaseAPI.addToCart(productId, quantity);
             await get().loadCartData(); // Refresh cart data
+            if (product) {
+              successAddToCartMessage({ productName: product.product_name });
+            }
           } catch (err) {
             const errorMessage =
               err instanceof Error ? err.message : "Failed to add to cart";
@@ -176,14 +183,5 @@ export const useCartStore = create<CartStore>()(
     }
   )
 );
-
-// Hook to initialize cart data on app start (optional - not used in this implementation)
-// export const useInitializeCart = () => {
-//   const loadCartData = useCartStore((state) => state.loadCartData);
-//
-//   React.useEffect(() => {
-//     loadCartData();
-//   }, [loadCartData]);
-// };
 
 export type { CartItem, CartSummary };
