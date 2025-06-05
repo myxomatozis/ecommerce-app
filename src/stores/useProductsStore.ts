@@ -21,7 +21,7 @@ const createCacheKey = (filters: ProductFilters = {}) => {
   return JSON.stringify(key);
 };
 
-export type Product = Omit<DBProduct, "category_id">;
+export type Product = Omit<DBProduct, "category_id"> & { category?: string };
 
 interface ProductsList {
   products: Product[];

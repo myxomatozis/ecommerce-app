@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Search, Heart, Menu, X } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { useCartStore } from "@/stores";
 
 const Header: React.FC = () => {
-  const { cartSummary, isCartOpen, setIsCartOpen } = useCart();
+  const cartSummary = useCartStore((state) => state.cartSummary);
+  const isCartOpen = useCartStore((state) => state.isCartOpen);
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();

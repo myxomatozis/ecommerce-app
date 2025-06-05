@@ -1,19 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+
 import { Button, Card, CardContent, Badge } from "@/components/UI";
+import { useCartStore } from "@/stores";
 
 const CartSidebar: React.FC = () => {
-  const {
-    cartItems,
-    cartSummary,
-    updateQuantity,
-    removeFromCart,
-    isCartOpen,
-    setIsCartOpen,
-    clearCart,
-  } = useCart();
+  const cartItems = useCartStore((state) => state.cartItems);
+  const cartSummary = useCartStore((state) => state.cartSummary);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const isCartOpen = useCartStore((state) => state.isCartOpen);
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const subtotal =
     cartSummary.total_amount - cartSummary.shipping - cartSummary.tax;

@@ -13,18 +13,23 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { Product, useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
-import { getProductById } from "@/lib/supabase";
+import { Product, useAppData, useCartStore } from "@/stores";
 
 const ProductDetailPage: React.FC = () => {
+  const { getProduct } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
   const { id } = useParams<{ id: string }>();
-  const { addToCart, getCartItemQuantity, updateQuantity } = useCart();
+
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getCartItemQuantity = useCartStore(
+    (state) => state.getCartItemQuantity
+  );
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
 
   useEffect(() => {
     if (!id) return;
-    getProductById(id)
+    getProduct(id)
       .then((data) => {
         if (data) {
           setProduct(data);
@@ -115,13 +120,13 @@ const ProductDetailPage: React.FC = () => {
   ];
 
   const getStockStatus = () => {
-    if (product.stock_quantity > 10) {
+    if (product?.stock_quantity && product.stock_quantity > 10) {
       return {
         status: "In Stock",
         variant: "success" as const,
         icon: CheckCircle,
       };
-    } else if (product.stock_quantity > 0) {
+    } else if (product?.stock_quantity && product.stock_quantity > 0) {
       return {
         status: `Only ${product.stock_quantity} left`,
         variant: "warning" as const,
@@ -308,12 +313,14 @@ const ProductDetailPage: React.FC = () => {
                         onClick={() =>
                           setSelectedQuantity(
                             Math.min(
-                              product.stock_quantity,
+                              product?.stock_quantity || 0,
                               selectedQuantity + 1
                             )
                           )
                         }
-                        disabled={selectedQuantity >= product.stock_quantity}
+                        disabled={
+                          selectedQuantity >= (product?.stock_quantity || 0)
+                        }
                         className="rounded-none border-l border-gray-200"
                       >
                         <Plus size={16} />
@@ -384,7 +391,8 @@ const ProductDetailPage: React.FC = () => {
                               handleUpdateCartQuantity(currentCartQuantity + 1)
                             }
                             disabled={
-                              currentCartQuantity >= product.stock_quantity
+                              currentCartQuantity >=
+                              (product?.stock_quantity || 0)
                             }
                             className="text-primary-600 hover:text-primary-700"
                           >

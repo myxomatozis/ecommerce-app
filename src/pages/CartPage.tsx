@@ -9,12 +9,15 @@ import {
   ArrowRight,
   Tag,
 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
+import { useCartStore } from "@/stores";
 
 const CartPage: React.FC = () => {
-  const { cartItems, cartSummary, updateQuantity, removeFromCart, clearCart } =
-    useCart();
+  const cartItems = useCartStore((state) => state.cartItems);
+  const cartSummary = useCartStore((state) => state.cartSummary);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const subtotal =
     cartSummary.total_amount - cartSummary.shipping - cartSummary.tax;

@@ -11,8 +11,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
-import { useAppData } from "@/stores";
+import { useAppData, useCartStore } from "@/stores";
 import {
   Button,
   Card,
@@ -25,7 +24,10 @@ import {
 import { ProductFilters } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
-  const { addToCart, getCartItemQuantity } = useCart();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getCartItemQuantity = useCartStore(
+    (state) => state.getCartItemQuantity
+  );
   const {
     getProducts,
     loadMoreProducts,

@@ -9,12 +9,11 @@ import {
   Heart,
   Plus,
 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
 import { Button, Card, CardContent, Badge } from "@/components/UI";
-import { Product, useAppData } from "@/stores";
+import { Product, useAppData, useCartStore } from "@/stores";
 
 const HomePage: React.FC = () => {
-  const { addToCart } = useCart();
+  const addToCart = useCartStore((state) => state.addToCart);
   const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
   const { getProducts } = useAppData();
 

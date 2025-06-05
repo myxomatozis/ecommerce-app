@@ -9,7 +9,6 @@ import {
   CheckCircle,
   ExternalLink,
 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
 import {
   Button,
   Card,
@@ -19,9 +18,11 @@ import {
   Checkbox,
 } from "@/components/UI";
 import SupabaseAPI from "@/lib/supabase";
+import { useCartStore } from "@/stores";
 
 const CheckoutPage: React.FC = () => {
-  const { cartItems, cartSummary } = useCart();
+  const cartItems = useCartStore((state) => state.cartItems);
+  const cartSummary = useCartStore((state) => state.cartSummary);
 
   const [customerEmail, setCustomerEmail] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
