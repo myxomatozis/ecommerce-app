@@ -43,7 +43,6 @@ const Dropdown: React.FC<DropdownProps> = ({
   multiple = false,
   size = "md",
   variant = "default",
-  position = "auto",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

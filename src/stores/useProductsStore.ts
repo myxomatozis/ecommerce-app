@@ -332,7 +332,7 @@ export const useProductsStore = create<ProductsState>()(
             return { productLists: newProductLists };
           });
         } else {
-          set((state) => ({ productLists: {} }));
+          set(() => ({ productLists: {} }));
         }
       },
 
