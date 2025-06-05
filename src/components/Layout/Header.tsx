@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { ShoppingBag, Search, Heart, User, Menu, X } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { Button } from "@/components/UI";
@@ -10,19 +10,40 @@ const Header: React.FC = () => {
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const navigation = [
-    { name: "New Arrivals", href: "/products?sort=newest" },
-    { name: "Women", href: "/products?category=women" },
-    { name: "Men", href: "/products?category=men" },
-    { name: "Accessories", href: "/products?category=accessories" },
-    { name: "Sale", href: "/products?sale=true" },
+    { name: "New Arrivals", category: null, sort: "newest", sale: null },
+    { name: "Women", category: "women", sort: null, sale: null },
+    { name: "Men", category: "men", sort: null, sale: null },
+    { name: "Accessories", category: "accessories", sort: null, sale: null },
+    { name: "Sale", category: null, sort: null, sale: "true" },
   ];
 
-  const isActive = (path: string) => {
+  const isActive = (item: (typeof navigation)[0]) => {
+    if (location.pathname !== "/products") return false;
+
+    const currentCategory = searchParams.get("category");
+    const currentSort = searchParams.get("sort");
+    const currentSale = searchParams.get("sale");
+
     return (
-      location.pathname === path || location.search.includes(path.split("?")[1])
+      currentCategory === item.category &&
+      currentSort === item.sort &&
+      currentSale === item.sale
     );
+  };
+
+  const buildUrl = (item: (typeof navigation)[0]) => {
+    const params = new URLSearchParams();
+
+    // Only add non-null parameters
+    if (item.category) params.set("category", item.category);
+    if (item.sort) params.set("sort", item.sort);
+    if (item.sale) params.set("sale", item.sale);
+
+    const queryString = params.toString();
+    return queryString ? `/products?${queryString}` : "/products";
   };
 
   return (
@@ -41,22 +62,27 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 pl-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`text-sm font-medium transition-colors relative py-2 ${
-                  isActive(item.href)
-                    ? "text-gray-900"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                {item.name}
-                {isActive(item.href) && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
-                )}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isItemActive = isActive(item);
+              const url = buildUrl(item);
+              return (
+                <Link
+                  key={`${item.name}-${url}`}
+                  to={url}
+                  reloadDocument={location.pathname === "/products"}
+                  className={`text-sm font-medium transition-colors relative py-2 ${
+                    isItemActive
+                      ? "text-gray-900"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {item.name}
+                  {isItemActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right Side Icons */}
@@ -126,20 +152,25 @@ const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
             <nav className="space-y-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    isActive(item.href)
-                      ? "text-gray-900 bg-gray-100"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navigation.map((item) => {
+                const isItemActive = isActive(item);
+                const url = buildUrl(item);
+                return (
+                  <Link
+                    key={`mobile-${item.name}-${url}`}
+                    to={url}
+                    reloadDocument={location.pathname === "/products"}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      isItemActive
+                        ? "text-gray-900 bg-gray-100"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
 
               {/* Mobile User Link */}
               <Link
