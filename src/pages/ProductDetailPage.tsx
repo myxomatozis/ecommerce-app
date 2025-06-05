@@ -13,12 +13,14 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { Button, Card, CardContent, Badge } from "@/components/UI";
+import { Button, Card, CardContent, Badge, Spinner } from "@/components/UI";
 import { Product, useAppData, useCartStore } from "@/stores";
+import { CategoryBadge } from "@/components/UI/Badge";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
@@ -29,6 +31,7 @@ const ProductDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+    setLoading(true);
     getProduct(id)
       .then((data) => {
         if (data) {
@@ -40,6 +43,9 @@ const ProductDetailPage: React.FC = () => {
       .catch((error) => {
         console.error("Error fetching product:", error);
         setProduct(null);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [id]);
 
@@ -62,6 +68,22 @@ const ProductDetailPage: React.FC = () => {
 
   // Mock related products
   const relatedProducts: Product[] = [];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Spinner
+          size="lg"
+          variant="primary"
+          speed="fast"
+          type="spinner"
+          text="Loading product details..."
+          inline
+          className="text-gray-600"
+        />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -221,11 +243,11 @@ const ProductDetailPage: React.FC = () => {
 
             {/* Product Info */}
             <div className="p-6 lg:p-8">
-              <div className="mb-4">
-                <Badge variant="primary" size="md">
-                  {product.category}
-                </Badge>
-              </div>
+              {product.category && (
+                <div className="mb-4">
+                  <CategoryBadge category={product.category} />
+                </div>
+              )}
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
                 {product.name}
@@ -280,8 +302,10 @@ const ProductDetailPage: React.FC = () => {
                   size="md"
                   className="inline-flex items-center"
                 >
-                  <StockIcon size={16} className="mr-1" />
-                  {stockStatus.status}
+                  <div className="flex items-center space-x-2">
+                    <StockIcon size={16} className="mr-1" />
+                    {stockStatus.status}
+                  </div>
                 </Badge>
               </div>
 
@@ -346,7 +370,7 @@ const ProductDetailPage: React.FC = () => {
 
                   <Button
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    variant={isWishlisted ? "danger" : "outline"}
+                    variant="text"
                     size="lg"
                     className="sm:w-auto"
                   >

@@ -9,13 +9,11 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
     | "warning"
     | "danger"
     | "info"
-    | "gradient"
     | "outline"
-    | "soft";
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
+    | "minimal"
+    | "counter"; // New counter variant for icon overlays
+  size?: "xs" | "sm" | "md" | "lg";
   dot?: boolean;
-  rounded?: "sm" | "md" | "lg" | "full";
-  animation?: "none" | "pulse" | "bounce" | "glow";
   icon?: React.ReactNode;
   removable?: boolean;
   onRemove?: () => void;
@@ -27,8 +25,6 @@ const Badge: React.FC<BadgeProps> = ({
   variant = "default",
   size = "md",
   dot = false,
-  rounded = "full",
-  animation = "none",
   icon,
   removable = false,
   onRemove,
@@ -36,53 +32,45 @@ const Badge: React.FC<BadgeProps> = ({
 }) => {
   const baseClasses = `
     inline-flex items-center justify-center font-medium 
-    transition-all duration-200 ease-out
+    transition-all duration-300 ease-out
     ${!dot ? "whitespace-nowrap" : ""}
   `;
 
   const variantClasses = {
-    default: "bg-gray-100 text-gray-800 border border-gray-200",
-    primary: "bg-primary-100 text-primary-800 border border-primary-200",
-    secondary: "bg-gray-100 text-gray-600 border border-gray-200",
-    success: "bg-success-100 text-success-800 border border-success-200",
-    warning: "bg-warning-100 text-warning-800 border border-warning-200",
-    danger: "bg-danger-100 text-danger-800 border border-danger-200",
-    info: "bg-blue-100 text-blue-800 border border-blue-200",
-    gradient: `
-      bg-gradient-to-r from-primary-500 to-purple-600 
-      text-white border-0 shadow-sm
-    `,
-    outline: `
-      bg-transparent border-2 border-current 
-      text-gray-700 hover:bg-gray-50
-    `,
-    soft: `
-      bg-white/80 backdrop-blur-sm 
-      text-gray-700 border border-gray-200/60
-      shadow-sm
-    `,
+    default: "bg-neutral-100 text-neutral-800 border border-neutral-200",
+    primary: "bg-neutral-900 text-white border border-neutral-900",
+    secondary: "bg-neutral-200 text-neutral-700 border border-neutral-300",
+    success: "bg-neutral-800 text-neutral-100 border border-neutral-800", // Dark gray instead of green
+    warning: "bg-neutral-600 text-neutral-100 border border-neutral-600", // Medium gray instead of yellow
+    danger: "bg-neutral-700 text-neutral-100 border border-neutral-700", // Dark gray instead of red
+    info: "bg-neutral-500 text-white border border-neutral-500", // Medium gray instead of blue
+    outline:
+      "bg-transparent border border-neutral-300 text-neutral-700 hover:bg-neutral-50",
+    minimal: "bg-neutral-50 text-neutral-600 border border-transparent",
+    counter: "bg-neutral-900 text-white border-none rounded-full", // Special counter style
   };
 
   const sizeClasses = {
-    xs: dot ? "w-1.5 h-1.5" : "px-1.5 py-0.5 text-xs min-h-[1.25rem]",
-    sm: dot ? "w-2 h-2" : "px-2 py-0.5 text-xs min-h-[1.5rem]",
-    md: dot ? "w-2.5 h-2.5" : "px-2.5 py-1 text-sm min-h-[1.75rem]",
-    lg: dot ? "w-3 h-3" : "px-3 py-1.5 text-sm min-h-[2rem]",
-    xl: dot ? "w-4 h-4" : "px-4 py-2 text-base min-h-[2.25rem]",
-  };
-
-  const roundedClasses = {
-    sm: "rounded-md",
-    md: "rounded-lg",
-    lg: "rounded-xl",
-    full: "rounded-full",
-  };
-
-  const animationClasses = {
-    none: "",
-    pulse: "animate-pulse",
-    bounce: "animate-bounce",
-    glow: "animate-pulse shadow-glow",
+    xs: dot
+      ? "w-1.5 h-1.5"
+      : variant === "counter"
+      ? "w-4 h-4 text-[10px] min-w-[1rem]"
+      : "px-2 py-0.5 text-xs min-h-[1.25rem]",
+    sm: dot
+      ? "w-2 h-2"
+      : variant === "counter"
+      ? "w-5 h-5 text-xs min-w-[1.25rem]"
+      : "px-2.5 py-1 text-xs min-h-[1.5rem]",
+    md: dot
+      ? "w-2.5 h-2.5"
+      : variant === "counter"
+      ? "w-6 h-6 text-xs min-w-[1.5rem]"
+      : "px-3 py-1 text-sm min-h-[1.75rem]",
+    lg: dot
+      ? "w-3 h-3"
+      : variant === "counter"
+      ? "w-7 h-7 text-sm min-w-[1.75rem]"
+      : "px-4 py-1.5 text-sm min-h-[2rem]",
   };
 
   const iconSizes = {
@@ -90,15 +78,12 @@ const Badge: React.FC<BadgeProps> = ({
     sm: 12,
     md: 14,
     lg: 16,
-    xl: 18,
   };
 
   const classes = `
     ${baseClasses} 
     ${variantClasses[variant]} 
     ${sizeClasses[size]} 
-    ${roundedClasses[rounded]}
-    ${animationClasses[animation]}
     ${className}
   `
     .replace(/\s+/g, " ")
@@ -112,7 +97,7 @@ const Badge: React.FC<BadgeProps> = ({
     <span className={classes} {...props}>
       {/* Icon */}
       {icon && (
-        <span className="mr-1 flex-shrink-0">
+        <span className="mr-1.5 flex-shrink-0">
           {React.isValidElement(icon)
             ? React.cloneElement(icon as React.ReactElement, {
                 size: iconSizes[size],
@@ -133,8 +118,8 @@ const Badge: React.FC<BadgeProps> = ({
             onRemove();
           }}
           className={`
-            ml-1 flex-shrink-0 rounded-full p-0.5 
-            hover:bg-black/10 transition-colors duration-150
+            ml-1.5 flex-shrink-0 rounded-full p-0.5 
+            hover:bg-black/10 transition-colors duration-200
             focus:outline-none focus:ring-1 focus:ring-current
             ${size === "xs" ? "p-0" : ""}
           `}
@@ -162,14 +147,14 @@ const Badge: React.FC<BadgeProps> = ({
 // Specialized Badge variants for common use cases
 export const StatusBadge: React.FC<
   Omit<BadgeProps, "variant"> & {
-    status: "online" | "offline" | "away" | "busy";
+    status: "active" | "inactive" | "pending" | "completed";
   }
 > = ({ status, ...props }) => {
   const statusConfig = {
-    online: { variant: "success" as const, children: "Online", dot: true },
-    offline: { variant: "secondary" as const, children: "Offline", dot: true },
-    away: { variant: "warning" as const, children: "Away", dot: true },
-    busy: { variant: "danger" as const, children: "Busy", dot: true },
+    active: { variant: "primary" as const, children: "Active" },
+    inactive: { variant: "secondary" as const, children: "Inactive" },
+    pending: { variant: "warning" as const, children: "Pending" },
+    completed: { variant: "success" as const, children: "Completed" },
   };
 
   return <Badge {...statusConfig[status]} {...props} />;
@@ -181,13 +166,13 @@ export const CountBadge: React.FC<
     max?: number;
     showZero?: boolean;
   }
-> = ({ count, max = 99, showZero = false, ...props }) => {
+> = ({ count, max = 99, showZero = false, variant = "counter", ...props }) => {
   if (count === 0 && !showZero) return null;
 
   const displayCount = count > max ? `${max}+` : count.toString();
 
   return (
-    <Badge variant="danger" size="sm" {...props}>
+    <Badge variant={variant} size="sm" {...props}>
       {displayCount}
     </Badge>
   );
@@ -196,21 +181,21 @@ export const CountBadge: React.FC<
 export const CategoryBadge: React.FC<
   Omit<BadgeProps, "variant"> & {
     category: string;
-    colorScheme?:
-      | "auto"
-      | "primary"
-      | "secondary"
-      | "success"
-      | "warning"
-      | "danger"
-      | "info";
+    style?: "minimal" | "varied"; // New style option
   }
-> = ({ category, colorScheme = "auto", ...props }) => {
-  // Simple hash function to generate consistent colors for categories
-  const getVariantFromString = (str: string) => {
-    if (colorScheme !== "auto") return colorScheme;
+> = ({ category, style = "minimal", ...props }) => {
+  if (style === "minimal") {
+    // All categories use the same neutral style for ultra-minimal look
+    return (
+      <Badge variant="secondary" {...props}>
+        {category}
+      </Badge>
+    );
+  }
 
-    const variants = ["primary", "success", "warning", "info"] as const;
+  // Varied approach using different neutral shades
+  const getVariantFromString = (str: string) => {
+    const variants = ["secondary", "info", "warning", "success"] as const;
     const hash = str.split("").reduce((a, b) => {
       a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
@@ -221,6 +206,29 @@ export const CategoryBadge: React.FC<
   return (
     <Badge variant={getVariantFromString(category)} {...props}>
       {category}
+    </Badge>
+  );
+};
+
+// Icon Overlay Counter - Perfect for cart icons, notification badges, etc.
+export const IconCounter: React.FC<{
+  count: number;
+  max?: number;
+  showZero?: boolean;
+  className?: string;
+  size?: "xs" | "sm" | "md" | "lg";
+}> = ({ count, max = 99, showZero = false, className = "", size = "sm" }) => {
+  if (count === 0 && !showZero) return null;
+
+  const displayCount = count > max ? `${max}+` : count.toString();
+
+  return (
+    <Badge
+      variant="counter"
+      size={size}
+      className={`absolute -top-1 -right-1 ${className}`}
+    >
+      {displayCount}
     </Badge>
   );
 };

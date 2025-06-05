@@ -4,6 +4,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 import { Button, Card, CardContent, Badge } from "@/components/UI";
 import { useCartStore } from "@/stores";
+import { IconCounter } from "../UI/Badge";
 
 const CartSidebar: React.FC = () => {
   const {
@@ -46,13 +47,11 @@ const CartSidebar: React.FC = () => {
               <div className="relative">
                 <ShoppingBag size={24} className="text-gray-700" />
                 {cartSummary.item_count > 0 && (
-                  <Badge
-                    variant="primary"
+                  <IconCounter
+                    count={cartSummary.item_count}
                     size="xs"
-                    className="absolute -top-2 -right-2"
-                  >
-                    {cartSummary.item_count}
-                  </Badge>
+                    max={9}
+                  />
                 )}
               </div>
               <div>

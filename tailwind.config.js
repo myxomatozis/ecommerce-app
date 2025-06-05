@@ -7,167 +7,158 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
-        // Bright warm primary - coral/orange
+        // Refined neutral palette - modern and sophisticated
+        neutral: {
+          50: "#fafafa",
+          100: "#f5f5f5",
+          200: "#e5e5e5",
+          300: "#d4d4d4",
+          400: "#a3a3a3",
+          500: "#737373",
+          600: "#525252",
+          700: "#404040",
+          800: "#262626",
+          900: "#171717",
+          950: "#0a0a0a",
+        },
+        // Sophisticated primary - subtle and elegant
         primary: {
-          50: "#faf7f4",
-          100: "#f4ede6",
-          200: "#e7d6c7",
-          300: "#d6b8a1",
-          400: "#c49577",
-          500: "#b67c5a", // Main primary - sophisticated terracotta
-          600: "#a66a4a", // Deeper warm brown
-          700: "#8b5a3f",
-          800: "#704a37",
-          900: "#5c3d2e",
+          50: "#fafaf9",
+          100: "#f5f5f4",
+          200: "#e7e5e4",
+          300: "#d6d3d1",
+          400: "#a8a29e",
+          500: "#78716c", // Main primary - sophisticated stone
+          600: "#57534e",
+          700: "#44403c",
+          800: "#292524",
+          900: "#1c1917",
         },
-        // Muted warm accent colors
+        // Very subtle accent - barely noticeable for special cases
         accent: {
-          50: "#fefdf8",
-          100: "#fefaf0",
-          200: "#fcf3d9",
-          300: "#f9e8b8",
-          400: "#f4d888", // Muted warm gold
-          500: "#e6c564",
-          600: "#d4b146",
-          700: "#b8973a",
-          800: "#967a32",
-          900: "#7a632c",
-        },
-        // Sophisticated warm success - muted green
-        success: {
-          50: "#f7faf8",
-          100: "#eef5f0",
-          200: "#d6e7dc",
-          300: "#b5d3c1",
-          400: "#8db89f",
-          500: "#6b9d81", // Sophisticated warm green
-          600: "#578468",
-          700: "#486d56",
-          800: "#3c5847",
-          900: "#33493c",
-        },
-        // Keep some cooler tones for balance
-        secondary: {
-          50: "#f8fafc",
-          100: "#f1f5f9",
-          200: "#e2e8f0",
-          300: "#cbd5e1",
-          400: "#94a3b8",
-          500: "#64748b",
-          600: "#475569",
-          700: "#334155",
-          800: "#1e293b",
-          900: "#0f172a",
-        },
-        // Luxury gold for special elements
-        gold: {
-          50: "#fffbeb",
-          100: "#fef3c7",
-          200: "#fde68a",
-          300: "#fcd34d",
-          400: "#fbbf24",
-          500: "#f59e0b", // Rich gold
+          50: "#fefcf8",
+          100: "#fef7ed",
+          200: "#feeddb",
+          300: "#fddfb8",
+          400: "#fbc985",
+          500: "#f59e0b", // Very muted warm accent - use sparingly
           600: "#d97706",
           700: "#b45309",
           800: "#92400e",
           900: "#78350f",
         },
-        // Warning - bright amber
-        warning: {
-          50: "#fffbeb",
-          100: "#fef3c7",
-          200: "#fde68a",
-          300: "#fcd34d",
-          400: "#fbbf24",
-          500: "#f59e0b",
-          600: "#d97706",
-          700: "#b45309",
-          800: "#92400e",
-          900: "#78350f",
-        },
-        // Info - keep blue but warmer
-        info: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+        // Minimal semantic colors - very subtle when needed
+        semantic: {
+          success: "#404040", // Dark gray instead of green
+          warning: "#525252", // Medium gray instead of yellow
+          danger: "#262626", // Very dark gray instead of red
+          info: "#737373", // Medium gray instead of blue
         },
       },
-      // Sharp, minimal border radius for posh look
+      // Minimal border radius - very clean
       borderRadius: {
         none: "0px",
-        sm: "1px", // Very sharp
-        DEFAULT: "2px", // Sharp
-        md: "4px", // Slightly rounded
-        lg: "6px", // Less rounded than default
-        xl: "8px", // Still sharp but elegant
-        "2xl": "12px", // For cards
-        "3xl": "16px", // For modals
+        sm: "0px", // No rounding for modern look
+        DEFAULT: "0px", // Sharp edges
+        md: "2px", // Very minimal
+        lg: "4px", // Slightly rounded for cards
+        xl: "6px", // For special elements
+        "2xl": "8px", // For modals
+        "3xl": "12px", // Rare use
         full: "9999px", // Keep for pills/avatars
       },
-      // Enhanced animations for posh feel
+      // Refined animations - subtle and purposeful
       animation: {
-        "fade-in": "fadeIn 0.4s ease-out",
-        "slide-up": "slideUp 0.3s ease-out",
-        "bounce-in": "bounceIn 0.5s ease-out",
-        glow: "glow 2s ease-in-out infinite alternate",
-        shimmer: "shimmer 2.5s ease-in-out infinite",
-        float: "float 3s ease-in-out infinite",
+        "fade-in": "fadeIn 0.7s ease-out forwards",
+        "slide-up": "slideUp 0.6s ease-out",
+        "scale-in": "scaleIn 0.5s ease-out",
+        shimmer: "shimmer 3s ease-in-out infinite",
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       keyframes: {
         fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideUp: {
-          "0%": { transform: "translateY(20px)", opacity: "0" },
+          "0%": { transform: "translateY(30px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
-        bounceIn: {
-          "0%": { transform: "scale(0.3)", opacity: "0" },
-          "50%": { transform: "scale(1.05)" },
-          "70%": { transform: "scale(0.9)" },
+        scaleIn: {
+          "0%": { transform: "scale(0.95)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
-        },
-        glow: {
-          "0%": { boxShadow: "0 0 20px rgba(249, 115, 22, 0.3)" },
-          "100%": { boxShadow: "0 0 30px rgba(249, 115, 22, 0.6)" },
         },
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
       },
-      // Enhanced shadows for depth
+      // Subtle, modern shadows
       boxShadow: {
-        warm: "0 4px 14px 0 rgba(249, 115, 22, 0.1)",
-        "warm-lg":
-          "0 10px 25px -3px rgba(249, 115, 22, 0.1), 0 4px 6px -2px rgba(249, 115, 22, 0.05)",
-        glow: "0 0 20px rgba(249, 115, 22, 0.3)",
-        "glow-lg": "0 0 40px rgba(249, 115, 22, 0.4)",
-        sharp: "0 2px 8px 0 rgba(0, 0, 0, 0.12)",
-        "sharp-lg": "0 4px 16px 0 rgba(0, 0, 0, 0.12)",
+        minimal: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+        soft: "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
+        elegant: "0 8px 40px 0 rgba(0, 0, 0, 0.12)",
+        crisp: "0 2px 8px 0 rgba(0, 0, 0, 0.1)",
       },
-      // Warm gradients
+      // Modern spacing scale
+      spacing: {
+        18: "4.5rem",
+        88: "22rem",
+        128: "32rem",
+      },
+      // Typography scale
+      fontSize: {
+        "2xs": ["0.625rem", { lineHeight: "0.75rem" }],
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "5xl": ["3rem", { lineHeight: "1" }],
+        "6xl": ["3.75rem", { lineHeight: "1" }],
+        "7xl": ["4.5rem", { lineHeight: "1" }],
+        "8xl": ["6rem", { lineHeight: "1" }],
+        "9xl": ["8rem", { lineHeight: "1" }],
+      },
+      // Letter spacing
+      letterSpacing: {
+        tighter: "-0.05em",
+        tight: "-0.025em",
+        normal: "0em",
+        wide: "0.025em",
+        wider: "0.05em",
+        widest: "0.1em",
+      },
+      // Line height
+      lineHeight: {
+        3: ".75rem",
+        4: "1rem",
+        5: "1.25rem",
+        6: "1.5rem",
+        7: "1.75rem",
+        8: "2rem",
+        9: "2.25rem",
+        10: "2.5rem",
+      },
+      // Modern gradients - very subtle
       backgroundImage: {
-        "warm-gradient":
-          "linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)",
-        "gold-gradient":
-          "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
-        "sunset-gradient":
-          "linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #ef4444 100%)",
+        "gradient-minimal": "linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)",
+        "gradient-subtle": "linear-gradient(135deg, #ffffff 0%, #fafafa 100%)",
         "shimmer-gradient":
-          "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+          "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+      },
+      // Backdrop blur
+      backdropBlur: {
+        xs: "2px",
+      },
+      // Modern transitions
+      transitionDuration: {
+        400: "400ms",
+        600: "600ms",
+        800: "800ms",
+        1200: "1200ms",
+      },
+      transitionTimingFunction: {
+        "out-expo": "cubic-bezier(0.19, 1, 0.22, 1)",
+        "out-circ": "cubic-bezier(0.08, 0.82, 0.17, 1)",
+        "in-out-back": "cubic-bezier(0.68, -0.6, 0.32, 1.6)",
       },
     },
   },
