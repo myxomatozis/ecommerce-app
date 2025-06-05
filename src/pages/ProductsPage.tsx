@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, AlertCircle } from "lucide-react";
+import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
-import { Button, Input, Dropdown, Spinner } from "@/components/UI";
+import { Button, Input, Dropdown, Spinner, Badge } from "@/components/UI";
 import { ProductFilters } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
@@ -23,6 +23,7 @@ const ProductsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState(
@@ -31,9 +32,7 @@ const ProductsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category") || ""
   );
-  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>(
-    (searchParams.get("sort") as ProductFilters["sortBy"]) || "name"
-  );
+  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>("name");
 
   const ITEMS_PER_PAGE = 16;
 
@@ -64,7 +63,6 @@ const ProductsPage: React.FC = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("search", searchQuery);
     if (selectedCategory) params.set("category", selectedCategory);
-    if (sortBy) params.set("sort", sortBy);
     setSearchParams(params);
   }, [searchQuery, selectedCategory, setSearchParams]);
 
@@ -116,32 +114,38 @@ const ProductsPage: React.FC = () => {
 
   const categoryOptions = useMemo(
     () => [
-      { value: "", label: "All Products" },
+      { value: "", label: "All Categories" },
       ...categories.map((cat) => ({ value: cat.slug, label: cat.name })),
     ],
     [categories]
   );
 
   const sortOptions = [
-    { value: "name", label: "Name A-Z" },
+    { value: "name", label: "Name" },
     { value: "price_asc", label: "Price: Low to High" },
     { value: "price_desc", label: "Price: High to Low" },
-    { value: "newest", label: "Newest First" },
+    { value: "newest", label: "Newest" },
   ];
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("");
+    setSortBy("name");
+    setShowFilters(false);
+  };
+
+  const hasActiveFilters = searchQuery || selectedCategory || sortBy !== "name";
 
   // Loading state
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="container-modern section-padding">
-          <div className="text-center">
-            <Spinner size="lg" className="mb-4" />
-            <h2 className="text-xl font-medium text-neutral-900 mb-2">
-              Loading Products
-            </h2>
-            <p className="text-neutral-600">
-              Please wait while we fetch the latest products...
-            </p>
+        <div className="container-modern py-24">
+          <div className="text-center max-w-md mx-auto">
+            <div className="w-8 h-8 mx-auto mb-6">
+              <Spinner size="lg" />
+            </div>
+            <p className="text-neutral-600">Loading products...</p>
           </div>
         </div>
       </div>
@@ -152,14 +156,14 @@ const ProductsPage: React.FC = () => {
   if (productsError && products.length === 0) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="container-modern section-padding">
+        <div className="container-modern py-24">
           <div className="text-center max-w-md mx-auto">
-            <AlertCircle size={48} className="mx-auto text-neutral-400 mb-4" />
-            <h2 className="text-xl font-medium text-neutral-900 mb-2">
-              Something went wrong
+            <AlertCircle size={32} className="mx-auto text-neutral-400 mb-6" />
+            <h2 className="text-lg font-medium text-neutral-900 mb-2">
+              Unable to load products
             </h2>
-            <p className="text-neutral-600 mb-6">{productsError}</p>
-            <Button onClick={() => fetchProducts(true)} variant="primary">
+            <p className="text-neutral-600 mb-8">{productsError}</p>
+            <Button onClick={() => fetchProducts(true)} variant="outline">
               Try Again
             </Button>
           </div>
@@ -170,127 +174,253 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Header Section */}
+      <section className="border-b border-neutral-100">
+        <div className="container-modern py-16">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl font-light text-neutral-900 mb-4">
+              All Products
+            </h1>
+            <p className="text-lg text-neutral-600 mb-8">
+              Discover our complete collection of carefully curated items
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-lg mx-auto">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-12 pl-12 pr-4 text-base border-neutral-200 focus:border-neutral-400"
+                  fullWidth
+                />
+                <Search
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="container-modern py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="heading-lg mb-4">All Products</h1>
-          <p className="body-large">
-            Discover our complete collection of premium products
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="max-w-xl mx-auto mb-12">
-          <Input
-            type="text"
-            placeholder="Search for products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            leftIcon={<Search size={20} />}
-            fullWidth
-            className="h-12 text-base"
-          />
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-neutral-700 whitespace-nowrap">
-              Category:
-            </span>
-            <div className="min-w-[140px]">
-              <Dropdown
-                options={categoryOptions}
-                value={selectedCategory}
-                onChange={setSelectedCategory}
-                placeholder="All Products"
-                disabled={categoriesLoading}
-                variant="bordered"
+        {/* Filters Section */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
                 size="sm"
-              />
+                onClick={() => setShowFilters(!showFilters)}
+                leftIcon={<SlidersHorizontal size={16} />}
+                className="text-neutral-600"
+              >
+                Filters
+              </Button>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="minimal"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-neutral-500"
+                >
+                  Clear All
+                </Button>
+              )}
             </div>
+
+            {products.length > 0 && (
+              <p className="text-sm text-neutral-600">
+                {products.length} products
+              </p>
+            )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-neutral-700 whitespace-nowrap">
-              Sort by:
-            </span>
-            <div className="min-w-[140px]">
-              <Dropdown
-                options={sortOptions}
-                value={sortBy || "name"}
-                onChange={(value) =>
-                  setSortBy(value as ProductFilters["sortBy"])
-                }
-                placeholder="Sort by"
-                variant="bordered"
-                size="sm"
-              />
+          {/* Filter Controls */}
+          {showFilters && (
+            <div className="bg-neutral-50 p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium text-neutral-900">
+                  Filter Products
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFilters(false)}
+                >
+                  <X size={16} />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Category
+                  </label>
+                  <Dropdown
+                    options={categoryOptions}
+                    value={selectedCategory}
+                    onChange={setSelectedCategory}
+                    placeholder="All Categories"
+                    disabled={categoriesLoading}
+                    variant="bordered"
+                    size="sm"
+                    fullWidth
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Sort By
+                  </label>
+                  <Dropdown
+                    options={sortOptions}
+                    value={sortBy || "name"}
+                    onChange={(value) =>
+                      setSortBy(value as ProductFilters["sortBy"])
+                    }
+                    variant="bordered"
+                    size="sm"
+                    fullWidth
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Active Filters */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {searchQuery && (
+                <Badge
+                  variant="outline"
+                  removable
+                  onRemove={() => setSearchQuery("")}
+                >
+                  Search: {searchQuery}
+                </Badge>
+              )}
+              {selectedCategory && (
+                <Badge
+                  variant="outline"
+                  removable
+                  onRemove={() => setSelectedCategory("")}
+                >
+                  Category:{" "}
+                  {categories.find((c) => c.slug === selectedCategory)?.name}
+                </Badge>
+              )}
+              {sortBy !== "name" && (
+                <Badge
+                  variant="outline"
+                  removable
+                  onRemove={() => setSortBy("name")}
+                >
+                  Sort: {sortOptions.find((s) => s.value === sortBy)?.label}
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Products Grid */}
         {products.length === 0 ? (
-          <div className="text-center py-20">
-            <Search size={48} className="mx-auto text-neutral-300 mb-6" />
-            <h3 className="text-lg font-medium text-neutral-900 mb-2">
-              No products found
-            </h3>
-            <p className="text-neutral-600">
-              Try adjusting your search or filters
-            </p>
+          <div className="text-center py-24">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                <Search size={24} className="text-neutral-400" />
+              </div>
+              <h3 className="text-lg font-medium text-neutral-900 mb-2">
+                No products found
+              </h3>
+              <p className="text-neutral-600 mb-6">
+                Try adjusting your search terms or filters
+              </p>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={clearFilters}>
+                  Clear Filters
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <>
-            {/* Results count */}
-            <div className="mb-8">
-              <p className="text-sm text-neutral-600 text-center">
-                Showing {products.length} products
-              </p>
-            </div>
-
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12">
-              {products.map((product) => (
-                <div key={product.id} className="group">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
+              {products.map((product, index) => (
+                <article
+                  key={product.id}
+                  className="group"
+                  style={{
+                    animation: `fadeIn 0.6s ease-out forwards`,
+                    animationDelay: `${(index % ITEMS_PER_PAGE) * 50}ms`,
+                  }}
+                >
                   {/* Product Image */}
-                  <div className="aspect-product overflow-hidden bg-neutral-100 mb-4">
+                  <div className="aspect-[4/5] overflow-hidden bg-neutral-50 mb-4 relative">
                     <Link to={`/products/${product.id}`}>
                       <img
                         src={product.image_url || "/placeholder.jpg"}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.02]"
+                        loading="lazy"
                       />
                     </Link>
+
+                    {/* Quick Add Button */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300">
+                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAddToCart(product.id)}
+                          fullWidth
+                          className="bg-white text-neutral-900 hover:bg-neutral-100 shadow-soft"
+                        >
+                          Add to Cart
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Product Info */}
                   <div className="space-y-2">
                     <Link to={`/products/${product.id}`}>
-                      <h3 className="font-medium text-neutral-900 hover:text-neutral-600 transition-colors line-clamp-1">
+                      <h3 className="font-medium text-neutral-900 hover:text-neutral-600 transition-colors line-clamp-1 group-hover:text-neutral-600">
                         {product.name}
                       </h3>
                     </Link>
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-neutral-900">
+
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-lg font-medium text-neutral-900">
                         ${product.price.toFixed(0)}
                       </p>
-                      <Button
-                        variant="minimal"
-                        size="sm"
-                        onClick={() => handleAddToCart(product.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs"
-                      >
-                        Add to Cart
-                      </Button>
+
+                      {product.category && (
+                        <Badge
+                          variant="minimal"
+                          size="xs"
+                          className="text-neutral-500"
+                        >
+                          {product.category}
+                        </Badge>
+                      )}
                     </div>
+
+                    {/* Free shipping indicator */}
+                    {product.price > 50 && (
+                      <p className="text-xs text-neutral-500">Free shipping</p>
+                    )}
                   </div>
-                </div>
+                </article>
               ))}
             </div>
 
-            {/* Load More Button */}
+            {/* Load More */}
             {hasMore && (
               <div className="text-center">
                 <Button
@@ -298,9 +428,16 @@ const ProductsPage: React.FC = () => {
                   variant="outline"
                   size="lg"
                   disabled={loadingMore}
-                  className="px-10"
+                  className="px-12"
                 >
-                  {loadingMore ? "Loading..." : "Load More"}
+                  {loadingMore ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load More"
+                  )}
                 </Button>
               </div>
             )}
