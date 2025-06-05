@@ -102,13 +102,13 @@ export default {
       // Sharp, minimal border radius for posh look
       borderRadius: {
         none: "0px",
-        sm: "2px", // Very sharp
-        DEFAULT: "4px", // Sharp
-        md: "6px", // Slightly rounded
-        lg: "8px", // Less rounded than default
-        xl: "12px", // Still sharp but elegant
-        "2xl": "16px", // For cards
-        "3xl": "24px", // For modals
+        sm: "1px", // Very sharp
+        DEFAULT: "2px", // Sharp
+        md: "4px", // Slightly rounded
+        lg: "6px", // Less rounded than default
+        xl: "8px", // Still sharp but elegant
+        "2xl": "12px", // For cards
+        "3xl": "16px", // For modals
         full: "9999px", // Keep for pills/avatars
       },
       // Enhanced animations for posh feel
