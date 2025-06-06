@@ -319,17 +319,14 @@
               <span>Subtotal</span>
               <span>${{subtotal}}</span>
             </div>
-            {{#if hasShipping}}
             <div class="summary-row">
               <span>Shipping</span>
+              {{#if hasShipping}}
               <span>${{shipping}}</span>
-            </div>
-            {{else}}
-            <div class="summary-row">
-              <span>Shipping</span>
+              {{else}}
               <span>Free</span>
+              {{/if}}
             </div>
-            {{/if}}
             <div class="summary-row">
               <span>Tax</span>
               <span>${{tax}}</span>
@@ -352,9 +349,11 @@
           <div class="info-block">
             <h4>Shipping Address</h4>
             <p>
-              {{shippingAddress.line1}}<br />{{#if
-              shippingAddress.line2}}{{shippingAddress.line2}}<br />{{/if}}{{shippingAddress.city}},
-              {{shippingAddress.state}} {{shippingAddress.postalCode}}<br />{{shippingAddress.country}}
+              {{shippingAddress.line1}}<br />
+              {{#if shippingAddress.line2}} {{shippingAddress.line2}}<br />
+              {{/if}} {{shippingAddress.city}}, {{shippingAddress.state}}
+              {{shippingAddress.postalCode}}<br />
+              {{shippingAddress.country}}
             </p>
           </div>
           {{/if}}

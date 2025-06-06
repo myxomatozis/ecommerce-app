@@ -63,40 +63,80 @@ export class TemplateEngine {
   }
 
   private processIfBlocks(template: string, data: TemplateData): string {
-    // Process nested if blocks from innermost to outermost
     let result = template;
     let hasBlocks = true;
     let iterations = 0;
-    const maxIterations = 10; // Prevent infinite loops
+    const maxIterations = 20; // Increased for nested conditions
 
     while (hasBlocks && iterations < maxIterations) {
       iterations++;
-
-      // Match if blocks that don't contain other if blocks (innermost first)
-      const ifRegex =
-        /\{\{#if\s+([\w.]+)\}\}((?:(?!\{\{#if|\{\{\/if\}\}).)*?)(?:\{\{else\}\}((?:(?!\{\{#if|\{\{\/if\}\}).)*?))?\{\{\/if\}\}/g;
-
       const originalResult = result;
-      result = result.replace(
-        ifRegex,
-        (_match, condition, ifContent, elseContent = "") => {
+
+      // Process simple if blocks first (no nested if/else within)
+      const simpleIfRegex =
+        /\{\{#if\s+([\w.]+)\}\}((?:(?!\{\{#if).)*?)\{\{\/if\}\}/g;
+
+      result = result.replace(simpleIfRegex, (_match, condition, content) => {
+        // Check if this contains an else block
+        const elseMatch = content.match(/^([\s\S]*?)\{\{else\}\}([\s\S]*)$/);
+
+        let ifContent: string;
+        let elseContent: string;
+
+        if (elseMatch) {
+          ifContent = elseMatch[1];
+          elseContent = elseMatch[2];
+        } else {
+          ifContent = content;
+          elseContent = "";
+        }
+
+        const value = this.getValue(condition.trim(), data);
+        const isTrue = this.isTruthy(value);
+
+        console.log(
+          `Processing if condition: ${condition} = ${value} (${isTrue})`
+        );
+
+        return isTrue ? ifContent : elseContent;
+      });
+
+      // If no simple blocks were processed, try more complex nested ones
+      if (result === originalResult) {
+        const nestedIfRegex = /\{\{#if\s+([\w.]+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+
+        result = result.replace(nestedIfRegex, (_match, condition, content) => {
+          // Check if this contains an else block
+          const elseMatch = content.match(/^([\s\S]*?)\{\{else\}\}([\s\S]*)$/);
+
+          let ifContent: string;
+          let elseContent: string;
+
+          if (elseMatch) {
+            ifContent = elseMatch[1];
+            elseContent = elseMatch[2];
+          } else {
+            ifContent = content;
+            elseContent = "";
+          }
+
           const value = this.getValue(condition.trim(), data);
           const isTrue = this.isTruthy(value);
 
-          return isTrue ? ifContent : elseContent;
-        }
-      );
+          console.log(
+            `Processing nested if condition: ${condition} = ${value} (${isTrue})`
+          );
 
-      // Check if we made any replacements
+          return isTrue ? ifContent : elseContent;
+        });
+      }
+
       hasBlocks = result !== originalResult;
     }
 
-    // If there are still unprocessed blocks after max iterations, remove them
+    // Clean up any remaining unprocessed blocks
     if (iterations >= maxIterations) {
-      console.warn(
-        "Max iterations reached for if block processing. Some blocks may be unprocessed."
-      );
-      // Remove any remaining unprocessed blocks
+      console.warn("Max iterations reached for if block processing.");
       result = result.replace(/\{\{#if\s+[\w.]+\}\}[\s\S]*?\{\{\/if\}\}/g, "");
     }
 
