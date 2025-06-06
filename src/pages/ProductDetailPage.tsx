@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Star,
-  Heart,
   Truck,
   Shield,
   RefreshCw,
@@ -15,8 +14,6 @@ import {
 } from "lucide-react";
 import {
   Button,
-  Card,
-  CardContent,
   Badge,
   Spinner,
   CategoryBadge,
@@ -25,7 +22,7 @@ import {
 import { Product, useAppData, useCartStore } from "@/stores";
 
 const ProductDetailPage: React.FC = () => {
-  const { getProduct } = useAppData();
+  const { getProduct, categories } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
@@ -58,23 +55,13 @@ const ProductDetailPage: React.FC = () => {
 
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const currentCartQuantity = getCartItemQuantity(id || "");
 
-  // Mock additional images for the product
   const productImages = product
-    ? [
-        product.image_url,
-        product.image_url, // In real app, these would be different angles
-        product.image_url,
-        product.image_url,
-      ].filter(Boolean)
+    ? product.images_gallery?.filter(Boolean) || []
     : [];
-
-  // Mock related products
-  const relatedProducts: Product[] = [];
 
   // Check if this product would benefit from size guide (clothing items)
   const isClothingItem =
@@ -96,44 +83,37 @@ const ProductDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spinner
-          size="lg"
-          variant="primary"
-          speed="fast"
-          type="spinner"
-          text="Loading product details..."
-          inline
-          className="text-gray-600"
-        />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Spinner size="lg" variant="primary" text="Loading product..." inline />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="text-center max-w-md">
-          <CardContent>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Product Not Found
-            </h1>
-            <p className="text-gray-600 mb-6">
-              The product you're looking for doesn't exist.
-            </p>
-            <Button as={Link} to="/products" variant="primary">
-              Back to Products
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <h1 className="text-2xl font-light text-neutral-900 mb-4">
+            Product Not Found
+          </h1>
+          <p className="text-neutral-600 mb-8">
+            The product you're looking for doesn't exist.
+          </p>
+          <Button as={Link} to="/products" variant="primary">
+            Back to Products
+          </Button>
+        </div>
       </div>
     );
   }
 
+  const categorySlug = categories.find(
+    (cat) => cat.name === product.category
+  )?.slug;
+
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     addToCart(product.id, selectedQuantity);
     setIsAddingToCart(false);
   };
@@ -149,13 +129,13 @@ const ProductDetailPage: React.FC = () => {
       description:
         product.price > 50
           ? "Free delivery on this item"
-          : `Add ${(50 - product.price).toFixed(2)} for free shipping`,
+          : `Add $${(50 - product.price).toFixed(2)} for free shipping`,
       available: product.price > 50,
     },
     {
       icon: Shield,
       title: "Secure Payment",
-      description: "100% secure checkout",
+      description: "100% secure checkout with Stripe",
       available: true,
     },
     {
@@ -170,19 +150,16 @@ const ProductDetailPage: React.FC = () => {
     if (product?.stock_quantity && product.stock_quantity > 10) {
       return {
         status: "In Stock",
-        variant: "success" as const,
         icon: CheckCircle,
       };
     } else if (product?.stock_quantity && product.stock_quantity > 0) {
       return {
         status: `Only ${product.stock_quantity} left`,
-        variant: "warning" as const,
         icon: AlertCircle,
       };
     } else {
       return {
         status: "Out of Stock",
-        variant: "danger" as const,
         icon: AlertCircle,
       };
     }
@@ -192,29 +169,33 @@ const ProductDetailPage: React.FC = () => {
   const StockIcon = stockStatus.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link to="/" className="hover:text-gray-900 transition-colors">
+        <nav className="flex items-center space-x-2 text-sm text-neutral-600 mb-8">
+          <Link to="/" className="hover:text-neutral-900 transition-colors">
             Home
           </Link>
           <span>/</span>
           <Link
             to="/products"
-            className="hover:text-gray-900 transition-colors"
+            className="hover:text-neutral-900 transition-colors"
           >
             Products
           </Link>
+          {categorySlug && (
+            <>
+              <span>/</span>
+              <Link
+                to={`/products?category=${categorySlug}`}
+                className="hover:text-neutral-900 transition-colors"
+              >
+                {product.category}
+              </Link>
+            </>
+          )}
           <span>/</span>
-          <Link
-            to={`/products?category=${product.category}`}
-            className="hover:text-gray-900 transition-colors"
-          >
-            {product.category}
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">{product.name}</span>
+          <span className="text-neutral-900">{product.name}</span>
         </nav>
 
         {/* Back Button */}
@@ -222,82 +203,81 @@ const ProductDetailPage: React.FC = () => {
           as={Link}
           to="/products"
           variant="ghost"
-          leftIcon={<ArrowLeft size={20} />}
-          className="mb-8"
+          leftIcon={<ArrowLeft size={16} />}
+          className="mb-8 text-neutral-600 hover:text-neutral-900"
         >
           Back to Products
         </Button>
 
         {/* Product Detail */}
-        <Card className="overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Product Images */}
-            <div className="p-6">
-              <div className="aspect-square mb-4 rounded-xl overflow-hidden bg-gray-100">
-                <img
-                  src={productImages[selectedImage] || "/placeholder.jpg"}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Image Thumbnails */}
-              {productImages.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {productImages.map((image, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      onClick={() => setSelectedImage(index)}
-                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors p-0 ${
-                        selectedImage === index
-                          ? "border-primary-600"
-                          : "border-transparent hover:border-gray-300"
-                      }`}
-                    >
-                      <img
-                        src={image || "/placeholder.jpg"}
-                        alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </Button>
-                  ))}
-                </div>
-              )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          {/* Product Images */}
+          <div>
+            <div className="aspect-square mb-4 overflow-hidden bg-neutral-50">
+              <img
+                src={product.image_url || "/placeholder.jpg"}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
             </div>
 
-            {/* Product Info */}
-            <div className="p-6 lg:p-8">
-              {product.category && (
-                <div className="mb-4">
-                  <CategoryBadge category={product.category} />
-                </div>
-              )}
+            {/* Image Thumbnails */}
+            {productImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-2">
+                {productImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-square overflow-hidden border transition-colors ${
+                      selectedImage === index
+                        ? "border-neutral-900"
+                        : "border-neutral-200 hover:border-neutral-400"
+                    }`}
+                  >
+                    <img
+                      src={image || "/placeholder.jpg"}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+          {/* Product Info */}
+          <div className="space-y-8">
+            {product.category && (
+              <div>
+                <CategoryBadge category={product.category} />
+              </div>
+            )}
+
+            <div>
+              <h1 className="text-3xl font-light text-neutral-900 mb-4">
                 {product.name}
               </h1>
 
               {/* Rating */}
               {product.rating && (
-                <div className="flex items-center space-x-2 mb-6">
+                <div className="flex items-center space-x-2 mb-4">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={20}
+                        size={14}
                         className={`${
                           i < Math.floor(product.rating!)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
+                            ? "text-neutral-900 fill-current"
+                            : "text-neutral-300"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-lg font-medium text-gray-900">
+                  <span className="text-sm text-neutral-900">
                     {product.rating}
                   </span>
-                  <span className="text-gray-600">
+                  <span className="text-sm text-neutral-600">
                     ({product.reviews_count} reviews)
                   </span>
                 </div>
@@ -305,259 +285,156 @@ const ProductDetailPage: React.FC = () => {
 
               {/* Price */}
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
+                <span className="text-3xl font-light text-neutral-900">
                   ${product.price.toFixed(2)}
                 </span>
                 {product.price > 50 && (
-                  <Badge variant="success" size="sm" className="ml-4">
-                    Free shipping included
+                  <Badge variant="minimal" size="sm" className="ml-4">
+                    Free shipping
                   </Badge>
                 )}
               </div>
+            </div>
 
-              {/* Description */}
-              <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                {product.description}
-              </p>
+            {/* Description */}
+            <p className="text-neutral-600 leading-relaxed">
+              {product.description}
+            </p>
 
-              {/* Stock Status */}
-              <div className="mb-6">
-                <Badge
-                  variant={stockStatus.variant}
-                  size="md"
-                  className="inline-flex items-center"
-                >
-                  <div className="flex items-center space-x-2">
-                    <StockIcon size={16} className="mr-1" />
-                    {stockStatus.status}
+            {/* Stock Status */}
+            <div className="flex items-center space-x-2">
+              <StockIcon size={14} className="text-neutral-600" />
+              <span className="text-sm text-neutral-600">
+                {stockStatus.status}
+              </span>
+            </div>
+
+            {/* Size Guide for Clothing Items */}
+            {isClothingItem && (
+              <div>
+                <SizeGuideButton
+                  productCategory={product.category}
+                  variant="minimal"
+                  size="sm"
+                  className="text-neutral-600 hover:text-neutral-900 pl-0 pr-0"
+                />
+              </div>
+            )}
+
+            {/* Quantity Selector and Add to Cart */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-neutral-600">Quantity:</span>
+                  <div className="flex items-center border border-neutral-200">
+                    <button
+                      onClick={() =>
+                        setSelectedQuantity(Math.max(1, selectedQuantity - 1))
+                      }
+                      disabled={selectedQuantity <= 1}
+                      className="p-2 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
+                      {selectedQuantity}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setSelectedQuantity(
+                          Math.min(
+                            product?.stock_quantity || 0,
+                            selectedQuantity + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        selectedQuantity >= (product?.stock_quantity || 0)
+                      }
+                      className="p-2 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus size={14} />
+                    </button>
                   </div>
-                </Badge>
+                </div>
               </div>
 
-              {/* Size Guide for Clothing Items */}
-              {isClothingItem && (
-                <div className="mb-6">
-                  <SizeGuideButton
-                    productCategory={product.category}
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary-600 hover:text-primary-700"
-                  />
-                </div>
-              )}
+              <Button
+                onClick={handleAddToCart}
+                disabled={product.stock_quantity === 0 || isAddingToCart}
+                variant="primary"
+                size="lg"
+                fullWidth
+                isLoading={isAddingToCart}
+                leftIcon={
+                  !isAddingToCart ? <ShoppingCart size={18} /> : undefined
+                }
+              >
+                {isAddingToCart ? "Adding..." : "Add to Cart"}
+              </Button>
 
-              {/* Quantity Selector and Add to Cart */}
-              <div className="mb-8">
-                <div className="flex items-center space-x-4 mb-4">
-                  <label className="text-sm font-medium text-gray-700">
-                    Quantity:
-                  </label>
-                  <Card variant="outlined" className="inline-flex">
-                    <CardContent padding="none" className="flex items-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+              {/* Current Cart Status */}
+              {currentCartQuantity > 0 && (
+                <div className="p-4 bg-neutral-50 border border-neutral-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-600">
+                      {currentCartQuantity} in cart
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button
                         onClick={() =>
-                          setSelectedQuantity(Math.max(1, selectedQuantity - 1))
+                          handleUpdateCartQuantity(currentCartQuantity - 1)
                         }
-                        disabled={selectedQuantity <= 1}
-                        className="rounded-none border-r border-gray-200"
+                        className="p-1 hover:bg-neutral-100 transition-colors"
                       >
-                        <Minus size={16} />
-                      </Button>
-                      <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
-                        {selectedQuantity}
+                        <Minus size={14} />
+                      </button>
+                      <span className="font-medium text-neutral-900 min-w-[2rem] text-center text-sm">
+                        {currentCartQuantity}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() =>
-                          setSelectedQuantity(
-                            Math.min(
-                              product?.stock_quantity || 0,
-                              selectedQuantity + 1
-                            )
-                          )
+                          handleUpdateCartQuantity(currentCartQuantity + 1)
                         }
                         disabled={
-                          selectedQuantity >= (product?.stock_quantity || 0)
+                          currentCartQuantity >= (product?.stock_quantity || 0)
                         }
-                        className="rounded-none border-l border-gray-200"
+                        className="p-1 hover:bg-neutral-100 transition-colors disabled:opacity-50"
                       >
-                        <Plus size={16} />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    onClick={handleAddToCart}
-                    disabled={product.stock_quantity === 0 || isAddingToCart}
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    isLoading={isAddingToCart}
-                    leftIcon={
-                      !isAddingToCart ? <ShoppingCart size={20} /> : undefined
-                    }
-                  >
-                    {isAddingToCart ? "Adding..." : "Add to Cart"}
-                  </Button>
-
-                  <Button
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    variant="text"
-                    size="lg"
-                    className="sm:w-auto"
-                  >
-                    <Heart
-                      size={20}
-                      className={isWishlisted ? "fill-current" : ""}
-                    />
-                  </Button>
-                </div>
-
-                {/* Current Cart Status */}
-                {currentCartQuantity > 0 && (
-                  <Card
-                    variant="outlined"
-                    className="mt-4 border-primary-200 bg-primary-50"
-                  >
-                    <CardContent padding="sm">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="primary" size="sm">
-                            {currentCartQuantity} in cart
-                          </Badge>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              handleUpdateCartQuantity(currentCartQuantity - 1)
-                            }
-                            className="text-primary-600 hover:text-primary-700"
-                          >
-                            <Minus size={16} />
-                          </Button>
-                          <span className="font-medium text-primary-800 min-w-[2rem] text-center">
-                            {currentCartQuantity}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              handleUpdateCartQuantity(currentCartQuantity + 1)
-                            }
-                            disabled={
-                              currentCartQuantity >=
-                              (product?.stock_quantity || 0)
-                            }
-                            className="text-primary-600 hover:text-primary-700"
-                          >
-                            <Plus size={16} />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-
-              {/* Features */}
-              <Card variant="outlined">
-                <CardContent>
-                  <h3 className="font-semibold text-gray-900 mb-4">
-                    What's Included
-                  </h3>
-                  <div className="space-y-4">
-                    {features.map((feature, index) => {
-                      const Icon = feature.icon;
-                      return (
-                        <div key={index} className="flex items-start space-x-3">
-                          <div
-                            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                              feature.available
-                                ? "bg-green-100 text-green-600"
-                                : "bg-gray-100 text-gray-400"
-                            }`}
-                          >
-                            <Icon size={16} />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">
-                              {feature.title}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              {feature.description}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </Card>
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">
-              Related Products
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
-                <Card
-                  key={relatedProduct.id}
-                  hover
-                  className="overflow-hidden group"
-                >
-                  <Link to={`/products/${relatedProduct.id}`}>
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={relatedProduct.image_url || "/placeholder.jpg"}
-                        alt={relatedProduct.name}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {relatedProduct.rating && (
-                        <Badge
-                          variant="default"
-                          size="sm"
-                          className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-900"
-                        >
-                          <Star
-                            size={14}
-                            className="text-yellow-400 fill-current mr-1"
-                          />
-                          {relatedProduct.rating}
-                        </Badge>
-                      )}
+                        <Plus size={14} />
+                      </button>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-                    <CardContent>
-                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
-                        {relatedProduct.name}
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-gray-900">
-                          ${relatedProduct.price.toFixed(2)}
+            {/* Features */}
+            <div className="border-t border-neutral-100 pt-8">
+              <h3 className="text-sm font-medium text-neutral-900 mb-4">
+                Product Details
+              </h3>
+              <div className="space-y-3">
+                {features.map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={index} className="flex items-center space-x-3">
+                      <Icon size={16} className="text-neutral-600" />
+                      <div>
+                        <span className="text-sm text-neutral-900">
+                          {feature.title}
                         </span>
-                        <Badge variant="secondary" size="sm">
-                          {relatedProduct.category}
-                        </Badge>
+                        <span className="text-sm text-neutral-600 ml-1">
+                          — {feature.description}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Link>
-                </Card>
-              ))}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
