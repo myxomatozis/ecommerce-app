@@ -3,16 +3,16 @@ import { Link, useLocation, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
-  FolderOpen,
   ShoppingCart,
-  Users,
-  Settings,
   Menu,
   LogOut,
-  Home,
+  Plus,
+  Eye,
+  Settings,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/UI";
+import { Button, Badge } from "@/components/UI";
 import { toast } from "@/utils/toast";
 
 export const AdminLayout: React.FC = () => {
@@ -20,15 +20,50 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Only include pages that actually exist
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Products", href: "/admin/products", icon: Package },
-    { name: "Categories", href: "/admin/categories", icon: FolderOpen },
-    { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+    {
+      name: "Dashboard",
+      href: "/admin",
+      icon: LayoutDashboard,
+      available: true,
+    },
+    {
+      name: "Products",
+      href: "/admin/products",
+      icon: Package,
+      available: true,
+    },
+    {
+      name: "Orders",
+      href: "/admin/orders",
+      icon: ShoppingCart,
+      available: true,
+    },
+    // Disabled pages - coming soon
+    {
+      name: "Categories",
+      href: "/admin/categories",
+      icon: Settings,
+      available: false,
+      comingSoon: true,
+    },
     ...(isSuperAdmin
       ? [
-          { name: "Admin Users", href: "/admin/users", icon: Users },
-          { name: "Settings", href: "/admin/settings", icon: Settings },
+          {
+            name: "Admin Users",
+            href: "/admin/users",
+            icon: Users,
+            available: false,
+            comingSoon: true,
+          },
+          {
+            name: "Settings",
+            href: "/admin/settings",
+            icon: Settings,
+            available: false,
+            comingSoon: true,
+          },
         ]
       : []),
   ];
@@ -70,18 +105,77 @@ export const AdminLayout: React.FC = () => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-neutral-200">
-            <Link to="/" className="text-xl font-medium text-neutral-900">
+            <Link
+              to="/"
+              className="text-xl font-medium text-neutral-900 hover:text-neutral-600 transition-colors"
+            >
               The Folk
             </Link>
-            <span className="text-xs bg-neutral-100 text-neutral-600 px-2 py-1 rounded">
+            <Badge
+              variant="minimal"
+              size="sm"
+              className="bg-neutral-100 text-neutral-600"
+            >
               Admin
-            </span>
+            </Badge>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="p-4 border-b border-neutral-100">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                as={Link}
+                to="/admin/products/new"
+                variant="ghost"
+                size="sm"
+                leftIcon={<Plus size={14} />}
+                className="justify-start text-xs"
+                onClick={() => setSidebarOpen(false)}
+              >
+                Add Product
+              </Button>
+              <Button
+                as={Link}
+                to="/"
+                variant="ghost"
+                size="sm"
+                leftIcon={<Eye size={14} />}
+                className="justify-start text-xs"
+                onClick={() => setSidebarOpen(false)}
+              >
+                View Store
+              </Button>
+            </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
+
+              if (!item.available) {
+                return (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg text-neutral-400 cursor-not-allowed"
+                  >
+                    <div className="flex items-center">
+                      <Icon size={20} className="mr-3" />
+                      {item.name}
+                    </div>
+                    {item.comingSoon && (
+                      <Badge
+                        variant="minimal"
+                        size="xs"
+                        className="text-neutral-400"
+                      >
+                        Soon
+                      </Badge>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={item.name}
@@ -111,7 +205,7 @@ export const AdminLayout: React.FC = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-neutral-900 truncate">
-                    {adminUser?.email}
+                    {adminUser?.email.split("@")[0]}
                   </p>
                   <p className="text-xs text-neutral-500 capitalize">
                     {adminUser?.role.replace("_", " ")}
@@ -121,17 +215,6 @@ export const AdminLayout: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Button
-                as={Link}
-                to="/"
-                variant="ghost"
-                size="sm"
-                fullWidth
-                leftIcon={<Home size={16} />}
-                className="justify-start text-neutral-600"
-              >
-                View Store
-              </Button>
               <Button
                 onClick={handleSignOut}
                 variant="ghost"
@@ -151,7 +234,14 @@ export const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col lg:ml-64">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-neutral-200">
-          <h1 className="text-lg font-medium text-neutral-900">Admin</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-lg font-medium text-neutral-900">
+              The Folk Admin
+            </h1>
+            <Badge variant="minimal" size="sm">
+              {adminUser?.role.replace("_", " ")}
+            </Badge>
+          </div>
           <Button
             onClick={() => setSidebarOpen(true)}
             variant="ghost"
