@@ -11,6 +11,7 @@ import ContactPage from "@/pages/ContactPage";
 import AboutPage from "@/pages/AboutPage";
 import FAQPage from "@/pages/FAQPage";
 import LegalPage from "@/pages/LegalPage";
+import SizeGuidePage from "@/pages/SizeGuidePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { ToastRenderer } from "./components/UI";
@@ -30,6 +31,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/faq" element={<FAQPage />} />
+          <Route path="/size-guide" element={<SizeGuidePage />} />
           <Route path="/privacy" element={<LegalPage />} />
           <Route path="/terms" element={<LegalPage />} />
           <Route path="*" element={<NotFoundPage />} />

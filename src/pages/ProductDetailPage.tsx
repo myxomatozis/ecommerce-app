@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   CheckCircle,
   AlertCircle,
+  Ruler,
 } from "lucide-react";
 import { Button, Card, CardContent, Badge, Spinner } from "@/components/UI";
 import { Product, useAppData, useCartStore } from "@/stores";
@@ -68,6 +69,21 @@ const ProductDetailPage: React.FC = () => {
 
   // Mock related products
   const relatedProducts: Product[] = [];
+
+  // Check if this product would benefit from size guide (clothing items)
+  const isClothingItem =
+    product?.category &&
+    [
+      "women",
+      "men",
+      "clothing",
+      "tops",
+      "bottoms",
+      "dresses",
+      "shirts",
+      "pants",
+      "jeans",
+    ].some((cat) => product.category?.toLowerCase().includes(cat));
 
   if (loading) {
     return (
@@ -308,6 +324,22 @@ const ProductDetailPage: React.FC = () => {
                   </div>
                 </Badge>
               </div>
+
+              {/* Size Guide Link for Clothing Items */}
+              {isClothingItem && (
+                <div className="mb-6">
+                  <Button
+                    as={Link}
+                    to="/size-guide"
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Ruler size={16} />}
+                    className="text-primary-600 hover:text-primary-700"
+                  >
+                    Size Guide
+                  </Button>
+                </div>
+              )}
 
               {/* Quantity Selector and Add to Cart */}
               <div className="mb-8">

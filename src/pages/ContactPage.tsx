@@ -288,6 +288,16 @@ const ContactPage: React.FC = () => {
                   </Button>
                   <Button
                     as={Link}
+                    to="/size-guide"
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    className="justify-start text-gray-600 hover:text-gray-900"
+                  >
+                    Size Guide
+                  </Button>
+                  <Button
+                    as={Link}
                     to="/shipping"
                     variant="ghost"
                     size="sm"
@@ -305,16 +315,6 @@ const ContactPage: React.FC = () => {
                     className="justify-start text-gray-600 hover:text-gray-900"
                   >
                     Returns & Exchanges
-                  </Button>
-                  <Button
-                    as={Link}
-                    to="/size-guide"
-                    variant="ghost"
-                    size="sm"
-                    fullWidth
-                    className="justify-start text-gray-600 hover:text-gray-900"
-                  >
-                    Size Guide
                   </Button>
                 </div>
               </CardContent>

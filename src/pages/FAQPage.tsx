@@ -90,14 +90,14 @@ const FAQPage: React.FC = () => {
       id: "sizing-1",
       question: "How do I find the right size?",
       answer:
-        "Each product page includes a detailed size chart. We recommend measuring yourself and comparing to our size guide. If you're between sizes, we generally recommend sizing up for a more comfortable fit.",
+        "Each product page includes a detailed size chart. We recommend measuring yourself and comparing to our comprehensive size guide. If you're between sizes, we generally recommend sizing up for a more comfortable fit.",
       category: "sizing",
     },
     {
       id: "sizing-2",
       question: "Are your products true to size?",
       answer:
-        "Our products generally run true to size, but fit can vary by brand and style. We include fit notes on each product page and customer reviews often mention sizing feedback.",
+        "Our products generally run true to size, but fit can vary by brand and style. We include fit notes on each product page and customer reviews often mention sizing feedback. Check our detailed size guide for specific measurements.",
       category: "sizing",
     },
     {
@@ -105,6 +105,13 @@ const FAQPage: React.FC = () => {
       question: "Do you restock sold-out items?",
       answer:
         "Some items are restocked regularly, while others are limited edition. You can sign up for restock notifications on product pages. We also release new collections monthly.",
+      category: "sizing",
+    },
+    {
+      id: "sizing-4",
+      question: "What's the difference between UK, EU, and US sizes?",
+      answer:
+        "We provide conversion charts for UK, EU, and US sizing across all categories. Visit our size guide for detailed conversion tables and measurement instructions to ensure the perfect fit.",
       category: "sizing",
     },
 
@@ -296,6 +303,20 @@ const FAQPage: React.FC = () => {
                           <p className="text-gray-600 leading-relaxed">
                             {item.answer}
                           </p>
+                          {/* Add size guide link for sizing questions */}
+                          {item.category === "sizing" && (
+                            <div className="mt-4">
+                              <Button
+                                as={Link}
+                                to="/size-guide"
+                                variant="ghost"
+                                size="sm"
+                                className="text-primary-600 hover:text-primary-700"
+                              >
+                                View Size Guide →
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
