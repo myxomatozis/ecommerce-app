@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
       phone_number_collection: {
         enabled: true,
       },
-      customer_creation: "always",
+      // customer_creation: "always",
     });
 
     return new Response(
