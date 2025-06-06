@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Lock, CheckCircle } from "lucide-react";
 import SupabaseAPI from "@/lib/supabase";
 import { useCartStore } from "@/stores";
+import { Checkbox } from "@/components/UI";
 
 const CheckoutPage: React.FC = () => {
   const cartItems = useCartStore((state) => state.cartItems);
@@ -121,36 +122,16 @@ const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Terms */}
-              <div className="space-y-4">
-                <label className="flex items-start space-x-3 cursor-pointer">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={agreeToTerms}
-                      onChange={(e) => setAgreeToTerms(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`w-4 h-4 border-2 rounded transition-colors ${
-                        agreeToTerms
-                          ? "bg-gray-900 border-gray-900"
-                          : "border-gray-300 hover:border-gray-400"
-                      }`}
-                    >
-                      {agreeToTerms && (
-                        <CheckCircle
-                          size={12}
-                          className="text-white absolute -top-1 -left-1"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    I agree to the{" "}
+              <Checkbox
+                checked={agreeToTerms}
+                onChange={(e) => setAgreeToTerms(e.target.checked)}
+                label={
+                  <span className="text-sm text-gray-600 flex items-center space-x-1">
+                    I agree to the&nbsp;
                     <Link to="/terms" className="underline hover:no-underline">
                       Terms of Service
-                    </Link>{" "}
-                    and{" "}
+                    </Link>
+                    and&nbsp;
                     <Link
                       to="/privacy"
                       className="underline hover:no-underline"
@@ -158,8 +139,8 @@ const CheckoutPage: React.FC = () => {
                       Privacy Policy
                     </Link>
                   </span>
-                </label>
-              </div>
+                }
+              />
 
               {/* Submit Button */}
               <button

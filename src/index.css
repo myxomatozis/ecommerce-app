@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 @layer base {
   body {
@@ -75,7 +73,7 @@
   }
 
   .card-product {
-    @apply bg-white rounded-none transition-all duration-500 group
+    @apply bg-white rounded-none transition-all duration-500 
            hover:shadow-xl border border-transparent hover:border-neutral-200;
   }
 
@@ -126,12 +124,12 @@
 
   /* Product grid modern styles */
   .product-card {
-    @apply bg-white rounded-none transition-all duration-500 group
+    @apply bg-white rounded-none transition-all duration-500 
            hover:shadow-xl overflow-hidden;
   }
 
   .product-image {
-    @apply transition-all duration-700 group-hover:scale-[1.02];
+    @apply transition-all duration-700 hover:scale-[1.02];
   }
 
   /* Typography hierarchy */
@@ -157,7 +155,7 @@
 
   /* Loading states */
   .loading-shimmer {
-    @apply bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-100 animate-shimmer;
+    @apply bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-100 animate-ping;
     background-size: 200% 100%;
   }
 
@@ -287,7 +285,7 @@
 
   /* Minimal hover states */
   .hover-lift {
-    @apply transition-all duration-500 hover:shadow-elegant;
+    @apply transition-all duration-500 hover:shadow-lg;
   }
 
   .hover-scale {

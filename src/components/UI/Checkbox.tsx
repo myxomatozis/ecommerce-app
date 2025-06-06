@@ -12,6 +12,7 @@ export interface CheckboxProps
   variant?: "default" | "minimal" | "outlined";
   labelPosition?: "right" | "left";
   icon?: React.ReactNode;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
@@ -68,14 +69,14 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     };
 
     const getCheckboxClasses = () => {
-      const base = `${sizeClasses[size].checkbox} transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:ring-offset-1 appearance-none relative bg-white`;
+      const base = `${sizeClasses[size].checkbox} transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:ring-offset-1 appearance-none relative`;
 
       if (disabled) {
         return `${base} ${variantClasses[variant]} bg-neutral-50 border-neutral-200 cursor-not-allowed opacity-50`;
       }
 
       if (checked || indeterminate) {
-        return `${base} bg-neutral-900 border-neutral-900 text-white shadow-minimal hover:bg-neutral-800`;
+        return `${base} bg-neutral-900 border-neutral-900 shadow-minimal hover:bg-neutral-800`;
       }
 
       return `${base} ${variantClasses[variant]} hover:border-neutral-400 hover:shadow-minimal`;
