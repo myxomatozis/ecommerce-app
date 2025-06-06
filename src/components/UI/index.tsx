@@ -1,3 +1,4 @@
+// src/components/UI/index.tsx
 // Export all UI components for easy importing
 export { default as Button } from "./Button";
 export type { ButtonProps } from "./Button";
@@ -46,3 +47,11 @@ export type { TabsProps, TabsListProps, TabsPanelProps, TabItem } from "./Tabs";
 
 export { default as Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
+
+// Size Guide Components
+export { SizeGuideModal, SizeTable, SizeGuideButton } from "../SizeGuide";
+export type {
+  SizeGuideModalProps,
+  SizeTableData,
+  ProductCategory,
+} from "../SizeGuide";
