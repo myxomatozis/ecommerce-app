@@ -60,11 +60,11 @@ export const AdminLayout: React.FC = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed on all screen sizes */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-neutral-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-neutral-200 transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
       >
         <div className="flex flex-col h-full">
@@ -79,7 +79,7 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -147,8 +147,8 @@ export const AdminLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 lg:pl-0">
+      {/* Main content - Properly offset for fixed sidebar */}
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-neutral-200">
           <h1 className="text-lg font-medium text-neutral-900">Admin</h1>
@@ -170,4 +170,5 @@ export const AdminLayout: React.FC = () => {
     </div>
   );
 };
+
 export default AdminLayout;
