@@ -1,3 +1,4 @@
+// supabase/functions/resend/template-engine.ts
 // deno-lint-ignore-file no-explicit-any
 export interface TemplateData {
   [key: string]: string | number | boolean;
@@ -62,18 +63,44 @@ export class TemplateEngine {
   }
 
   private processIfBlocks(template: string, data: TemplateData): string {
-    const ifRegex =
-      /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
+    // Process nested if blocks from innermost to outermost
+    let result = template;
+    let hasBlocks = true;
+    let iterations = 0;
+    const maxIterations = 10; // Prevent infinite loops
 
-    return template.replace(
-      ifRegex,
-      (_match, condition, ifContent, elseContent = "") => {
-        const value = this.getValue(condition, data);
-        const isTrue = this.isTruthy(value);
+    while (hasBlocks && iterations < maxIterations) {
+      iterations++;
 
-        return isTrue ? ifContent : elseContent;
-      }
-    );
+      // Match if blocks that don't contain other if blocks (innermost first)
+      const ifRegex =
+        /\{\{#if\s+([\w.]+)\}\}((?:(?!\{\{#if|\{\{\/if\}\}).)*?)(?:\{\{else\}\}((?:(?!\{\{#if|\{\{\/if\}\}).)*?))?\{\{\/if\}\}/g;
+
+      const originalResult = result;
+      result = result.replace(
+        ifRegex,
+        (_match, condition, ifContent, elseContent = "") => {
+          const value = this.getValue(condition.trim(), data);
+          const isTrue = this.isTruthy(value);
+
+          return isTrue ? ifContent : elseContent;
+        }
+      );
+
+      // Check if we made any replacements
+      hasBlocks = result !== originalResult;
+    }
+
+    // If there are still unprocessed blocks after max iterations, remove them
+    if (iterations >= maxIterations) {
+      console.warn(
+        "Max iterations reached for if block processing. Some blocks may be unprocessed."
+      );
+      // Remove any remaining unprocessed blocks
+      result = result.replace(/\{\{#if\s+[\w.]+\}\}[\s\S]*?\{\{\/if\}\}/g, "");
+    }
+
+    return result;
   }
 
   private processVariables(template: string, data: TemplateData): string {
@@ -90,9 +117,13 @@ export class TemplateEngine {
     let value: any = data;
 
     for (const key of keys) {
-      if (value && typeof value === "object") {
+      if (value && typeof value === "object" && key in value) {
         value = value[key];
       } else {
+        console.log(
+          `Path ${path} not found at key ${key}. Available keys:`,
+          Object.keys(value || {})
+        );
         return undefined;
       }
     }
@@ -111,25 +142,67 @@ export class TemplateEngine {
   }
 }
 
-// Template loader utility
+// Enhanced template loader with multiple path resolution strategies
 export async function loadTemplate(templateName: string): Promise<string> {
-  try {
-    // In Deno, we can read files directly from the filesystem
-    const templatePath = `./functions/resend/${templateName}.html`;
-    const template = await Deno.readTextFile(templatePath);
-    return template;
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      throw new Error(`Template ${templateName} not found`);
-    }
-    // Handle other errors (e.g., permission issues)
-    if (error instanceof Error) {
-      throw new Error(
-        `Failed to load template ${templateName}: ${error.message}`
+  const possiblePaths = [
+    // Current working directory (development)
+    `./${templateName}.html`,
+    `${templateName}.html`,
+
+    // Original paths
+    `./functions/resend/${templateName}.html`,
+    `/functions/resend/${templateName}.html`,
+
+    // Edge Functions runtime paths
+    `./resend/${templateName}.html`,
+    `/resend/${templateName}.html`,
+
+    // Absolute from bundle root
+    `/${templateName}.html`,
+
+    // Current directory relative
+    `resend/${templateName}.html`,
+  ];
+
+  let lastError: Error | null = null;
+
+  // Try each possible path
+  for (const templatePath of possiblePaths) {
+    try {
+      console.log(`Attempting to load template from: ${templatePath}`);
+      const template = await Deno.readTextFile(templatePath);
+      console.log(`Successfully loaded template from: ${templatePath}`);
+      return template;
+    } catch (error) {
+      lastError = error as Error;
+      console.log(
+        `Failed to load from ${templatePath}:`,
+        error instanceof Error ? error.message : error
       );
+      continue;
     }
-    return Promise.reject(`Failed to load template ${templateName}`);
   }
+
+  // If all paths failed, provide debugging information
+  console.error("All template paths failed. Debugging info:");
+  console.error("Current working directory:", Deno.cwd());
+
+  try {
+    // List files in current directory
+    const currentDirFiles = [];
+    for await (const dirEntry of Deno.readDir(".")) {
+      currentDirFiles.push(dirEntry.name);
+    }
+    console.error("Files in current directory:", currentDirFiles);
+  } catch (dirError) {
+    console.error("Cannot read current directory:", dirError);
+  }
+
+  throw new Error(
+    `Template ${templateName} not found in any of the expected locations. ` +
+      `Tried paths: ${possiblePaths.join(", ")}. ` +
+      `Last error: ${lastError?.message || "Unknown error"}`
+  );
 }
 
 // Template data processors for different types
@@ -148,8 +221,49 @@ export function prepareOrderConfirmationData(variables: any): TemplateData {
     }));
   }
 
+  // Process shipping address to ensure proper structure
+  if (data.shippingAddress && typeof data.shippingAddress === "object") {
+    data.shippingAddress = {
+      line1: data.shippingAddress.line1 || "",
+      line2: data.shippingAddress.line2 || "",
+      city: data.shippingAddress.city || "",
+      state: data.shippingAddress.state || "",
+      postalCode:
+        data.shippingAddress.postalCode ||
+        data.shippingAddress.postal_code ||
+        "",
+      country: data.shippingAddress.country || "",
+    };
+  }
+
+  // Ensure numeric values are properly formatted
+  if (data.subtotal && typeof data.subtotal === "string") {
+    data.subtotal = parseFloat(data.subtotal).toFixed(2);
+  }
+  if (data.shipping && typeof data.shipping === "string") {
+    data.shipping = parseFloat(data.shipping).toFixed(2);
+  }
+  if (data.tax && typeof data.tax === "string") {
+    data.tax = parseFloat(data.tax).toFixed(2);
+  }
+  if (data.total && typeof data.total === "string") {
+    data.total = parseFloat(data.total).toFixed(2);
+  }
+
   // Ensure URLs
-  data.storeUrl = data.storeUrl || "https://stylehub.com";
+  data.storeUrl = data.storeUrl || "https://thefolkproject.com";
+
+  console.log("Processed template data:", {
+    hasShipping: data.hasShipping,
+    shippingAddress: data.shippingAddress,
+    itemsCount: data.items?.length || 0,
+    totals: {
+      subtotal: data.subtotal,
+      shipping: data.shipping,
+      tax: data.tax,
+      total: data.total,
+    },
+  });
 
   return data;
 }

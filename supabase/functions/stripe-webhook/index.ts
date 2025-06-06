@@ -50,7 +50,7 @@ const sendOrderConfirmationEmail = async (orderId: string) => {
       country: string;
     } | null;
 
-    // Format shipping address
+    // Format shipping address properly for template
     const shippingAddress = orderShippingAddress
       ? {
           line1: orderShippingAddress.line1 || "",
@@ -60,7 +60,7 @@ const sendOrderConfirmationEmail = async (orderId: string) => {
           postalCode: orderShippingAddress.postal_code || "",
           country: orderShippingAddress.country || "",
         }
-      : undefined;
+      : null;
 
     // Calculate estimated delivery (5 business days from now)
     const estimatedDate = new Date();
@@ -71,7 +71,7 @@ const sendOrderConfirmationEmail = async (orderId: string) => {
       day: "numeric",
     });
 
-    // Prepare email data
+    // Prepare email data with proper formatting
     const emailData = {
       templateId: "order-confirmation",
       to: order.customer_email || "",
@@ -85,17 +85,28 @@ const sendOrderConfirmationEmail = async (orderId: string) => {
             price: Number(item.product_price),
             quantity: item.quantity,
           })) || [],
-        subtotal: order.subtotal.toFixed(2),
-        shipping: (order.shipping_amount || 0).toFixed(2),
-        tax: (order.tax_amount || 0).toFixed(2),
-        total: order.total_amount.toFixed(2),
+        subtotal: Number(order.subtotal).toFixed(2),
+        shipping: Number(order.shipping_amount || 0).toFixed(2),
+        tax: Number(order.tax_amount || 0).toFixed(2),
+        total: Number(order.total_amount).toFixed(2),
         estimatedDelivery,
         shippingAddress,
-        storeUrl: "https://stylehub.com", // Replace with your actual domain
+        storeUrl: "https://thefolkproject.com", // Replace with your actual domain
         // trackingUrl will be added when order ships
       },
-      from: "info@thefolkproject.com",
+      from: "The Folk <info@thefolkproject.com>",
     };
+
+    console.log("Sending email with data:", {
+      ...emailData,
+      variables: {
+        ...emailData.variables,
+        items: `${emailData.variables.items.length} items`,
+        shippingAddress: emailData.variables.shippingAddress
+          ? "Present"
+          : "Missing",
+      },
+    });
 
     // Send email via resend function
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/resend`, {

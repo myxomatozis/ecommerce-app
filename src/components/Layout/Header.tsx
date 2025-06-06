@@ -56,7 +56,7 @@ const Header: React.FC = () => {
               to="/"
               className="text-xl font-medium text-neutral-900 hover:text-neutral-600 transition-colors duration-300"
             >
-              StyleHub
+              The Folk
             </Link>
           </div>
 

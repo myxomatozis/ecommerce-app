@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
           {/* Copyright */}
           <div className="text-center">
             <p className="text-gray-500 text-sm">
-              ©{currentYear} StyleHub. All rights reserved.
+              ©{currentYear} The Folk. All rights reserved.
             </p>
           </div>
         </div>

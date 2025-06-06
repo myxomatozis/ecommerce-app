@@ -245,7 +245,7 @@ const SuccessPage: React.FC = () => {
           </p>
           <div className="space-y-3">
             <a
-              href={`mailto:support@stylehub.com?subject=Order ${order.external_id}`}
+              href={`mailto:support@thefolkproject.com?subject=Order ${order.external_id}`}
               className="block text-gray-900 underline hover:no-underline transition-all"
             >
               Contact Support

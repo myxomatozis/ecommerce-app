@@ -127,7 +127,7 @@ const FAQPage: React.FC = () => {
       id: "general-1",
       question: "How can I contact customer service?",
       answer:
-        "You can reach us via email at hello@stylehub.com, phone at +1 (555) 123-4567, or through our contact form. Our team responds to emails within 24 hours during business days.",
+        "You can reach us via email at hello@thefolkproject.com, phone at +1 (555) 123-4567, or through our contact form. Our team responds to emails within 24 hours during business days.",
       category: "general",
     },
   ];
@@ -197,7 +197,7 @@ const FAQPage: React.FC = () => {
               Frequently Asked Questions
             </h1>
             <p className="text-lg text-gray-500">
-              Find answers to common questions about shopping with StyleHub
+              Find answers to common questions about shopping with The Folk
             </p>
           </div>
 
@@ -322,7 +322,7 @@ const FAQPage: React.FC = () => {
                   </Button>
                   <Button
                     as="a"
-                    href="mailto:hello@stylehub.com"
+                    href="mailto:hello@thefolkproject.com"
                     variant="outline"
                     size="md"
                   >

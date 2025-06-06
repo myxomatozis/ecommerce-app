@@ -6,7 +6,7 @@ import { Button, Input, Dropdown, Spinner, Badge } from "@/components/UI";
 import { ProductFilters } from "@/lib/supabase";
 
 const ProductsPage: React.FC = () => {
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { addToCart } = useCartStore();
   const {
     getProducts,
     loadMoreProducts,

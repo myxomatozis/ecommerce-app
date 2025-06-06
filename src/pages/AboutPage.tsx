@@ -60,7 +60,7 @@ const AboutPage: React.FC = () => {
           {/* Hero Section */}
           <div className="text-center space-y-6">
             <h1 className="text-3xl font-light text-gray-900">
-              About StyleHub
+              About The Folk
             </h1>
             <p className="text-lg text-gray-500 leading-relaxed">
               We believe style is personal, and everyone deserves access to
@@ -76,7 +76,7 @@ const AboutPage: React.FC = () => {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Founded in 2019, StyleHub began as a simple idea: to make
+                  Founded in 2019, The Folk began as a simple idea: to make
                   quality fashion accessible to everyone. What started as a
                   small online boutique has grown into a curated marketplace
                   featuring carefully selected pieces from emerging and
@@ -248,10 +248,10 @@ const AboutPage: React.FC = () => {
             </p>
             <div className="space-y-2">
               <a
-                href="mailto:hello@stylehub.com"
+                href="mailto:hello@thefolkproject.com"
                 className="block text-gray-900 hover:text-gray-700 transition-colors"
               >
-                hello@stylehub.com
+                hello@thefolkproject.com
               </a>
               <a
                 href="tel:+15551234567"

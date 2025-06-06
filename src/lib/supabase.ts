@@ -375,7 +375,7 @@ export class SupabaseAPI {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        templateId: "contact_form",
+        templateId: "contact-form",
         variables: formData,
       }),
     });

@@ -227,7 +227,7 @@ const LegalPage: React.FC = () => {
                         Acceptance of Terms
                       </h3>
                       <p>
-                        By accessing and using StyleHub's website and services,
+                        By accessing and using The Folk's website and services,
                         you accept and agree to be bound by the terms and
                         provision of this agreement. If you do not agree to
                         abide by the above, please do not use this service.
@@ -240,7 +240,7 @@ const LegalPage: React.FC = () => {
                       </h3>
                       <p className="mb-4">
                         Permission is granted to temporarily download one copy
-                        of StyleHub's materials for personal, non-commercial
+                        of The Folk's materials for personal, non-commercial
                         transitory viewing only. This is the grant of a license,
                         not a transfer of title, and under this license you may
                         not:
@@ -322,7 +322,7 @@ const LegalPage: React.FC = () => {
                         Limitation of Liability
                       </h3>
                       <p>
-                        StyleHub shall not be liable for any indirect,
+                        The Folk shall not be liable for any indirect,
                         incidental, special, consequential, or punitive damages,
                         including without limitation, loss of profits, data,
                         use, goodwill, or other intangible losses, resulting
@@ -375,7 +375,7 @@ const LegalPage: React.FC = () => {
                 </p>
                 <div className="space-y-2">
                   <p className="text-gray-600">
-                    <strong>Email:</strong> legal@stylehub.com
+                    <strong>Email:</strong> legal@thefolkproject.com
                   </p>
                   <p className="text-gray-600">
                     <strong>Address:</strong> 123 Fashion Street, New York, NY
@@ -388,7 +388,7 @@ const LegalPage: React.FC = () => {
                   </Button>
                   <Button
                     as="a"
-                    href="mailto:legal@stylehub.com"
+                    href="mailto:legal@thefolkproject.com"
                     variant="outline"
                     size="md"
                   >

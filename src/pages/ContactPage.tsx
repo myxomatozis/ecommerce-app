@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, MapPin, CheckCircle } from "lucide-react";
 import { Button, Input, Card, CardContent } from "@/components/UI";
 import SupabaseAPI from "@/lib/supabase";
+import { toast } from "@/utils/toast";
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -29,10 +30,15 @@ const ContactPage: React.FC = () => {
 
     setIsSubmitting(true);
 
-    await SupabaseAPI.submitContactForm(formData);
+    try {
+      await SupabaseAPI.submitContactForm(formData);
+      setSubmitted(true);
+    } catch (error) {
+      toast.error("Failed to submit contact form. Please try again later.");
+      console.error("Error submitting contact form:", error);
+    }
 
     setIsSubmitting(false);
-    setSubmitted(true);
   };
 
   const isFormValid =
@@ -189,10 +195,10 @@ const ContactPage: React.FC = () => {
                     <div>
                       <p className="font-medium text-gray-900 mb-1">Email</p>
                       <a
-                        href="mailto:hello@stylehub.com"
+                        href="mailto:hello@thefolkproject.com"
                         className="text-gray-600 hover:text-gray-900 transition-colors"
                       >
-                        hello@stylehub.com
+                        hello@thefolkproject.com
                       </a>
                     </div>
                   </div>

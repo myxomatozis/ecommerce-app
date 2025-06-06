@@ -27,7 +27,7 @@ type TemplateId = "order-confirmation" | "contact-form";
 
 type RequestBody = {
   templateId: TemplateId;
-  to: string | string[];
+  to?: string | string[];
   variables: TemplateData;
   from?: string;
   subject?: string;
@@ -47,7 +47,7 @@ const templateConfig = {
     dataProcessor: prepareContactFormData,
     getSubject: (vars: TemplateData) =>
       `Contact Form: ${vars.subject || "New Message"}`,
-    getDefaultTo: () => "hello@stylehub.com",
+    getDefaultTo: () => "info@thefolkproject.com",
   },
 } as const;
 
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     // Prepare email data
     const emailTo = to || config.getDefaultTo(variables);
     const emailSubject = subject || config.getSubject(variables);
-    const emailFrom = from || "StyleHub <hello@stylehub.com>";
+    const emailFrom = from || "The Folk <info@thefolkproject.com>";
 
     // Send email
     const result = await resend.emails.send({

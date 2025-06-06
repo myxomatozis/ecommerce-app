@@ -115,7 +115,7 @@ const NotFoundPage: React.FC = () => {
             Still can't find what you're looking for?
           </h3>
           <a
-            href="mailto:support@stylehub.com"
+            href="mailto:support@thefolkproject.com"
             className="text-gray-900 underline hover:no-underline transition-all"
           >
             Contact Support
