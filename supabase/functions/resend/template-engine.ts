@@ -61,109 +61,141 @@ export class TemplateEngine {
         .join("");
     });
   }
+
   private processIfBlocks(template: string, data: TemplateData): string {
     let result = template;
-    const maxIterations = 50;
+    let hasChanges = true;
     let iteration = 0;
+    const maxIterations = 50;
 
-    while (maxIterations > 0 && iteration < maxIterations) {
-      const originalResult = result;
-
-      // Simple approach: find and replace the first if block we encounter
-      const ifMatch = result.match(
-        /\{\{#if\s+([\w.]+)\}\}([\s\S]*?)\{\{\/if\}\}/
-      );
-
-      if (!ifMatch) {
-        // No more if blocks found
-        break;
-      }
-
-      const [fullMatch, condition, content] = ifMatch;
-
-      // Check if this content has nested if blocks
-      const hasNestedIf = /\{\{#if\s+[\w.]+\}\}/.test(content);
-
-      if (hasNestedIf) {
-        // Skip this block for now, it has nested content
-        // Replace it temporarily with a placeholder to avoid matching it again
-        const placeholder = `__TEMP_IF_${iteration}__`;
-        result = result.replace(fullMatch, placeholder);
-
-        // Process other blocks first
-        result = this.processIfBlocks(result, data);
-
-        // Restore the block and process it
-        result = result.replace(placeholder, fullMatch);
-
-        // Now process this block (its nested content should be resolved)
-        result = this.processSingleIfBlock(result, condition, content, data);
-      } else {
-        // No nested if blocks, safe to process
-        result = this.processSingleIfBlock(result, condition, content, data);
-      }
-
+    // Process from innermost to outermost if blocks
+    while (hasChanges && iteration < maxIterations) {
+      hasChanges = false;
       iteration++;
 
-      // Safety check: if no progress was made, break to avoid infinite loop
-      if (result === originalResult) {
-        console.warn("No progress made in template processing, breaking loop");
-        break;
+      // Find the first if block that doesn't contain nested if blocks
+      const matches = this.findInnermostIfBlocks(result);
+
+      for (const match of matches) {
+        const { fullMatch, condition, content } = match;
+        const value = this.getValue(condition.trim(), data);
+        const isTrue = this.isTruthy(value);
+
+        console.log(
+          `Processing condition: ${condition} = ${JSON.stringify(
+            value
+          )} (${isTrue})`
+        );
+
+        // Handle else blocks
+        const elseMatch = content.match(/^([\s\S]*?)\{\{else\}\}([\s\S]*)$/);
+        let replacement: string;
+
+        if (elseMatch) {
+          const [, ifContent, elseContent] = elseMatch;
+          replacement = isTrue ? ifContent : elseContent;
+        } else {
+          replacement = isTrue ? content : "";
+        }
+
+        result = result.replace(fullMatch, replacement);
+        hasChanges = true;
       }
     }
 
     if (iteration >= maxIterations) {
-      console.error(
-        "Template processing hit max iterations, possible infinite loop"
+      console.warn(
+        "Template processing hit max iterations, cleaning up remaining if blocks"
       );
-      // Clean up any remaining if blocks
+      // Clean up any remaining if blocks as fallback
       result = result.replace(/\{\{#if\s+[\w.]+\}\}[\s\S]*?\{\{\/if\}\}/g, "");
     }
 
     return result;
   }
 
-  private processSingleIfBlock(
-    template: string,
-    condition: string,
-    content: string,
-    data: TemplateData
-  ): string {
-    // Check for else block
-    const elseMatch = content.match(/^([\s\S]*?)\{\{else\}\}([\s\S]*)$/);
+  private findInnermostIfBlocks(template: string): Array<{
+    fullMatch: string;
+    condition: string;
+    content: string;
+  }> {
+    const matches: Array<{
+      fullMatch: string;
+      condition: string;
+      content: string;
+    }> = [];
 
-    let ifContent: string;
-    let elseContent: string;
+    const ifRegex = /\{\{#if\s+([\w.]+)\}\}/g;
+    let match;
 
-    if (elseMatch) {
-      ifContent = elseMatch[1];
-      elseContent = elseMatch[2];
-    } else {
-      ifContent = content;
-      elseContent = "";
+    while ((match = ifRegex.exec(template)) !== null) {
+      const startPos = match.index;
+      const condition = match[1];
+      const openTag = match[0];
+
+      // Find the matching closing tag
+      const result = this.findMatchingCloseTag(
+        template,
+        startPos + openTag.length
+      );
+      if (result) {
+        const { endPos, content } = result;
+        const fullMatch = template.substring(startPos, endPos);
+
+        // Check if this block contains nested if blocks
+        if (!this.containsNestedIfBlocks(content)) {
+          matches.push({
+            fullMatch,
+            condition,
+            content,
+          });
+        }
+      }
     }
 
-    const value = this.getValue(condition.trim(), data);
-    const isTrue = this.isTruthy(value);
+    return matches;
+  }
 
-    console.log(
-      `Processing condition: ${condition} = ${JSON.stringify(
-        value
-      )} (${isTrue})`
-    );
+  private findMatchingCloseTag(
+    template: string,
+    startPos: number
+  ): { endPos: number; content: string } | null {
+    let depth = 1;
+    let pos = startPos;
+    const content = [];
 
-    const replacement = isTrue ? ifContent : elseContent;
-    const fullPattern = new RegExp(
-      `\\{\\{#if\\s+${condition.replace(
-        /\./g,
-        "\\."
-      )}\\}\\}[\\s\\S]*?\\{\\{\\/if\\}\\}`,
-      "g"
-    );
+    while (pos < template.length && depth > 0) {
+      // Look for if and /if tags
+      const ifMatch = template.substring(pos).match(/^\{\{#if\s+[\w.]+\}\}/);
+      const endIfMatch = template.substring(pos).match(/^\{\{\/if\}\}/);
 
-    console.log("Replacing pattern:", fullPattern, "with:", replacement);
+      if (ifMatch) {
+        depth++;
+        content.push(ifMatch[0]);
+        pos += ifMatch[0].length;
+      } else if (endIfMatch) {
+        depth--;
+        if (depth === 0) {
+          // Found our closing tag
+          return {
+            endPos: pos + endIfMatch[0].length,
+            content: content.join(""),
+          };
+        } else {
+          content.push(endIfMatch[0]);
+          pos += endIfMatch[0].length;
+        }
+      } else {
+        content.push(template[pos]);
+        pos++;
+      }
+    }
 
-    return template.replace(fullPattern, replacement);
+    return null;
+  }
+
+  private containsNestedIfBlocks(content: string): boolean {
+    return /\{\{#if\s+[\w.]+\}\}/.test(content);
   }
 
   private processVariables(template: string, data: TemplateData): string {

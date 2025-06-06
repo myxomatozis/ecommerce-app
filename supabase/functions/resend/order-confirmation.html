@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Order Confirmation</title>
+    <title>Order Confirmation - The Folk</title>
     <style>
       /* Reset and base styles */
       * {
@@ -18,6 +18,7 @@
         line-height: 1.6;
         color: #171717;
         background-color: #fafafa;
+        font-size: 15px;
       }
 
       .container {
@@ -54,12 +55,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-
-      .success-check {
-        width: 28px;
-        height: 28px;
-        color: #404040;
       }
 
       .title {
@@ -114,7 +109,7 @@
       .order-item {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         padding: 16px 0;
         border-bottom: 1px solid #f5f5f5;
       }
@@ -144,6 +139,7 @@
         font-weight: 500;
         color: #171717;
         text-align: right;
+        margin-left: 16px;
       }
 
       .summary-row {
@@ -258,6 +254,16 @@
           display: block;
           margin: 8px 0;
         }
+
+        .order-item {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .item-price {
+          text-align: left;
+          margin-left: 0;
+        }
       }
     </style>
   </head>
@@ -273,15 +279,16 @@
         <!-- Success Icon -->
         <div class="success-icon">
           <svg
-            class="success-check"
+            width="28"
+            height="28"
             fill="none"
-            stroke="currentColor"
+            stroke="#404040"
             viewBox="0 0 24 24"
+            stroke-width="2"
           >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="2"
               d="M5 13l4 4L19 7"
             ></path>
           </svg>
@@ -350,9 +357,9 @@
             <h4>Shipping Address</h4>
             <p>
               {{shippingAddress.line1}}<br />
-              {{#if shippingAddress.line2}} {{shippingAddress.line2}}<br />
-              {{/if}} {{shippingAddress.city}}, {{shippingAddress.state}}
-              {{shippingAddress.postalCode}}<br />
+              {{#if shippingAddress.line2}}{{shippingAddress.line2}}<br />{{/if}}
+              {{shippingAddress.city}}{{#if shippingAddress.state}},
+              {{shippingAddress.state}}{{/if}} {{shippingAddress.postalCode}}<br />
               {{shippingAddress.country}}
             </p>
           </div>
