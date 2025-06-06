@@ -1,4 +1,4 @@
-# ModernStore - React Ecommerce App
+# The Folk - React Ecommerce App
 
 A modern, lightweight ecommerce application built with React, TypeScript, Tailwind CSS, and Supabase.
 

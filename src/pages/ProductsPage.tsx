@@ -385,7 +385,6 @@ const ProductsPage: React.FC = () => {
                           size="sm"
                           onClick={() => handleAddToCart(product.id)}
                           fullWidth
-                          className="bg-white text-neutral-900 hover:bg-neutral-100 shadow-soft"
                         >
                           Add to Cart
                         </Button>
