@@ -1,7 +1,7 @@
 // supabase/functions/resend/template-engine.ts
 // deno-lint-ignore-file no-explicit-any
 export interface TemplateData {
-  [key: string]: string | number | boolean;
+  [key: string]: any;
 }
 
 export class TemplateEngine {
@@ -160,6 +160,8 @@ export class TemplateEngine {
       )}\\}\\}[\\s\\S]*?\\{\\{\\/if\\}\\}`,
       "g"
     );
+
+    console.log("Replacing pattern:", fullPattern, "with:", replacement);
 
     return template.replace(fullPattern, replacement);
   }
