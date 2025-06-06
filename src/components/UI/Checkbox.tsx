@@ -9,8 +9,7 @@ export interface CheckboxProps
   helperText?: string;
   indeterminate?: boolean;
   size?: "sm" | "md" | "lg";
-  variant?: "default" | "filled" | "outlined";
-  color?: "primary" | "secondary" | "success" | "warning" | "danger";
+  variant?: "default" | "minimal" | "outlined";
   labelPosition?: "right" | "left";
   icon?: React.ReactNode;
 }
@@ -26,7 +25,6 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       indeterminate = false,
       size = "md",
       variant = "default",
-      color = "primary",
       labelPosition = "right",
       icon,
       id,
@@ -45,89 +43,64 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         icon: 12,
         label: "text-sm",
         description: "text-xs",
+        spacing: "space-x-2",
       },
       md: {
         checkbox: "w-5 h-5",
         icon: 14,
         label: "text-sm",
         description: "text-xs",
+        spacing: "space-x-3",
       },
       lg: {
         checkbox: "w-6 h-6",
         icon: 16,
         label: "text-base",
         description: "text-sm",
-      },
-    };
-
-    const colorClasses = {
-      primary: {
-        bg: "bg-primary-600 border-primary-600",
-        focus: "focus:ring-primary-500/20 focus:border-primary-600",
-        hover: "hover:border-primary-500",
-      },
-      secondary: {
-        bg: "bg-gray-600 border-gray-600",
-        focus: "focus:ring-gray-500/20 focus:border-gray-600",
-        hover: "hover:border-gray-500",
-      },
-      success: {
-        bg: "bg-green-600 border-green-600",
-        focus: "focus:ring-green-500/20 focus:border-green-600",
-        hover: "hover:border-green-500",
-      },
-      warning: {
-        bg: "bg-yellow-600 border-yellow-600",
-        focus: "focus:ring-yellow-500/20 focus:border-yellow-600",
-        hover: "hover:border-yellow-500",
-      },
-      danger: {
-        bg: "bg-red-600 border-red-600",
-        focus: "focus:ring-red-500/20 focus:border-red-600",
-        hover: "hover:border-red-500",
+        spacing: "space-x-3",
       },
     };
 
     const variantClasses = {
-      default: "border-2 rounded-md",
-      filled: "border-2 rounded-lg",
-      outlined: "border-2 rounded-md border-dashed",
+      default: "border border-neutral-300",
+      minimal: "border border-neutral-200",
+      outlined: "border border-neutral-300 border-dashed",
     };
 
     const getCheckboxClasses = () => {
-      const base = `${sizeClasses[size].checkbox} ${variantClasses[variant]} transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 appearance-none relative`;
+      const base = `${sizeClasses[size].checkbox} transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:ring-offset-1 appearance-none relative bg-white`;
 
       if (disabled) {
-        return `${base} bg-gray-100 border-gray-300 cursor-not-allowed opacity-60`;
+        return `${base} ${variantClasses[variant]} bg-neutral-50 border-neutral-200 cursor-not-allowed opacity-50`;
       }
 
       if (checked || indeterminate) {
-        return `${base} ${colorClasses[color].bg} ${colorClasses[color].focus} text-white`;
+        return `${base} bg-neutral-900 border-neutral-900 text-white shadow-minimal hover:bg-neutral-800`;
       }
 
-      return `${base} bg-white border-gray-300 ${colorClasses[color].focus} ${colorClasses[color].hover}`;
+      return `${base} ${variantClasses[variant]} hover:border-neutral-400 hover:shadow-minimal`;
     };
 
     const getLabelClasses = () => {
-      const base = `${sizeClasses[size].label} font-medium transition-colors duration-200`;
+      const base = `${sizeClasses[size].label} font-medium transition-colors duration-300`;
 
       if (disabled) {
-        return `${base} text-gray-400 cursor-not-allowed`;
+        return `${base} text-neutral-400 cursor-not-allowed`;
       }
 
-      return `${base} text-gray-900 cursor-pointer ${
-        error ? "text-red-700" : ""
+      return `${base} text-neutral-900 cursor-pointer ${
+        error ? "text-neutral-700" : ""
       }`;
     };
 
     const getDescriptionClasses = () => {
-      const base = `${sizeClasses[size].description} mt-1 transition-colors duration-200`;
+      const base = `${sizeClasses[size].description} mt-1 transition-colors duration-300`;
 
       if (disabled) {
-        return `${base} text-gray-400`;
+        return `${base} text-neutral-400`;
       }
 
-      return `${base} text-gray-600 ${error ? "text-red-600" : ""}`;
+      return `${base} text-neutral-600 ${error ? "text-neutral-600" : ""}`;
     };
 
     const renderContent = () => (
@@ -150,18 +123,13 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 {icon ? (
                   icon
                 ) : indeterminate ? (
-                  <Minus size={sizeClasses[size].icon} strokeWidth={3} />
+                  <Minus size={sizeClasses[size].icon} strokeWidth={2.5} />
                 ) : (
-                  <Check size={sizeClasses[size].icon} strokeWidth={3} />
+                  <Check size={sizeClasses[size].icon} strokeWidth={2.5} />
                 )}
               </div>
             ) : null}
           </div>
-
-          {/* Ripple effect on click */}
-          {!disabled && (
-            <div className="absolute inset-0 rounded-md transition-all duration-200 pointer-events-none opacity-0 bg-current scale-0 group-active:opacity-20 group-active:scale-150" />
-          )}
         </div>
 
         {(label || description) && (
@@ -182,7 +150,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <div className={`group ${className}`}>
         <div
-          className={`flex items-start space-x-3 ${
+          className={`flex items-start ${sizeClasses[size].spacing} ${
             labelPosition === "left" ? "flex-row-reverse space-x-reverse" : ""
           }`}
         >
@@ -192,7 +160,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         {(error || helperText) && (
           <div className="mt-2">
             {error && (
-              <p className="text-sm text-red-600 flex items-center">
+              <p className="text-sm text-neutral-700 flex items-center">
                 <svg
                   className="w-4 h-4 mr-1 flex-shrink-0"
                   fill="currentColor"
@@ -208,9 +176,9 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               </p>
             )}
             {helperText && !error && (
-              <p className="text-sm text-gray-500 flex items-start">
+              <p className="text-sm text-neutral-500 flex items-start">
                 <svg
-                  className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0 text-gray-400"
+                  className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0 text-neutral-400"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
