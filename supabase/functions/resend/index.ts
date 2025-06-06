@@ -1,10 +1,13 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
-// Setup type definitions for built-in Supabase Runtime APIs
+// supabase/functions/resend/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { Resend } from "resend";
+import {
+  TemplateEngine,
+  loadTemplate,
+  prepareOrderConfirmationData,
+  prepareContactFormData,
+  TemplateData,
+} from "./template-engine.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -20,52 +23,129 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+type TemplateId = "order-confirmation" | "contact-form";
+
 type RequestBody = {
-  templateId: "order_confirmation" | "contact_form";
-  variables: Record<string, string>;
+  templateId: TemplateId;
+  to: string | string[];
+  variables: TemplateData;
+  from?: string;
+  subject?: string;
 };
+
+// Template configuration
+const templateConfig = {
+  "order-confirmation": {
+    fileName: "order-confirmation",
+    dataProcessor: prepareOrderConfirmationData,
+    getSubject: (vars: TemplateData) =>
+      `Order Confirmation #${vars.orderNumber}`,
+    getDefaultTo: (vars: TemplateData) => vars.customerEmail,
+  },
+  "contact-form": {
+    fileName: "contact-form",
+    dataProcessor: prepareContactFormData,
+    getSubject: (vars: TemplateData) =>
+      `Contact Form: ${vars.subject || "New Message"}`,
+    getDefaultTo: () => "hello@stylehub.com",
+  },
+} as const;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-  const { templateId, variables }: RequestBody = await req.json();
 
-  if (templateId === "contact_form") {
-    try {
-      await resend.emails.send({
-        from: "The Folk Website <info@thefolkproject.com>",
-        to: ["info@thefolkproject.com"],
-        subject: "Contact Form Submission",
-        html: `<div>${Object.entries(variables)
-          .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
-          .join("<br>")}<div>`,
-      });
-    } catch (error) {
-      console.error("Error sending contact form email:", error);
+  try {
+    const { templateId, to, variables, from, subject }: RequestBody =
+      await req.json();
+
+    // Validate required fields
+    if (!templateId || !variables) {
       return new Response(
-        JSON.stringify({ error: "Failed to send contact form email" }),
+        JSON.stringify({
+          error: "Missing required fields: templateId, variables",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Get template configuration
+    const config = templateConfig[templateId];
+    if (!config) {
+      return new Response(
+        JSON.stringify({ error: `Unknown template: ${templateId}` }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Load HTML template
+    const htmlTemplate = await loadTemplate(config.fileName);
+
+    // Prepare template data
+    const templateData = config.dataProcessor(variables);
+
+    // Render template
+    const engine = new TemplateEngine(htmlTemplate);
+    const renderedHtml = engine.render(templateData);
+
+    // Prepare email data
+    const emailTo = to || config.getDefaultTo(variables);
+    const emailSubject = subject || config.getSubject(variables);
+    const emailFrom = from || "StyleHub <hello@stylehub.com>";
+
+    // Send email
+    const result = await resend.emails.send({
+      from: emailFrom,
+      to: Array.isArray(emailTo) ? emailTo : [emailTo as string],
+      subject: emailSubject,
+      html: renderedHtml,
+    });
+
+    if (result.error) {
+      console.error("Resend error:", result.error);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to send email",
+          details: result.error,
+        }),
         {
           status: 500,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
     }
+
+    console.log(`Email sent successfully: ${templateId} to ${emailTo}`);
+
+    return new Response(
+      JSON.stringify({
+        sent: true,
+        messageId: result.data?.id,
+        templateId,
+        to: emailTo,
+      }),
+      {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error) {
+    console.error("Error processing email request:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
-
-  return new Response(JSON.stringify({ sent: true }), {
-    headers: { "Content-Type": "application/json", ...corsHeaders },
-  });
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/resend' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/

@@ -16,6 +16,112 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
+const sendOrderConfirmationEmail = async (orderId: string) => {
+  try {
+    // Get order details
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
+      .single();
+
+    if (orderError || !order) {
+      console.error("Failed to fetch order for email:", orderError);
+      return;
+    }
+
+    // Get order items
+    const { data: orderItems, error: itemsError } = await supabase
+      .from("order_items")
+      .select("*")
+      .eq("order_id", orderId);
+
+    if (itemsError) {
+      console.error("Failed to fetch order items for email:", itemsError);
+      return;
+    }
+
+    const orderShippingAddress = order.shipping_address as {
+      line1: string;
+      line2?: string;
+      city: string;
+      state?: string;
+      postal_code: string;
+      country: string;
+    } | null;
+
+    // Format shipping address
+    const shippingAddress = orderShippingAddress
+      ? {
+          line1: orderShippingAddress.line1 || "",
+          line2: orderShippingAddress?.line2 || "",
+          city: orderShippingAddress.city || "",
+          state: orderShippingAddress?.state || "",
+          postalCode: orderShippingAddress.postal_code || "",
+          country: orderShippingAddress.country || "",
+        }
+      : undefined;
+
+    // Calculate estimated delivery (5 business days from now)
+    const estimatedDate = new Date();
+    estimatedDate.setDate(estimatedDate.getDate() + 7); // Add 7 days for weekend buffer
+    const estimatedDelivery = estimatedDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Prepare email data
+    const emailData = {
+      templateId: "order-confirmation",
+      to: order.customer_email || "",
+      variables: {
+        orderNumber: order.external_id || "",
+        customerName: order.customer_name || "Valued Customer",
+        customerEmail: order.customer_email || "",
+        items:
+          orderItems?.map((item) => ({
+            name: item.product_name,
+            price: Number(item.product_price),
+            quantity: item.quantity,
+          })) || [],
+        subtotal: order.subtotal.toFixed(2),
+        shipping: (order.shipping_amount || 0).toFixed(2),
+        tax: (order.tax_amount || 0).toFixed(2),
+        total: order.total_amount.toFixed(2),
+        estimatedDelivery,
+        shippingAddress,
+        storeUrl: "https://stylehub.com", // Replace with your actual domain
+        // trackingUrl will be added when order ships
+      },
+      from: "info@thefolkproject.com",
+    };
+
+    // Send email via resend function
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/resend`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.json();
+      console.error("Failed to send order confirmation email:", errorData);
+    } else {
+      const result = await emailResponse.json();
+      console.log(
+        "Order confirmation email sent successfully:",
+        result.messageId
+      );
+    }
+  } catch (error) {
+    console.error("Error sending order confirmation email:", error);
+  }
+};
+
 Deno.serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
@@ -120,7 +226,8 @@ Deno.serve(async (req) => {
             })
             .eq("id", orderId);
         }
-
+        // Send order confirmation email
+        await sendOrderConfirmationEmail(orderId);
         console.log(`Order created successfully: ${orderId}`);
         break;
       }
