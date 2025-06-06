@@ -57,7 +57,9 @@ const ProductDetailPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const currentCartQuantity = getCartItemQuantity(id || "");
+  const [currentCartQuantity, setCurrentCartQuantity] = useState(
+    getCartItemQuantity(id || "")
+  );
 
   const productImages = product
     ? product.images_gallery?.filter(Boolean) || []
@@ -120,6 +122,7 @@ const ProductDetailPage: React.FC = () => {
 
   const handleUpdateCartQuantity = (newQuantity: number) => {
     updateQuantity(product.id, newQuantity);
+    setCurrentCartQuantity(newQuantity);
   };
 
   const features = [
@@ -187,7 +190,10 @@ const ProductDetailPage: React.FC = () => {
             <>
               <span>/</span>
               <Link
-                to={`/products?category=${categorySlug}`}
+                to={{
+                  pathname: "/products",
+                  search: `?category=${categorySlug}`,
+                }}
                 className="hover:text-neutral-900 transition-colors"
               >
                 {product.category}
@@ -284,7 +290,7 @@ const ProductDetailPage: React.FC = () => {
               )}
 
               {/* Price */}
-              <div className="mb-6">
+              <div className="mb-6 flex items-center">
                 <span className="text-3xl font-light text-neutral-900">
                   ${product.price.toFixed(2)}
                 </span>
@@ -327,19 +333,22 @@ const ProductDetailPage: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-neutral-600">Quantity:</span>
                   <div className="flex items-center border border-neutral-200">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() =>
                         setSelectedQuantity(Math.max(1, selectedQuantity - 1))
                       }
                       disabled={selectedQuantity <= 1}
-                      className="p-2 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Minus size={14} />
-                    </button>
+                    </Button>
                     <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
                       {selectedQuantity}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() =>
                         setSelectedQuantity(
                           Math.min(
@@ -351,10 +360,9 @@ const ProductDetailPage: React.FC = () => {
                       disabled={
                         selectedQuantity >= (product?.stock_quantity || 0)
                       }
-                      className="p-2 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus size={14} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

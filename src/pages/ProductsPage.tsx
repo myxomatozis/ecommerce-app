@@ -249,7 +249,8 @@ const ProductsPage: React.FC = () => {
             <div className="flex-shrink-0">
               {products.length > 0 && (
                 <p className="text-sm text-neutral-600">
-                  {products.length} items on this page
+                  {products.length} {products.length === 1 ? "item" : "items"}{" "}
+                  on this page
                 </p>
               )}
             </div>
@@ -378,7 +379,6 @@ const ProductsPage: React.FC = () => {
                     animationDelay: `${(index % ITEMS_PER_PAGE) * 50}ms`,
                   }}
                 >
-                  {/* Product Image */}
                   <div className="aspect-[4/5] overflow-hidden bg-neutral-50 mb-4 relative">
                     <Link to={`/products/${product.id}`}>
                       <img
@@ -389,9 +389,9 @@ const ProductsPage: React.FC = () => {
                       />
                     </Link>
 
-                    {/* Quick Add Button */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300">
-                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    {/* Quick Add Button Overlay - Fixed with proper pointer events */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none">
+                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-auto">
                         <Button
                           variant="primary"
                           size="sm"

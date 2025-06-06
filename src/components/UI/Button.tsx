@@ -31,7 +31,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseClasses = `
-      inline-flex items-center justify-center font-medium 
+      inline-flex items-center justify-center font-medium cursor-pointer
       transition-all duration-300 focus:outline-none focus:ring-1 
       disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden
       border border-transparent
