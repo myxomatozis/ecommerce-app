@@ -26,6 +26,9 @@ const ProductsPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter states
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
+  );
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
@@ -38,12 +41,27 @@ const ProductsPage: React.FC = () => {
       : "name"
   );
 
+  // Debounced search effect
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchInput]);
+
   const ITEMS_PER_PAGE = 16;
 
   // Load categories on mount
   useEffect(() => {
     getCategories();
   }, [getCategories]);
+
+  // Initialize search input from URL params on first load
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    setSearchInput(urlSearch);
+  }, []); // Only run once on mount
 
   // Build current filters object
   const currentFilters = useMemo(
@@ -59,7 +77,7 @@ const ProductsPage: React.FC = () => {
 
   // Fetch products when filters change
   useEffect(() => {
-    fetchProducts(true);
+    loadProducts();
   }, [currentFilters]);
 
   // Update URL params when filters change
@@ -70,43 +88,33 @@ const ProductsPage: React.FC = () => {
     if (sortBy) params.set("sort", sortBy);
 
     setSearchParams(params);
-  }, [searchQuery, selectedCategory, setSearchParams]);
+  }, [searchQuery, selectedCategory, sortBy, setSearchParams]);
 
-  const fetchProducts = async (reset = false) => {
+  const loadProducts = async () => {
     try {
-      if (reset) {
-        setLoading(true);
-        const cached = await getProducts(currentFilters);
-        if (cached && cached.length > 0) {
-          setProducts(cached);
-          setLoading(false);
-        }
-      } else {
-        setLoadingMore(true);
-      }
-
-      const data = reset
-        ? await getProducts(currentFilters)
-        : await loadMoreProducts(currentFilters);
-
-      if (reset) {
-        setProducts(data);
-        setHasMore(data.length === ITEMS_PER_PAGE);
-      } else {
-        setProducts((prev) => [...prev, ...data]);
-        setHasMore(data.length === ITEMS_PER_PAGE);
-      }
+      setLoading(true);
+      const data = await getProducts(currentFilters);
+      setProducts(data);
+      setHasMore(data.length === ITEMS_PER_PAGE);
     } catch (err) {
       console.error("Failed to fetch products:", err);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchProducts(false);
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      const data = await loadMoreProducts(currentFilters);
+      setProducts((_prev) => data);
+      setHasMore(data.length === ITEMS_PER_PAGE);
+    } catch (err) {
+      console.error("Failed to load more products:", err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -134,6 +142,7 @@ const ProductsPage: React.FC = () => {
   ];
 
   const clearFilters = () => {
+    setSearchInput("");
     setSearchQuery("");
     setSelectedCategory("");
     setSortBy("name");
@@ -169,7 +178,7 @@ const ProductsPage: React.FC = () => {
               Unable to load products
             </h2>
             <p className="text-neutral-600 mb-8">{productsError}</p>
-            <Button onClick={() => fetchProducts(true)} variant="outline">
+            <Button onClick={loadProducts} variant="outline">
               Try Again
             </Button>
           </div>
@@ -180,42 +189,21 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Section */}
+      {/* Minimal Header */}
       <section className="border-b border-neutral-100">
-        <div className="container-modern py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-light text-neutral-900 mb-4">
-              All Products
-            </h1>
-            <p className="text-lg text-neutral-600 mb-8">
-              Discover our complete collection of carefully curated items
-            </p>
-
-            {/* Search Bar */}
-            <div className="max-w-lg mx-auto">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12 pl-12 pr-4 text-base border-neutral-200 focus:border-neutral-400"
-                  fullWidth
-                />
-                <Search
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-                />
-              </div>
-            </div>
+        <div className="container-modern py-8">
+          <div className="text-center">
+            <h1 className="text-xl font-medium text-neutral-900">Products</h1>
           </div>
         </div>
       </section>
 
-      <div className="container-modern py-12">
-        {/* Filters Section */}
+      <div className="container-modern py-8">
+        {/* Search & Filters Section */}
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
+          {/* Top Bar: Filters (Left), Search (Center), Count (Right) */}
+          <div className="flex items-center gap-4 mb-6">
+            {/* Left: Filter Controls */}
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -239,16 +227,37 @@ const ProductsPage: React.FC = () => {
               )}
             </div>
 
-            {products.length > 0 && (
-              <p className="text-sm text-neutral-600">
-                {products.length} products
-              </p>
-            )}
+            {/* Center: Search Bar */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative max-w-sm w-full">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="h-10 pl-10 pr-4 text-sm border-neutral-200 focus:border-neutral-400"
+                  fullWidth
+                />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                />
+              </div>
+            </div>
+
+            {/* Right: Product Count */}
+            <div className="flex-shrink-0">
+              {products.length > 0 && (
+                <p className="text-sm text-neutral-600">
+                  {products.length} items on this page
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Filter Controls */}
+          {/* Expandable Filter Controls */}
           {showFilters && (
-            <div className="bg-neutral-50 p-6 mb-8">
+            <div className="bg-neutral-50 p-6 mb-8 border border-neutral-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-neutral-900">
                   Filter Products
@@ -305,7 +314,10 @@ const ProductsPage: React.FC = () => {
                 <Badge
                   variant="outline"
                   removable
-                  onRemove={() => setSearchQuery("")}
+                  onRemove={() => {
+                    setSearchInput("");
+                    setSearchQuery("");
+                  }}
                 >
                   Search: {searchQuery}
                 </Badge>
@@ -372,7 +384,7 @@ const ProductsPage: React.FC = () => {
                       <img
                         src={product.image_url || "/placeholder.jpg"}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.02]"
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.02] cursor-pointer"
                         loading="lazy"
                       />
                     </Link>
