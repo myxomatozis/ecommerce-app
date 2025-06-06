@@ -15,7 +15,7 @@ interface ToastRendererProps {
 
 const ToastRenderer: React.FC<ToastRendererProps> = ({
   position = "top-right",
-  maxToasts = 5,
+  maxToasts = 3, // Reduced for cleaner appearance
 }) => {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
@@ -33,12 +33,12 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
   }, []);
 
   const positionClasses = {
-    "top-right": "top-20 right-4",
-    "top-left": "top-20 left-4",
-    "bottom-right": "bottom-4 right-4",
-    "bottom-left": "bottom-4 left-4",
-    "top-center": "top-4 left-1/2 -translate-x-1/2",
-    "bottom-center": "bottom-4 left-1/2 -translate-x-1/2",
+    "top-right": "top-22 right-6",
+    "top-left": "top-22 left-6",
+    "bottom-right": "bottom-6 right-6",
+    "bottom-left": "bottom-6 left-6",
+    "top-center": "top-6 left-1/2 -translate-x-1/2",
+    "bottom-center": "bottom-6 left-1/2 -translate-x-1/2",
   };
 
   const visibleToasts = toasts.slice(0, maxToasts);
@@ -47,7 +47,7 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
 
   return (
     <div
-      className={`fixed z-50 pointer-events-none ${positionClasses[position]}`}
+      className={`fixed z-50 pointer-events-none ${positionClasses[position]} max-w-sm w-full`}
       aria-live="polite"
       aria-label="Notifications"
     >
@@ -57,7 +57,7 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
             key={toast.id}
             id={toast.id}
             type={toast.type}
-            variant={toast.variant}
+            variant={toast.variant || "default"}
             title={toast.title}
             message={toast.message}
             duration={toast.duration}

@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { ShoppingBag, Search, Heart, User, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, X } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { Button } from "@/components/UI";
 import { IconCounter } from "../UI/Badge";
 
 const Header: React.FC = () => {
-  const cartSummary = useCartStore((state) => state.cartSummary);
-  const isCartOpen = useCartStore((state) => state.isCartOpen);
-  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
+  const { cartSummary, isCartOpen, setIsCartOpen } = useCartStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -35,7 +33,7 @@ const Header: React.FC = () => {
     );
   };
 
-  const buildUrl = (item: (typeof navigation)[0]) => {
+  const buildToOptions = (item: (typeof navigation)[0]) => {
     const params = new URLSearchParams();
 
     if (item.category) params.set("category", item.category);
@@ -43,7 +41,13 @@ const Header: React.FC = () => {
     if (item.sale) params.set("sale", item.sale);
 
     const queryString = params.toString();
-    return queryString ? `/products?${queryString}` : "/products";
+    if (queryString) {
+      return {
+        pathname: "/products",
+        search: `?${queryString}`,
+      };
+    }
+    return "/products";
   };
 
   return (
@@ -62,14 +66,13 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => {
+            {navigation.map((item, idx) => {
               const isItemActive = isActive(item);
-              const url = buildUrl(item);
+              const to = buildToOptions(item);
               return (
                 <Link
-                  key={`${item.name}-${url}`}
-                  to={url}
-                  reloadDocument={location.pathname === "/products"}
+                  key={`${item.name}-${idx}`}
+                  to={to}
                   className={`text-sm font-medium transition-colors duration-300 relative py-2 ${
                     isItemActive
                       ? "text-neutral-900"
@@ -99,16 +102,6 @@ const Header: React.FC = () => {
               <Search size={24} />
             </Button>
 
-            {/* Wishlist Icon */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 text-neutral-600 hover:text-neutral-900 h-9 w-9"
-              aria-label="Wishlist"
-            >
-              <Heart size={24} />
-            </Button>
-
             {/* Cart Icon */}
             <Button
               onClick={() => setIsCartOpen(!isCartOpen)}
@@ -124,16 +117,6 @@ const Header: React.FC = () => {
                 size="xs"
                 className="top-0 right-0"
               />
-            </Button>
-
-            {/* User Icon - Desktop only */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex p-2 text-neutral-600 hover:text-neutral-900 h-9 w-9"
-              aria-label="Account"
-            >
-              <User size={24} />
             </Button>
 
             {/* Mobile Menu Toggle */}
@@ -155,7 +138,7 @@ const Header: React.FC = () => {
             <nav className="space-y-1">
               {navigation.map((item) => {
                 const isItemActive = isActive(item);
-                const url = buildUrl(item);
+                const url = buildToOptions(item);
                 return (
                   <Link
                     key={`mobile-${item.name}-${url}`}

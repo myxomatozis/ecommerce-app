@@ -3,7 +3,7 @@ import React from "react";
 export interface ToastData {
   id: string;
   type?: "success" | "error" | "warning" | "info" | "loading";
-  variant?: "default" | "filled" | "minimal";
+  variant?: "default" | "minimal";
   title?: string | React.ReactNode;
   message: string | React.ReactNode;
   duration?: number;
@@ -31,20 +31,42 @@ class ToastManager {
 
   add(toast: Omit<ToastData, "id">) {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newToast: ToastData = { ...toast, id };
+    const newToast: ToastData = {
+      ...toast,
+      id,
+      variant: toast.variant || "default", // Default to clean minimal style
+    };
 
     this.toasts.push(newToast);
     this.notify();
 
-    // Auto-remove toast after duration (default 5000ms)
+    // Auto-remove toast after duration
     if (!toast.persistent) {
-      const duration = toast.duration || 5000;
+      const duration = toast.duration || this.getDefaultDuration(toast.type);
       setTimeout(() => {
         this.remove(id);
       }, duration);
     }
 
     return id;
+  }
+
+  private getDefaultDuration(type?: string) {
+    // Minimalistic approach - shorter durations for cleaner UX
+    switch (type) {
+      case "success":
+        return 3000;
+      case "error":
+        return 5000;
+      case "warning":
+        return 4000;
+      case "info":
+        return 3500;
+      case "loading":
+        return 0; // Loading toasts should be persistent by default
+      default:
+        return 4000;
+    }
   }
 
   remove(id: string) {
@@ -65,7 +87,7 @@ class ToastManager {
 // Global toast manager instance
 const toastManager = new ToastManager();
 
-// Pure functions for showing toasts
+// Clean, minimalistic toast functions
 export const toast = {
   success: (
     message: string | React.ReactNode,
@@ -76,7 +98,7 @@ export const toast = {
       type: "success",
       message,
       title,
-      duration: 4000,
+      variant: "default",
       ...options,
     });
   },
@@ -90,7 +112,7 @@ export const toast = {
       type: "error",
       message,
       title,
-      duration: 6000,
+      variant: "default",
       ...options,
     });
   },
@@ -104,7 +126,7 @@ export const toast = {
       type: "warning",
       message,
       title,
-      duration: 5000,
+      variant: "default",
       ...options,
     });
   },
@@ -118,7 +140,7 @@ export const toast = {
       type: "info",
       message,
       title,
-      duration: 4000,
+      variant: "default",
       ...options,
     });
   },
@@ -133,6 +155,21 @@ export const toast = {
       message,
       title,
       persistent: true,
+      variant: "default",
+      ...options,
+    });
+  },
+
+  // For ultra-clean minimal toasts
+  minimal: (
+    message: string | React.ReactNode,
+    type: "success" | "error" | "warning" | "info" = "info",
+    options?: Partial<ToastData>
+  ) => {
+    return toastManager.add({
+      type,
+      message,
+      variant: "minimal",
       ...options,
     });
   },

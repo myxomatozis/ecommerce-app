@@ -82,13 +82,10 @@ const ProductsPage: React.FC = () => {
 
   // Update URL params when filters change
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("search", searchQuery);
-    if (selectedCategory) params.set("category", selectedCategory);
-    if (sortBy) params.set("sort", sortBy);
-
-    setSearchParams(params);
-  }, [searchQuery, selectedCategory, sortBy, setSearchParams]);
+    if (searchQuery) searchParams.set("search", searchQuery);
+    if (selectedCategory) searchParams.set("category", selectedCategory);
+    if (sortBy) searchParams.set("sort", sortBy);
+  }, [searchQuery, selectedCategory, sortBy, searchParams]);
 
   const loadProducts = async () => {
     try {

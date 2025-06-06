@@ -22,7 +22,7 @@ import {
 import { Product, useAppData, useCartStore } from "@/stores";
 
 const ProductDetailPage: React.FC = () => {
-  const { getProduct, categories } = useAppData();
+  const { getProduct, categories, getCategories } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
@@ -40,6 +40,17 @@ const ProductDetailPage: React.FC = () => {
       .then((data) => {
         if (data) {
           setProduct(data);
+          if (categories.length === 0) {
+            getCategories().then((cat) => {
+              setCategorySlug(
+                cat.find((c) => c.name === data.category)?.slug || ""
+              );
+            });
+          } else {
+            setCategorySlug(
+              categories.find((c) => c.name === data.category)?.slug || ""
+            );
+          }
         } else {
           setProduct(null);
         }
@@ -56,6 +67,8 @@ const ProductDetailPage: React.FC = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const [categorySlug, setCategorySlug] = useState("");
 
   const [currentCartQuantity, setCurrentCartQuantity] = useState(
     getCartItemQuantity(id || "")
@@ -109,15 +122,12 @@ const ProductDetailPage: React.FC = () => {
     );
   }
 
-  const categorySlug = categories.find(
-    (cat) => cat.name === product.category
-  )?.slug;
-
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     await new Promise((resolve) => setTimeout(resolve, 600));
     addToCart(product.id, selectedQuantity);
     setIsAddingToCart(false);
+    setCurrentCartQuantity((prev) => prev + selectedQuantity);
   };
 
   const handleUpdateCartQuantity = (newQuantity: number) => {
@@ -389,28 +399,30 @@ const ProductDetailPage: React.FC = () => {
                       {currentCartQuantity} in cart
                     </span>
                     <div className="flex items-center space-x-2">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() =>
                           handleUpdateCartQuantity(currentCartQuantity - 1)
                         }
-                        className="p-1 hover:bg-neutral-100 transition-colors"
                       >
                         <Minus size={14} />
-                      </button>
+                      </Button>
                       <span className="font-medium text-neutral-900 min-w-[2rem] text-center text-sm">
                         {currentCartQuantity}
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() =>
                           handleUpdateCartQuantity(currentCartQuantity + 1)
                         }
                         disabled={
                           currentCartQuantity >= (product?.stock_quantity || 0)
                         }
-                        className="p-1 hover:bg-neutral-100 transition-colors disabled:opacity-50"
                       >
                         <Plus size={14} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
