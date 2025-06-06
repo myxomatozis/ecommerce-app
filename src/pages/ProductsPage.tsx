@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
@@ -18,74 +18,77 @@ const ProductsPage: React.FC = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Local UI state
+  // Simple local state - only for UI and data
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-
-  // Filter states
-  const [searchInput, setSearchInput] = useState(
-    searchParams.get("search") || ""
-  );
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || ""
-  );
-  const [sortBy, setSortBy] = useState<ProductFilters["sortBy"]>(
-    searchParams.get("sort")
-      ? (searchParams.get("sort") as ProductFilters["sortBy"])
-      : "name"
-  );
-
-  // Debounced search effect
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      setSearchQuery(searchInput);
-    }, 300);
-
-    return () => clearTimeout(debounceTimer);
-  }, [searchInput]);
+  const [searchInput, setSearchInput] = useState("");
 
   const ITEMS_PER_PAGE = 16;
+
+  // Derive all filter state from URL params - single source of truth
+  const currentFilters = useMemo((): ProductFilters => {
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+    const sort = searchParams.get("sort") || "name";
+
+    return {
+      categorySlug: category || undefined,
+      searchTerm: search || undefined,
+      sortBy: sort as ProductFilters["sortBy"],
+      limit: ITEMS_PER_PAGE,
+      offset: 0,
+    };
+  }, [searchParams]);
+
+  // Helper to update URL params
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value === null || value === "") {
+            newParams.delete(key);
+          } else {
+            newParams.set(key, value);
+          }
+        });
+
+        return newParams;
+      });
+    },
+    [setSearchParams]
+  );
+
+  // Initialize search input from URL on mount
+  useEffect(() => {
+    setSearchInput(searchParams.get("search") || "");
+  }, []); // Only run once
 
   // Load categories on mount
   useEffect(() => {
     getCategories();
   }, [getCategories]);
 
-  // Initialize search input from URL params on first load
+  // Debounced search effect
   useEffect(() => {
-    const urlSearch = searchParams.get("search") || "";
-    setSearchInput(urlSearch);
-  }, []); // Only run once on mount
+    const timeoutId = setTimeout(() => {
+      const currentSearch = searchParams.get("search") || "";
+      if (searchInput !== currentSearch) {
+        updateParams({ search: searchInput || null });
+      }
+    }, 300);
 
-  // Build current filters object
-  const currentFilters = useMemo(
-    (): ProductFilters => ({
-      categorySlug: selectedCategory || undefined,
-      searchTerm: searchQuery || undefined,
-      sortBy,
-      limit: ITEMS_PER_PAGE,
-      offset: 0,
-    }),
-    [selectedCategory, searchQuery, sortBy]
-  );
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, searchParams, updateParams]);
 
-  // Fetch products when filters change
+  // Single effect for data fetching when filters change
   useEffect(() => {
     loadProducts();
   }, [currentFilters]);
-
-  // Update URL params when filters change
-  useEffect(() => {
-    if (searchQuery) searchParams.set("search", searchQuery);
-    if (selectedCategory) searchParams.set("category", selectedCategory);
-    if (sortBy) searchParams.set("sort", sortBy);
-  }, [searchQuery, selectedCategory, sortBy, searchParams]);
 
   const loadProducts = async () => {
     try {
@@ -106,8 +109,8 @@ const ProductsPage: React.FC = () => {
     try {
       setLoadingMore(true);
       const data = await loadMoreProducts(currentFilters);
-      setProducts((_prev) => data);
-      setHasMore(data.length === ITEMS_PER_PAGE);
+      setProducts(data);
+      setHasMore(data.length > products.length);
     } catch (err) {
       console.error("Failed to load more products:", err);
     } finally {
@@ -123,6 +126,7 @@ const ProductsPage: React.FC = () => {
     }
   };
 
+  // Dropdown options
   const categoryOptions = useMemo(
     () => [
       { value: "", label: "All Categories" },
@@ -138,15 +142,26 @@ const ProductsPage: React.FC = () => {
     { value: "newest", label: "Newest" },
   ];
 
+  // Filter handlers
+  const handleCategoryChange = (category: string) => {
+    updateParams({ category: category || null });
+  };
+
+  const handleSortChange = (sort: string) => {
+    updateParams({ sort: sort === "name" ? null : sort });
+  };
+
   const clearFilters = () => {
     setSearchInput("");
-    setSearchQuery("");
-    setSelectedCategory("");
-    setSortBy("name");
+    updateParams({ search: null, category: null, sort: null });
     setShowFilters(false);
   };
 
-  const hasActiveFilters = searchQuery || selectedCategory || sortBy !== "name";
+  // Derived state
+  const hasActiveFilters =
+    currentFilters.searchTerm ||
+    currentFilters.categorySlug ||
+    currentFilters.sortBy !== "name";
 
   // Loading state
   if (loading && products.length === 0) {
@@ -198,7 +213,7 @@ const ProductsPage: React.FC = () => {
       <div className="container-modern py-8">
         {/* Search & Filters Section */}
         <div className="mb-12">
-          {/* Top Bar: Filters (Left), Search (Center), Count (Right) */}
+          {/* Top Bar */}
           <div className="flex items-center gap-4 mb-6">
             {/* Left: Filter Controls */}
             <div className="flex items-center gap-4">
@@ -246,8 +261,7 @@ const ProductsPage: React.FC = () => {
             <div className="flex-shrink-0">
               {products.length > 0 && (
                 <p className="text-sm text-neutral-600">
-                  {products.length} {products.length === 1 ? "item" : "items"}{" "}
-                  on this page
+                  {products.length} {products.length === 1 ? "item" : "items"}
                 </p>
               )}
             </div>
@@ -276,8 +290,8 @@ const ProductsPage: React.FC = () => {
                   </label>
                   <Dropdown
                     options={categoryOptions}
-                    value={selectedCategory}
-                    onChange={setSelectedCategory}
+                    value={currentFilters.categorySlug || ""}
+                    onChange={handleCategoryChange}
                     placeholder="All Categories"
                     disabled={categoriesLoading}
                     variant="bordered"
@@ -292,10 +306,8 @@ const ProductsPage: React.FC = () => {
                   </label>
                   <Dropdown
                     options={sortOptions}
-                    value={sortBy || "name"}
-                    onChange={(value) =>
-                      setSortBy(value as ProductFilters["sortBy"])
-                    }
+                    value={currentFilters.sortBy || "name"}
+                    onChange={handleSortChange}
                     variant="bordered"
                     size="sm"
                     fullWidth
@@ -308,35 +320,43 @@ const ProductsPage: React.FC = () => {
           {/* Active Filters */}
           {hasActiveFilters && (
             <div className="flex flex-wrap gap-2 mb-8">
-              {searchQuery && (
+              {currentFilters.searchTerm && (
                 <Badge
                   variant="outline"
                   removable
                   onRemove={() => {
                     setSearchInput("");
-                    setSearchQuery("");
+                    updateParams({ search: null });
                   }}
                 >
-                  Search: {searchQuery}
+                  Search: {currentFilters.searchTerm}
                 </Badge>
               )}
-              {selectedCategory && (
+              {currentFilters.categorySlug && (
                 <Badge
                   variant="outline"
                   removable
-                  onRemove={() => setSelectedCategory("")}
+                  onRemove={() => updateParams({ category: null })}
                 >
                   Category:{" "}
-                  {categories.find((c) => c.slug === selectedCategory)?.name}
+                  {
+                    categories.find(
+                      (c) => c.slug === currentFilters.categorySlug
+                    )?.name
+                  }
                 </Badge>
               )}
-              {sortBy !== "name" && (
+              {currentFilters.sortBy !== "name" && (
                 <Badge
                   variant="outline"
                   removable
-                  onRemove={() => setSortBy("name")}
+                  onRemove={() => updateParams({ sort: null })}
                 >
-                  Sort: {sortOptions.find((s) => s.value === sortBy)?.label}
+                  Sort:{" "}
+                  {
+                    sortOptions.find((s) => s.value === currentFilters.sortBy)
+                      ?.label
+                  }
                 </Badge>
               )}
             </div>
@@ -386,7 +406,7 @@ const ProductsPage: React.FC = () => {
                       />
                     </Link>
 
-                    {/* Quick Add Button Overlay - Fixed with proper pointer events */}
+                    {/* Quick Add Button Overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none">
                       <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-auto">
                         <Button

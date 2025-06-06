@@ -431,9 +431,6 @@ const ProductDetailPage: React.FC = () => {
 
             {/* Features */}
             <div className="border-t border-neutral-100 pt-8">
-              <h3 className="text-sm font-medium text-neutral-900 mb-4">
-                Product Details
-              </h3>
               <div className="space-y-3">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
