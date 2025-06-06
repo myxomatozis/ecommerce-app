@@ -169,37 +169,79 @@ export const ProductFormPage: React.FC = () => {
     }
   };
 
-  const uploadImage = async (file: File): Promise<string> => {
+  // Image upload function
+  const uploadImageFile = async (file: File): Promise<string> => {
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       throw new Error("File size must be less than 10MB");
     }
 
     const fileExt = file.name.split(".").pop()?.toLowerCase();
-    const allowedTypes = ["jpg", "jpeg", "png", "webp"];
+    const allowedTypes = ["jpg", "jpeg", "png", "webp", "gif"];
 
     if (!fileExt || !allowedTypes.includes(fileExt)) {
-      throw new Error("Only JPG, PNG, and WebP files are allowed");
+      throw new Error("Only JPG, PNG, WebP, and GIF files are allowed");
     }
 
-    const fileName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+    try {
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}.${fileExt}`;
+      const filePath = `products/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, file);
+      // Test if bucket is accessible by trying to get a public URL first
+      const { data: testData } = supabase.storage
+        .from("product-images")
+        .getPublicUrl("test");
 
-    if (uploadError) {
-      throw uploadError;
+      if (!testData.publicUrl) {
+        throw new Error(
+          "Storage bucket not accessible. Please ensure Supabase storage is properly configured."
+        );
+      }
+
+      // Attempt the actual upload
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+
+        // Common error messages and better user feedback
+        if (uploadError.message.includes("not found")) {
+          throw new Error(
+            "Storage bucket 'product-images' not found. Please create it in Supabase Storage."
+          );
+        } else if (uploadError.message.includes("policy")) {
+          throw new Error(
+            "Upload permissions not configured. Please set up storage policies for admin users."
+          );
+        } else if (uploadError.message.includes("already exists")) {
+          throw new Error(
+            "File with this name already exists. Please try again."
+          );
+        } else {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+      }
+
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      if (!data.publicUrl) {
+        throw new Error("Failed to get public URL for uploaded image");
+      }
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error("File upload error:", error);
+      throw error;
     }
-
-    const { data } = supabase.storage
-      .from("product-images")
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
   };
 
   const handleMainImageUpload = async (
@@ -208,18 +250,24 @@ export const ProductFormPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const uploadKey = "main";
+
     try {
-      setUploadingImages((prev) => ({ ...prev, main: true }));
-      const imageUrl = await uploadImage(file);
+      setUploadingImages((prev) => ({ ...prev, [uploadKey]: true }));
+      const imageUrl = await uploadImageFile(file);
       setFormData((prev) => ({ ...prev, image_url: imageUrl }));
       toast.success("Main image uploaded successfully");
     } catch (error) {
       console.error("Error uploading image:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload image"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to upload image";
+      toast.error(errorMessage);
     } finally {
-      setUploadingImages((prev) => ({ ...prev, main: false }));
+      setUploadingImages((prev) => ({ ...prev, [uploadKey]: false }));
+      // Clear the file input
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 
@@ -229,25 +277,55 @@ export const ProductFormPage: React.FC = () => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    const uploadKey = "gallery";
+
     try {
-      setUploadingImages((prev) => ({ ...prev, gallery: true }));
+      setUploadingImages((prev) => ({ ...prev, [uploadKey]: true }));
 
-      const uploadPromises = files.map((file) => uploadImage(file));
-      const imageUrls = await Promise.all(uploadPromises);
+      // Upload files sequentially to avoid overwhelming the storage
+      const imageUrls: string[] = [];
 
-      setFormData((prev) => ({
-        ...prev,
-        images_gallery: [...prev.images_gallery, ...imageUrls],
-      }));
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const imageUrl = await uploadImageFile(file);
+          imageUrls.push(imageUrl);
+        } catch (error) {
+          console.error(`Error uploading file ${i + 1} (${file.name}):`, error);
+          // Continue with other files, but show error for this one
+          toast.error(
+            `Failed to upload ${file.name}: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`
+          );
+        }
+      }
 
-      toast.success(`${imageUrls.length} image(s) uploaded successfully`);
+      if (imageUrls.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          images_gallery: [...prev.images_gallery, ...imageUrls],
+        }));
+
+        toast.success(
+          `${imageUrls.length} image(s) uploaded successfully${
+            imageUrls.length < files.length
+              ? ` (${files.length - imageUrls.length} failed)`
+              : ""
+          }`
+        );
+      }
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload images"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to upload images";
+      toast.error(errorMessage);
     } finally {
-      setUploadingImages((prev) => ({ ...prev, gallery: false }));
+      setUploadingImages((prev) => ({ ...prev, [uploadKey]: false }));
+      // Clear the file input
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 
@@ -498,58 +576,64 @@ export const ProductFormPage: React.FC = () => {
                 Main Image
               </label>
 
-              <div className="flex items-start space-x-6">
+              <div className="space-y-6">
                 {formData.image_url && (
-                  <div className="w-32 h-32 bg-neutral-100 rounded-lg overflow-hidden relative">
-                    <img
-                      src={formData.image_url}
-                      alt="Main product image"
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({ ...prev, image_url: "" }))
-                      }
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
+                  <div className="flex items-start space-x-6">
+                    <div className="w-32 h-32 bg-neutral-100 rounded-lg overflow-hidden relative">
+                      <img
+                        src={formData.image_url}
+                        alt="Main product image"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src =
+                            "https://via.placeholder.com/300x300?text=Image+Error";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, image_url: "" }))
+                        }
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                <div className="flex-1">
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleMainImageUpload}
-                      className="hidden"
-                      id="main-image-upload"
-                      disabled={uploadingImages.main}
-                    />
-                    <label
-                      htmlFor="main-image-upload"
-                      className="cursor-pointer block"
-                    >
-                      {uploadingImages.main ? (
-                        <Spinner size="sm" text="Uploading..." />
-                      ) : (
-                        <>
-                          <Upload
-                            size={32}
-                            className="mx-auto text-neutral-400 mb-2"
-                          />
-                          <p className="text-sm text-neutral-600">
-                            Click to upload main product image
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            JPG, PNG, WebP up to 10MB
-                          </p>
-                        </>
-                      )}
-                    </label>
-                  </div>
+                {/* File Upload */}
+                <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageUpload}
+                    className="hidden"
+                    id="main-image-upload"
+                    disabled={uploadingImages.main}
+                  />
+                  <label
+                    htmlFor="main-image-upload"
+                    className="cursor-pointer block"
+                  >
+                    {uploadingImages.main ? (
+                      <Spinner size="sm" text="Uploading..." />
+                    ) : (
+                      <>
+                        <Upload
+                          size={32}
+                          className="mx-auto text-neutral-400 mb-2"
+                        />
+                        <p className="text-sm text-neutral-600">
+                          Click to upload main product image
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          JPG, PNG, WebP, GIF up to 10MB
+                        </p>
+                      </>
+                    )}
+                  </label>
                 </div>
               </div>
             </div>
@@ -569,6 +653,11 @@ export const ProductFormPage: React.FC = () => {
                           src={imageUrl}
                           alt={`Gallery image ${index + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src =
+                              "https://via.placeholder.com/300x300?text=Image+Error";
+                          }}
                         />
                       </div>
                       <button
@@ -609,7 +698,8 @@ export const ProductFormPage: React.FC = () => {
                         Click to upload additional images
                       </p>
                       <p className="text-xs text-neutral-500 mt-1">
-                        Select multiple images. JPG, PNG, WebP up to 10MB each
+                        Select multiple images. JPG, PNG, WebP, GIF up to 10MB
+                        each
                       </p>
                     </>
                   )}
@@ -646,5 +736,3 @@ export const ProductFormPage: React.FC = () => {
     </div>
   );
 };
-
-export default ProductFormPage;

@@ -238,7 +238,7 @@ const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Image Thumbnails */}
-            {productImages.length > 1 && (
+            {productImages.length >= 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {productImages.map((image, index) => (
                   <button

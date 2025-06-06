@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -18,7 +18,9 @@ import { toast } from "@/utils/toast";
 export const AdminLayout: React.FC = () => {
   const { adminUser, signOut, isSuperAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Only include pages that actually exist
   const navigation = [
@@ -69,12 +71,31 @@ export const AdminLayout: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent multiple sign out attempts
+
     try {
+      setIsSigningOut(true);
+
+      // Show immediate feedback
+      toast.loading("Signing out...", undefined, {
+        duration: 0,
+        persistent: true,
+      });
+
       await signOut();
+
+      // Clear any existing toasts and show success
+      toast.clear();
       toast.success("Signed out successfully");
+
+      // Navigate to login page
+      navigate("/admin/login", { replace: true });
     } catch (error) {
-      toast.error("Error signing out");
       console.error("Sign out error:", error);
+      toast.clear();
+      toast.error("Error signing out. Please try again.");
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -85,13 +106,15 @@ export const AdminLayout: React.FC = () => {
     return location.pathname.startsWith(href);
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="h-screen flex bg-neutral-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
@@ -108,6 +131,7 @@ export const AdminLayout: React.FC = () => {
             <Link
               to="/"
               className="text-xl font-medium text-neutral-900 hover:text-neutral-600 transition-colors"
+              onClick={closeSidebar}
             >
               The Folk
             </Link>
@@ -130,7 +154,7 @@ export const AdminLayout: React.FC = () => {
                 size="sm"
                 leftIcon={<Plus size={14} />}
                 className="justify-start text-xs"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
               >
                 Add Product
               </Button>
@@ -141,7 +165,7 @@ export const AdminLayout: React.FC = () => {
                 size="sm"
                 leftIcon={<Eye size={14} />}
                 className="justify-start text-xs"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
               >
                 View Store
               </Button>
@@ -180,7 +204,7 @@ export const AdminLayout: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={closeSidebar}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive(item.href)
                       ? "bg-neutral-900 text-white"
@@ -222,8 +246,10 @@ export const AdminLayout: React.FC = () => {
                 fullWidth
                 leftIcon={<LogOut size={16} />}
                 className="justify-start text-neutral-600"
+                disabled={isSigningOut}
+                isLoading={isSigningOut}
               >
-                Sign Out
+                {isSigningOut ? "Signing out..." : "Sign Out"}
               </Button>
             </div>
           </div>
@@ -247,6 +273,7 @@ export const AdminLayout: React.FC = () => {
             variant="ghost"
             size="sm"
             className="lg:hidden"
+            disabled={isSigningOut}
           >
             <Menu size={20} />
           </Button>
