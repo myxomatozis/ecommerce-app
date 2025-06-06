@@ -122,6 +122,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    const existingCustomers = await stripe.customers.list({
+      email: customerInfo.email,
+      limit: 1,
+    });
+
+    let stripeCustomerId;
+    if (existingCustomers.data.length > 0) {
+      console.log(
+        `Found existing customer with email ${customerInfo.email}, using ID: ${existingCustomers.data[0].id}`
+      );
+      stripeCustomerId = existingCustomers.data[0].id;
+    }
+
     // Create Stripe checkout session
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -129,7 +142,6 @@ Deno.serve(async (req) => {
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
-      customer_email: customerInfo.email,
       metadata: {
         cart_session_id: sessionId,
       },
@@ -140,7 +152,9 @@ Deno.serve(async (req) => {
       phone_number_collection: {
         enabled: true,
       },
-      // customer_creation: "always",
+      ...(stripeCustomerId
+        ? { customer: stripeCustomerId }
+        : { customer_creation: "always", customer_email: customerInfo.email }),
     });
 
     return new Response(

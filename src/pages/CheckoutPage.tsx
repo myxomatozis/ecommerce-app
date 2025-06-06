@@ -4,6 +4,7 @@ import { ArrowLeft, Lock } from "lucide-react";
 import SupabaseAPI from "@/lib/supabase";
 import { useCartStore } from "@/stores";
 import { Checkbox } from "@/components/UI";
+import { toast } from "@/utils/toast";
 
 const CheckoutPage: React.FC = () => {
   const cartItems = useCartStore((state) => state.cartItems);
@@ -50,6 +51,9 @@ const CheckoutPage: React.FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       window.location.href = url;
     } catch (error) {
+      toast.error(
+        "An error occurred while processing your checkout. Please try again."
+      );
       console.error("Checkout error:", error);
     } finally {
       setIsProcessing(false);
