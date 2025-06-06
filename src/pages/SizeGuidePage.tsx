@@ -6,11 +6,11 @@ import {
   Button,
   Card,
   CardContent,
+  SizeTable,
   Tabs,
   TabsList,
   TabsPanel,
 } from "@/components/UI";
-import { SizeTable } from "@/components/SizeGuide";
 import {
   sizeCategories,
   womensShoes,
