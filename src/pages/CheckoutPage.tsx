@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Lock, CheckCircle } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import SupabaseAPI from "@/lib/supabase";
 import { useCartStore } from "@/stores";
 import { Checkbox } from "@/components/UI";
