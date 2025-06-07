@@ -1,13 +1,7 @@
 // src/pages/Admin/ProductFormPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  Upload,
-  X,
-  Image as ImageIcon,
-  AlertTriangle,
-} from "lucide-react";
+import { ArrowLeft, Upload, X, Image as ImageIcon } from "lucide-react";
 import {
   Button,
   Input,
@@ -42,7 +36,7 @@ interface Category {
 export const ProductFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isEditing = id !== "new" && Boolean(id);
+  const isEditing = id !== "new";
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -64,7 +58,6 @@ export const ProductFormPage: React.FC = () => {
   const [uploadingImages, setUploadingImages] = useState<
     Record<string, boolean>
   >({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadCategories();
@@ -78,7 +71,6 @@ export const ProductFormPage: React.FC = () => {
       const { data, error } = await supabase
         .from("categories")
         .select("id, name")
-        .eq("is_active", true)
         .order("name");
 
       if (error) throw error;
@@ -99,7 +91,6 @@ export const ProductFormPage: React.FC = () => {
         .single();
 
       if (error) throw error;
-      if (!data) throw new Error("Product not found");
 
       setFormData({
         name: data.name || "",
@@ -123,25 +114,6 @@ export const ProductFormPage: React.FC = () => {
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Product name is required";
-    }
-
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = "Valid price is required";
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = "Product description is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -151,11 +123,6 @@ export const ProductFormPage: React.FC = () => {
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
   };
 
   const handleDropdownChange = (name: string) => (value: string) => {
@@ -163,25 +130,10 @@ export const ProductFormPage: React.FC = () => {
       ...prev,
       [name]: value,
     }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
   };
 
   const uploadImage = async (file: File): Promise<string> => {
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      throw new Error("File size must be less than 10MB");
-    }
-
-    const fileExt = file.name.split(".").pop()?.toLowerCase();
-    const allowedTypes = ["jpg", "jpeg", "png", "webp"];
-
-    if (!fileExt || !allowedTypes.includes(fileExt)) {
-      throw new Error("Only JPG, PNG, and WebP files are allowed");
-    }
-
+    const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random()
       .toString(36)
       .substr(2, 9)}.${fileExt}`;
@@ -208,6 +160,11 @@ export const ProductFormPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
+
     try {
       setUploadingImages((prev) => ({ ...prev, main: true }));
       const imageUrl = await uploadImage(file);
@@ -215,9 +172,7 @@ export const ProductFormPage: React.FC = () => {
       toast.success("Main image uploaded successfully");
     } catch (error) {
       console.error("Error uploading image:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload image"
-      );
+      toast.error("Failed to upload image");
     } finally {
       setUploadingImages((prev) => ({ ...prev, main: false }));
     }
@@ -228,6 +183,14 @@ export const ProductFormPage: React.FC = () => {
   ) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
+
+    const invalidFiles = files.filter(
+      (file) => !file.type.startsWith("image/")
+    );
+    if (invalidFiles.length > 0) {
+      toast.error("Please select only valid image files");
+      return;
+    }
 
     try {
       setUploadingImages((prev) => ({ ...prev, gallery: true }));
@@ -240,12 +203,10 @@ export const ProductFormPage: React.FC = () => {
         images_gallery: [...prev.images_gallery, ...imageUrls],
       }));
 
-      toast.success(`${imageUrls.length} image(s) uploaded successfully`);
+      toast.success(`${imageUrls.length} images uploaded successfully`);
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload images"
-      );
+      toast.error("Failed to upload images");
     } finally {
       setUploadingImages((prev) => ({ ...prev, gallery: false }));
     }
@@ -261,8 +222,8 @@ export const ProductFormPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Please fix the errors before submitting");
+    if (!formData.name || !formData.price) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -270,42 +231,31 @@ export const ProductFormPage: React.FC = () => {
       setLoading(true);
 
       const productData = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        price: parseFloat(formData.price),
-        currency: formData.currency,
-        image_url: formData.image_url || null,
-        images_gallery:
-          formData.images_gallery.length > 0 ? formData.images_gallery : null,
-        stripe_price_id: formData.stripe_price_id.trim() || null,
-        stock_quantity: formData.stock_quantity
+        product_id: isEditing ? id : undefined,
+        product_name: formData.name,
+        product_description: formData.description || undefined,
+        product_price: parseFloat(formData.price),
+        product_currency: formData.currency,
+        product_image_url: formData.image_url || undefined,
+        product_images_gallery:
+          formData.images_gallery.length > 0
+            ? formData.images_gallery
+            : undefined,
+        product_stripe_price_id: formData.stripe_price_id || undefined,
+        product_stock_quantity: formData.stock_quantity
           ? parseInt(formData.stock_quantity)
-          : null,
-        category_id: formData.category_id || null,
-        is_active: formData.is_active,
-        metadata: formData.metadata,
+          : undefined,
+        product_category_id: formData.category_id || undefined,
+        product_is_active: formData.is_active,
+        product_metadata: formData.metadata,
       };
 
-      if (isEditing && id) {
-        // Update existing product
-        const { error } = await supabase
-          .from("products")
-          .update(productData)
-          .eq("id", id)
-          .select()
-          .single();
+      const { data: _productId, error } = await supabase.rpc(
+        "admin_upsert_product",
+        productData
+      );
 
-        if (error) throw error;
-      } else {
-        // Create new product
-        const { error } = await supabase
-          .from("products")
-          .insert(productData)
-          .select()
-          .single();
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast.success(
         isEditing
@@ -315,25 +265,21 @@ export const ProductFormPage: React.FC = () => {
       navigate("/admin/products");
     } catch (error) {
       console.error("Error saving product:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to save product. Please try again."
-      );
+      toast.error("Failed to save product");
     } finally {
       setLoading(false);
     }
   };
 
   const categoryOptions = [
-    { value: "", label: "Select Category (Optional)" },
+    { value: "", label: "Select Category" },
     ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
   ];
 
   const currencyOptions = [
-    { value: "USD", label: "USD - US Dollar" },
-    { value: "EUR", label: "EUR - Euro" },
-    { value: "GBP", label: "GBP - British Pound" },
+    { value: "USD", label: "USD" },
+    { value: "EUR", label: "EUR" },
+    { value: "GBP", label: "GBP" },
   ];
 
   if (initialLoading) {
@@ -386,13 +332,12 @@ export const ProductFormPage: React.FC = () => {
                   placeholder="Enter product name"
                   required
                   fullWidth
-                  error={errors.name}
                 />
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Description <span className="text-red-500">*</span>
+                  Description
                 </label>
                 <textarea
                   name="description"
@@ -400,17 +345,8 @@ export const ProductFormPage: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Enter product description"
                   rows={4}
-                  className={`w-full px-4 py-3 text-neutral-900 bg-white border rounded-lg placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-none ${
-                    errors.description ? "border-red-300" : "border-neutral-300"
-                  }`}
-                  required
+                  className="w-full px-4 py-3 text-neutral-900 bg-white border border-neutral-300 rounded-lg placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-none"
                 />
-                {errors.description && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <AlertTriangle size={16} className="mr-1" />
-                    {errors.description}
-                  </p>
-                )}
               </div>
 
               <Input
@@ -424,7 +360,6 @@ export const ProductFormPage: React.FC = () => {
                 placeholder="0.00"
                 required
                 fullWidth
-                error={errors.price}
               />
 
               <Dropdown
@@ -453,7 +388,6 @@ export const ProductFormPage: React.FC = () => {
                 value={formData.category_id}
                 onChange={handleDropdownChange("category_id")}
                 fullWidth
-                helperText="Optional - categorize your product"
               />
 
               <div className="md:col-span-2">
@@ -463,7 +397,7 @@ export const ProductFormPage: React.FC = () => {
                   value={formData.stripe_price_id}
                   onChange={handleInputChange}
                   placeholder="price_xxxxx"
-                  helperText="Optional: Stripe price ID for recurring products"
+                  helperText="Optional: Stripe price ID for subscription products"
                   fullWidth
                 />
               </div>
@@ -477,8 +411,8 @@ export const ProductFormPage: React.FC = () => {
                       is_active: e.target.checked,
                     }))
                   }
-                  label="Active Product"
-                  description="Product will be visible in the store when active"
+                  label="Active"
+                  description="Product will be visible in the store"
                 />
               </div>
             </div>
@@ -500,26 +434,17 @@ export const ProductFormPage: React.FC = () => {
 
               <div className="flex items-start space-x-6">
                 {formData.image_url && (
-                  <div className="w-32 h-32 bg-neutral-100 rounded-lg overflow-hidden relative">
+                  <div className="w-32 h-32 bg-neutral-100 rounded-lg overflow-hidden">
                     <img
                       src={formData.image_url}
                       alt="Main product image"
                       className="w-full h-full object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({ ...prev, image_url: "" }))
-                      }
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
                   </div>
                 )}
 
                 <div className="flex-1">
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
+                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
                     <input
                       type="file"
                       accept="image/*"
@@ -544,7 +469,7 @@ export const ProductFormPage: React.FC = () => {
                             Click to upload main product image
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            JPG, PNG, WebP up to 10MB
+                            JPG, PNG up to 10MB
                           </p>
                         </>
                       )}
@@ -557,7 +482,7 @@ export const ProductFormPage: React.FC = () => {
             {/* Gallery Images */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-4">
-                Additional Images ({formData.images_gallery.length})
+                Additional Images
               </label>
 
               {formData.images_gallery.length > 0 && (
@@ -583,7 +508,7 @@ export const ProductFormPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
+              <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
                 <input
                   type="file"
                   accept="image/*"
@@ -609,7 +534,7 @@ export const ProductFormPage: React.FC = () => {
                         Click to upload additional images
                       </p>
                       <p className="text-xs text-neutral-500 mt-1">
-                        Select multiple images. JPG, PNG, WebP up to 10MB each
+                        Select multiple images. JPG, PNG up to 10MB each
                       </p>
                     </>
                   )}
@@ -626,12 +551,7 @@ export const ProductFormPage: React.FC = () => {
           </Button>
 
           <div className="flex items-center space-x-3">
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={loading}
-              disabled={loading}
-            >
+            <Button type="submit" variant="primary" isLoading={loading}>
               {loading
                 ? isEditing
                   ? "Updating..."
