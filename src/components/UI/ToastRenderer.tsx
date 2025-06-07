@@ -33,8 +33,8 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
   }, []);
 
   const positionClasses = {
-    "top-right": "top-6 right-6",
-    "top-left": "top-6 left-6",
+    "top-right": "top-22 right-6",
+    "top-left": "top-22 left-6",
     "bottom-right": "bottom-6 right-6",
     "bottom-left": "bottom-6 left-6",
     "top-center": "top-6 left-1/2 -translate-x-1/2",
