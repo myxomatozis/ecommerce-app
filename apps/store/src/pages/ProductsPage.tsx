@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
-import { Button, Input, Dropdown, Spinner, Badge } from "@/components/UI";
 import { ProductFilters } from "@/lib/supabase";
 import { formatPrice } from "@/utils/currency";
 import { config } from "@/config";

@@ -12,16 +12,10 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import {
-  Button,
-  Badge,
-  Spinner,
-  CategoryBadge,
-  SizeGuideButton,
-} from "@/components/UI";
 import { Product, useAppData, useCartStore } from "@/stores";
 import { formatPrice, getCurrencySymbol } from "@/utils/currency";
 import { config } from "@/config";
+import { SizeGuideButton } from "@/components/SizeGuide";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct, categories, getCategories } = useAppData();

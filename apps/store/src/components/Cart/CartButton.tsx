@@ -1,7 +1,7 @@
 import { toast } from "@/utils/toast";
-import { Button } from "../UI";
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@thefolk/ui";
 
 const CartButton: FC = () => (
   <Button
