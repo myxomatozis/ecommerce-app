@@ -1,41 +1,36 @@
 {
-  "name": "@thefolk/root",
-  "version": "1.0.0",
+  "name": "modern-ecommerce",
   "private": true,
-  "description": "The Folk - Modern ecommerce platform",
-  "homepage": "https://thefolkproject.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourorg/thefolk.git"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "pnpm --filter \"@thefolk/*\" dev",
-    "dev:store": "pnpm --filter @thefolk/store dev",
-    "dev:admin": "pnpm --filter @thefolk/admin dev",
-    "dev:ui": "pnpm --filter @thefolk/ui dev",
-    "build": "pnpm --filter \"@thefolk/*\" build",
-    "build:store": "pnpm --filter @thefolk/store build",
-    "build:admin": "pnpm --filter @thefolk/admin build",
-    "build:ui": "pnpm --filter @thefolk/ui build",
-    "lint": "pnpm --filter \"@thefolk/*\" lint",
-    "type-check": "pnpm --filter \"@thefolk/*\" type-check",
-    "preview": "pnpm --filter \"@thefolk/*\" preview",
-    "clean": "pnpm --filter \"@thefolk/*\" clean",
-    "clean:deps": "pnpm --filter \"@thefolk/*\" clean:deps && rm -rf node_modules",
-    "reset": "pnpm clean:deps && pnpm install"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "update:db-types": "supabase gen types typescript --linked > types/database.types.ts"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^7.3.1",
+    "@supabase/supabase-js": "^2.49.10",
+    "lucide-react": "^0.513.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
-    "@types/node": "^22.15.30",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "packageManager": "pnpm@10.12.1"
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "@tailwindcss/vite": "^4.1.8",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "@vitejs/plugin-react": "^4.5.1",
+    "eslint": "^9.28.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
 }

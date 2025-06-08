@@ -3,6 +3,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Ruler, User, Shirt, Package } from "lucide-react";
 import {
+  Button,
+  Card,
+  CardContent,
+  SizeTable,
+  Tabs,
+  TabsList,
+  TabsPanel,
+} from "@/components/UI";
+import {
   sizeCategories,
   womensShoes,
   mensShoes,
