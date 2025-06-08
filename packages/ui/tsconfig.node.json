@@ -1,0 +1,3 @@
+{
+  "extends": "@thefolk/shared-config/typescript/node"
+}

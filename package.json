@@ -26,7 +26,8 @@
     "preview": "pnpm --filter \"@thefolk/*\" preview",
     "clean": "pnpm --filter \"@thefolk/*\" clean",
     "clean:deps": "pnpm --filter \"@thefolk/*\" clean:deps && rm -rf node_modules",
-    "reset": "pnpm clean:deps && pnpm install"
+    "reset": "pnpm clean:deps && pnpm install",
+    "update:db-types": "supabase gen types typescript --linked > packages/database-types/index.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
