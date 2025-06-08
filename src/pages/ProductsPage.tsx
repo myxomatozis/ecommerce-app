@@ -4,6 +4,8 @@ import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
 import { Button, Input, Dropdown, Spinner, Badge } from "@/components/UI";
 import { ProductFilters } from "@/lib/supabase";
+import { formatPrice } from "@/utils/currency";
+import { config } from "@/config";
 
 const ProductsPage: React.FC = () => {
   const { addToCart } = useCartStore();
@@ -431,7 +433,10 @@ const ProductsPage: React.FC = () => {
 
                     <div className="flex items-baseline justify-between">
                       <p className="text-lg font-medium text-neutral-900">
-                        ${product.price.toFixed(0)}
+                        {formatPrice(
+                          product.price,
+                          product.currency || config.storeCurrency
+                        )}
                       </p>
 
                       {product.category && (
@@ -446,7 +451,7 @@ const ProductsPage: React.FC = () => {
                     </div>
 
                     {/* Free shipping indicator */}
-                    {product.price > 50 && (
+                    {product.price > config.freeShippingThreshold && (
                       <p className="text-xs text-neutral-500">Free shipping</p>
                     )}
                   </div>

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Star, Award, Truck, RotateCcw } from "lucide-react";
 import { Button, Card, Badge } from "@/components/UI";
 import { Product, useAppData, useCartStore } from "@/stores";
+import { formatPrice, getCurrencySymbol } from "@/utils/currency";
+import { config } from "@/config";
 
 const HomePage: React.FC = () => {
   const { addToCart, loading } = useCartStore();
@@ -125,9 +127,9 @@ const HomePage: React.FC = () => {
                   <div className="flex items-center justify-between pt-2">
                     <div className="space-y-1">
                       <span className="text-xl font-medium text-neutral-900">
-                        ${product.price.toFixed(0)}
+                        {formatPrice(product.price, product.currency || "USD")}
                       </span>
-                      {product.price > 50 && (
+                      {product.price > config.freeShippingThreshold && (
                         <p className="text-xs text-neutral-500">
                           Free shipping
                         </p>
@@ -189,7 +191,9 @@ const HomePage: React.FC = () => {
                 Fast Shipping
               </h3>
               <p className="text-neutral-600 leading-relaxed">
-                Free shipping on orders over $50, delivered to your door
+                Free shipping on orders over
+                {getCurrencySymbol(config.storeCurrency)}
+                {config.freeShippingThreshold}, delivered to your door
               </p>
             </div>
 

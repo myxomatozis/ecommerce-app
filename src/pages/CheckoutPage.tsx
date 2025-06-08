@@ -5,6 +5,8 @@ import SupabaseAPI from "@/lib/supabase";
 import { useCartStore } from "@/stores";
 import { Checkbox } from "@/components/UI";
 import { toast } from "@/utils/toast";
+import { getCurrencySymbol } from "@/utils/currency";
+import { config } from "@/config";
 
 const CheckoutPage: React.FC = () => {
   const cartItems = useCartStore((state) => state.cartItems);
@@ -249,7 +251,8 @@ const CheckoutPage: React.FC = () => {
               {/* Free Shipping Notice */}
               {cartSummary.shipping > 0 && (
                 <div className="text-center text-sm text-gray-500 bg-gray-50 p-4 rounded">
-                  Add ${(100 - subtotal).toFixed(2)} more for free shipping
+                  Add {getCurrencySymbol(config.storeCurrency)}
+                  {(100 - subtotal).toFixed(2)} more for free shipping
                 </div>
               )}
 

@@ -22,16 +22,8 @@ export interface Category {
 
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 
-export interface CartItem {
-  cart_item_id: string;
-  product_id: string;
-  product_name: string;
-  product_price: number;
-  quantity: number;
-  total_price: number;
-  image_url: string | null;
-  stripe_price_id: string | null;
-}
+export type CartItem =
+  Database["public"]["Functions"]["get_cart_items"]["Returns"][number];
 
 export interface CartSummary {
   total_amount: number;

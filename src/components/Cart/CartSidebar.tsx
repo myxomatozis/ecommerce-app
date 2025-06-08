@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { X, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/stores";
+import { getCurrencySymbol } from "@/utils/currency";
+import { config } from "@/config";
 
 const CartSidebar: React.FC = () => {
   const {
@@ -152,7 +154,8 @@ const CartSidebar: React.FC = () => {
               {cartSummary.shipping > 0 && (
                 <div className="p-4 bg-gray-50 border-b border-gray-100">
                   <div className="text-center text-sm text-gray-600">
-                    Add ${(100 - subtotal).toFixed(2)} more for free shipping
+                    Add {getCurrencySymbol(config.storeCurrency)}
+                    {(100 - subtotal).toFixed(2)} more for free shipping
                   </div>
                 </div>
               )}

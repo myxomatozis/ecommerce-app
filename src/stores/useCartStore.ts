@@ -89,6 +89,8 @@ export const useCartStore = create<CartStore>()(
             await get().loadCartData(); // Refresh cart data
             if (product) {
               successAddToCartMessage({ productName: product.product_name });
+            } else {
+              successAddToCartMessage({ productName: "Item" });
             }
           } catch (err) {
             const errorMessage =

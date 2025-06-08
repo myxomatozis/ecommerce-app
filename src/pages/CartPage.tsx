@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Minus, X } from "lucide-react";
 import { useCartStore } from "@/stores";
+import { config } from "@/config";
+import { formatPrice } from "@/utils/currency";
 
 const CartPage: React.FC = () => {
   const cartItems = useCartStore((state) => state.cartItems);
@@ -110,7 +112,10 @@ const CartPage: React.FC = () => {
                       </h3>
                     </Link>
                     <p className="text-gray-500 text-sm mb-4">
-                      ${item.product_price.toFixed(2)}
+                      {formatPrice(
+                        item.product_price,
+                        item.product_currency || config.storeCurrency
+                      )}
                     </p>
 
                     {/* Quantity Controls */}
@@ -150,7 +155,7 @@ const CartPage: React.FC = () => {
 
                   <div className="text-right">
                     <p className="text-lg font-medium text-gray-900">
-                      ${item.total_price.toFixed(2)}
+                      {formatPrice(item.total_price)}
                     </p>
                   </div>
                 </div>
@@ -167,7 +172,7 @@ const CartPage: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${subtotal.toFixed(2)}</span>
+                  <span className="text-gray-900">{formatPrice(subtotal)}</span>
                 </div>
 
                 <div className="flex justify-between text-sm">
@@ -175,21 +180,21 @@ const CartPage: React.FC = () => {
                   <span className="text-gray-900">
                     {cartSummary.shipping === 0
                       ? "Free"
-                      : `$${cartSummary.shipping.toFixed(2)}`}
+                      : `${formatPrice(cartSummary.shipping)}`}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
                   <span className="text-gray-900">
-                    ${cartSummary.tax.toFixed(2)}
+                    {formatPrice(cartSummary.tax)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-medium pt-3 border-t border-gray-100">
                   <span className="text-gray-900">Total</span>
                   <span className="text-gray-900">
-                    ${cartSummary.total_amount.toFixed(2)}
+                    {formatPrice(cartSummary.total_amount)}
                   </span>
                 </div>
               </div>
@@ -197,7 +202,7 @@ const CartPage: React.FC = () => {
               {/* Free Shipping Notice */}
               {cartSummary.shipping > 0 && (
                 <div className="text-center text-sm text-gray-500 bg-gray-50 p-4 rounded">
-                  Add ${(100 - subtotal).toFixed(2)} more for free shipping
+                  Add {formatPrice(100 - subtotal)} more for free shipping
                 </div>
               )}
 

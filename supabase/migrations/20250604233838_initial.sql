@@ -784,7 +784,7 @@ $$;
 -- Name: get_cart_items(text); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.get_cart_items(session_id_param text) RETURNS TABLE(cart_item_id uuid, product_id uuid, product_name text, product_price numeric, quantity integer, total_price numeric, image_url text, stripe_price_id text)
+CREATE FUNCTION public.get_cart_items(session_id_param text) RETURNS TABLE(cart_item_id uuid, product_id uuid, product_name text, product_price numeric, product_currency text, quantity integer, total_price numeric, image_url text, stripe_price_id text)
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -794,6 +794,7 @@ BEGIN
     p.id,
     p.name,
     p.price,
+    p.currency,
     ci.quantity,
     (p.price * ci.quantity)::DECIMAL,
     p.image_url,

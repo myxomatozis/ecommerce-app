@@ -390,6 +390,7 @@ export type Database = {
           product_id: string
           product_name: string
           product_price: number
+          product_currency: string
           quantity: number
           total_price: number
           image_url: string
@@ -514,13 +515,13 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
+          category: string
+          rating: number
+          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
-          category: string
-          rating: number
-          reviews_count: number
         }[]
       }
       remove_cart_item: {

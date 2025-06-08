@@ -79,10 +79,12 @@ Deno.serve(async (req) => {
 
     const summary = cartSummary[0];
 
+    const currency = cartItems[0].product_currency.toLowerCase();
+
     // Create line items for Stripe
     const lineItems = cartItems.map((item) => ({
       price_data: {
-        currency: "usd",
+        currency: currency,
         product_data: {
           name: item.product_name,
           images: item.image_url ? [item.image_url] : [],
@@ -94,9 +96,10 @@ Deno.serve(async (req) => {
 
     // Add shipping as a line item if applicable
     if (summary.shipping > 0) {
+      const currency = cartItems[0].product_currency.toLowerCase();
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency: currency,
           product_data: {
             name: "Shipping",
             images: [], // You can add a shipping image if needed
@@ -111,7 +114,7 @@ Deno.serve(async (req) => {
     if (summary.tax > 0) {
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency: currency,
           product_data: {
             name: "Tax",
             images: [], // You can add a tax image if needed

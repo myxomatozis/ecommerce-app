@@ -20,6 +20,8 @@ import {
   SizeGuideButton,
 } from "@/components/UI";
 import { Product, useAppData, useCartStore } from "@/stores";
+import { formatPrice, getCurrencySymbol } from "@/utils/currency";
+import { config } from "@/config";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct, categories, getCategories } = useAppData();
@@ -140,10 +142,12 @@ const ProductDetailPage: React.FC = () => {
       icon: Truck,
       title: "Free Shipping",
       description:
-        product.price > 50
+        product.price > config.freeShippingThreshold
           ? "Free delivery on this item"
-          : `Add $${(50 - product.price).toFixed(2)} for free shipping`,
-      available: product.price > 50,
+          : `Add ${getCurrencySymbol(config.storeCurrency)}${(
+              config.freeShippingThreshold - product.price
+            ).toFixed(2)} for free shipping`,
+      available: product.price > config.freeShippingThreshold,
     },
     {
       icon: Shield,
@@ -302,9 +306,12 @@ const ProductDetailPage: React.FC = () => {
               {/* Price */}
               <div className="mb-6 flex items-center">
                 <span className="text-3xl font-light text-neutral-900">
-                  ${product.price.toFixed(2)}
+                  {formatPrice(
+                    product.price,
+                    product.currency || config.storeCurrency
+                  )}
                 </span>
-                {product.price > 50 && (
+                {product.price > config.freeShippingThreshold && (
                   <Badge variant="minimal" size="sm" className="ml-4">
                     Free shipping
                   </Badge>
