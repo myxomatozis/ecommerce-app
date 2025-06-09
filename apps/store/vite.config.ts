@@ -18,6 +18,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    assetsDir: "assets",
   },
   define: {
     "process.env": process.env,

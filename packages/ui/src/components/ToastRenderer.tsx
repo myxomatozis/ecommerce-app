@@ -24,15 +24,12 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
     const unsubscribe = toastManager.subscribe((newToasts) => {
       setToasts(newToasts);
     });
-    console.log("ToastRenderer mounted, current toasts:", toastManager.getToasts());
 
     // Initialize with current toasts
     const currentToasts = toastManager.getToasts();
     setToasts(currentToasts);
-    console.log("Initial toasts:", currentToasts);
 
     return () => {
-      console.log("ToastRenderer unmounted, unsubscribing");
       unsubscribe();
     };
   }, []);
