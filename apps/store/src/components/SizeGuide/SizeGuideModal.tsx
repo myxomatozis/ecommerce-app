@@ -49,7 +49,7 @@ const SizeGuideModal: React.FC<SizeGuideModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Size Guide"
-      size="lg"
+      size="xs"
       showCloseButton
     >
       <div className="space-y-8">

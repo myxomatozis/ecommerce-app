@@ -2,6 +2,15 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    // Mobile-first breakpoints with better xs handling
+    screens: {
+      xs: "475px", // Extra small devices
+      sm: "640px", // Small devices
+      md: "768px", // Medium devices
+      lg: "1024px", // Large devices
+      xl: "1280px", // Extra large devices
+      "2xl": "1536px", // 2X large devices
+    },
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -54,6 +63,24 @@ export default {
           danger: "#262626", // Very dark gray instead of red
           info: "#737373", // Medium gray instead of blue
         },
+      },
+      // Mobile-friendly max-width utilities
+      maxWidth: {
+        xs: "20rem", // 320px
+        sm: "24rem", // 384px
+        md: "28rem", // 448px
+        lg: "32rem", // 512px
+        xl: "36rem", // 576px
+        "2xl": "42rem", // 672px
+        "3xl": "48rem", // 768px
+        "4xl": "56rem", // 896px
+        "5xl": "64rem", // 1024px
+        "6xl": "72rem", // 1152px
+        "7xl": "80rem", // 1280px
+        // Mobile-specific sizes
+        "mobile-xs": "16rem", // 256px - very small modals
+        "mobile-sm": "18rem", // 288px - small modals
+        "mobile-md": "20rem", // 320px - medium modals
       },
       // Minimal border radius - very clean
       borderRadius: {

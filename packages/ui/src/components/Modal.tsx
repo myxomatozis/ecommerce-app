@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
+import { clsx } from "clsx";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ export interface ModalProps {
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
   footer?: React.ReactNode;
-  variant?: "default" | "centered" | "slide-over";
+  variant?: "default" | "centered" | "slide-over" | "minimal";
   className?: string;
   overlayClassName?: string;
 }
@@ -34,28 +35,67 @@ const Modal: React.FC<ModalProps> = ({
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const focusTrapRef = useRef<HTMLDivElement>(null);
 
-  // Size configurations
+  // Modern size configurations with proper mobile responsiveness
   const sizeClasses = {
-    xs: "max-w-xs",
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
+    xs: "max-w-[280px] sm:max-w-xs",
+    sm: "max-w-[320px] sm:max-w-sm",
+    md: "max-w-[90vw] sm:max-w-md",
+    lg: "max-w-[90vw] sm:max-w-lg",
+    xl: "max-w-[90vw] sm:max-w-xl",
+    "2xl": "max-w-[95vw] sm:max-w-2xl",
     full: "max-w-[95vw] max-h-[95vh]",
   };
 
-  // Variant configurations
+  // Modern variant configurations with mobile-first approach
   const variantClasses = {
-    default: "mx-4 my-8",
-    centered: "mx-4",
-    "slide-over": "ml-auto mr-0 my-0 h-full",
+    default: "mx-4 my-4 sm:mx-4 sm:my-8",
+    centered: "mx-4 my-4 sm:mx-4",
+    "slide-over": "ml-auto mr-0 my-0 h-full w-full max-w-[90vw] sm:max-w-md",
+    minimal: "mx-4 my-8 sm:mx-4 sm:my-16", // More white space for minimal variant
   };
 
   const containerClasses = {
-    default: "flex min-h-full items-center justify-center p-4",
-    centered: "flex min-h-full items-center justify-center p-4",
+    default: "flex min-h-full items-center justify-center p-4 sm:p-6",
+    centered: "flex min-h-full items-center justify-center p-4 sm:p-6",
     "slide-over": "flex min-h-full items-start justify-end",
+    minimal: "flex min-h-full items-center justify-center p-6 sm:p-8", // Extra padding for minimal
+  };
+
+  // Modal styling with 2025 trends - clean, minimal, purposeful
+  const getModalClasses = () => {
+    const baseClasses =
+      "relative transform transition-all duration-500 ease-out";
+
+    const variantSpecificClasses = {
+      default: clsx(
+        "bg-white shadow-2xl border border-neutral-100",
+        "rounded-none", // Following brutalist trend - no rounded corners
+        isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
+      ),
+      centered: clsx(
+        "bg-white shadow-2xl border border-neutral-100",
+        "rounded-none",
+        isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
+      ),
+      "slide-over": clsx(
+        "bg-white shadow-2xl border-l border-neutral-200",
+        "rounded-none h-full",
+        isOpen ? "translate-x-0" : "translate-x-full"
+      ),
+      minimal: clsx(
+        "bg-white shadow-sm border border-neutral-200",
+        "rounded-none", // Clean, geometric shape
+        isOpen ? "scale-100 opacity-100" : "scale-98 opacity-0"
+      ),
+    };
+
+    return clsx(
+      baseClasses,
+      sizeClasses[size],
+      variantClasses[variant],
+      variantSpecificClasses[variant],
+      className
+    );
   };
 
   // Handle escape key
@@ -78,15 +118,17 @@ const Modal: React.FC<ModalProps> = ({
     [closeOnOverlayClick, onClose]
   );
 
-  // Focus management
+  // Focus management and body scroll lock
   useEffect(() => {
     if (isOpen) {
-      // Store the previously focused element
+      // Store previously focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
 
-      // Prevent body scroll
+      // Modern scroll lock with proper scrollbar compensation
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = "var(--scrollbar-width, 0px)";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
 
       // Focus the modal
       if (modalRef.current) {
@@ -97,7 +139,7 @@ const Modal: React.FC<ModalProps> = ({
       document.addEventListener("keydown", handleEscape);
     } else {
       // Restore body scroll
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
       document.body.style.paddingRight = "";
 
       // Return focus to previously active element
@@ -108,7 +150,7 @@ const Modal: React.FC<ModalProps> = ({
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
       document.body.style.paddingRight = "";
     };
   }, [isOpen, handleEscape]);
@@ -141,22 +183,24 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  console.log("Size", sizeClasses[size]);
+
   return (
     <div
-      className={`
-        fixed inset-0 z-50 overflow-y-auto scrollbar-hide
-        ${overlayClassName}
-      `}
+      className={clsx("fixed inset-0 z-50 overflow-y-auto", overlayClassName)}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
     >
-      {/* Backdrop */}
+      {/* Modern backdrop with subtle blur */}
       <div
-        className={`
-          fixed inset-0 bg-black/50 backdrop-blur-sm transition-all duration-300 ease-out
-          ${isOpen ? "opacity-100" : "opacity-0"}
-        `}
+        className={clsx(
+          "fixed inset-0 backdrop-blur-sm transition-all duration-500 ease-out",
+          variant === "minimal"
+            ? "bg-neutral-900/20" // Lighter overlay for minimal variant
+            : "bg-neutral-900/30",
+          isOpen ? "opacity-100" : "opacity-0"
+        )}
         onClick={handleOverlayClick}
         aria-hidden="true"
       />
@@ -165,38 +209,31 @@ const Modal: React.FC<ModalProps> = ({
       <div className={containerClasses[variant]}>
         <div
           ref={focusTrapRef}
-          className={`
-            relative w-full transform transition-all duration-300 ease-out
-            ${sizeClasses[size]}
-            ${variantClasses[variant]}
-            ${
-              variant === "slide-over"
-                ? `
-                  bg-white shadow-2xl
-                  ${isOpen ? "translate-x-0" : "translate-x-full"}
-                `
-                : `
-                  bg-white rounded-2xl shadow-2xl
-                  ${isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"}
-                `
-            }
-            ${className}
-          `}
+          className={getModalClasses()}
           onKeyDown={handleTabKey}
         >
-          <div ref={modalRef} tabIndex={-1} className="focus:outline-none">
-            {/* Header */}
+          <div
+            ref={modalRef}
+            tabIndex={-1}
+            className="focus:outline-none h-full flex flex-col"
+          >
+            {/* Header - Modern typography following 2025 trends */}
             {(title || showCloseButton) && (
               <div
-                className={`
-                flex items-center justify-between p-6 
-                ${variant === "slide-over" ? "border-b border-gray-200" : ""}
-              `}
+                className={clsx(
+                  "flex items-center justify-between",
+                  variant === "minimal" ? "p-6 pb-0" : "p-6",
+                  variant === "slide-over" && "border-b border-neutral-100",
+                  variant === "minimal" && "border-b border-neutral-100"
+                )}
               >
                 {title && (
                   <h2
                     id="modal-title"
-                    className="text-xl font-semibold text-gray-900 pr-8"
+                    className={clsx(
+                      "font-medium text-neutral-900 pr-8 tracking-tight",
+                      variant === "minimal" ? "text-lg" : "text-xl"
+                    )}
                   >
                     {title}
                   </h2>
@@ -204,40 +241,44 @@ const Modal: React.FC<ModalProps> = ({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className={`
-                      p-2 -m-2 text-gray-400 hover:text-gray-600 
-                      transition-colors duration-200 rounded-lg hover:bg-gray-100
-                      focus:outline-none focus:ring-2 focus:ring-primary-500/20
-                      ${title ? "absolute top-4 right-4" : "ml-auto"}
-                    `}
+                    className={clsx(
+                      "p-2 -m-2 text-neutral-400 hover:text-neutral-900",
+                      "transition-colors duration-300",
+                      "hover:bg-neutral-50 focus:outline-none",
+                      "focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2",
+                      title ? "absolute top-4 right-4" : "ml-auto"
+                    )}
                     aria-label="Close modal"
                   >
-                    <X size={20} />
+                    <X size={20} strokeWidth={1.5} />
                   </button>
                 )}
               </div>
             )}
 
-            {/* Content */}
+            {/* Content - with proper spacing following white space trends */}
             <div
-              className={`
-              ${title || showCloseButton ? "" : "pt-6"} 
-              ${footer ? "pb-0" : "pb-6"} 
-              px-6 
-              ${variant === "slide-over" ? "flex-1 overflow-y-auto" : ""}
-            `}
+              className={clsx(
+                "flex-1 overflow-y-auto",
+                title || showCloseButton ? "" : "pt-6",
+                footer ? "pb-0" : "pb-6",
+                variant === "minimal" ? "px-6" : "px-6",
+                variant === "slide-over" && "min-h-0"
+              )}
             >
               {children}
             </div>
 
-            {/* Footer */}
+            {/* Footer - Clean, minimal design */}
             {footer && (
               <div
-                className={`
-                flex items-center justify-end gap-3 p-6 
-                border-t border-gray-100 bg-gray-50/50
-                ${variant === "slide-over" ? "" : "rounded-b-2xl"}
-              `}
+                className={clsx(
+                  "flex items-center justify-end gap-3 p-6 mt-auto",
+                  "border-t border-neutral-100",
+                  variant === "minimal"
+                    ? "bg-neutral-50/30"
+                    : "bg-neutral-50/50"
+                )}
               >
                 {footer}
               </div>
