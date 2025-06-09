@@ -35,30 +35,31 @@ const Modal: React.FC<ModalProps> = ({
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const focusTrapRef = useRef<HTMLDivElement>(null);
 
-  // Modern size configurations with proper mobile responsiveness
+  // Modern size configurations - using specific widths instead of w-full
   const sizeClasses = {
-    xs: "max-w-[280px] sm:max-w-xs",
-    sm: "max-w-[320px] sm:max-w-sm",
-    md: "max-w-[90vw] sm:max-w-md",
-    lg: "max-w-[90vw] sm:max-w-lg",
-    xl: "max-w-[90vw] sm:max-w-xl",
-    "2xl": "max-w-[95vw] sm:max-w-2xl",
-    full: "max-w-[95vw] max-h-[95vh]",
+    xs: "w-[280px] max-w-[90vw] sm:w-80", // 280px -> 320px
+    sm: "w-[320px] max-w-[90vw] sm:w-96", // 320px -> 384px
+    md: "w-[90vw] max-w-[90vw] sm:w-[448px] sm:max-w-md", // responsive -> 448px
+    lg: "w-[90vw] max-w-[90vw] sm:w-[512px] sm:max-w-lg", // responsive -> 512px
+    xl: "w-[90vw] max-w-[90vw] sm:w-[576px] sm:max-w-xl", // responsive -> 576px
+    "2xl": "w-[95vw] max-w-[95vw] sm:w-[672px] sm:max-w-2xl", // responsive -> 672px
+    full: "w-[95vw] max-w-[95vw] max-h-[95vh]", // nearly full screen
   };
 
   // Modern variant configurations with mobile-first approach
   const variantClasses = {
     default: "mx-4 my-4 sm:mx-4 sm:my-8",
     centered: "mx-4 my-4 sm:mx-4",
-    "slide-over": "ml-auto mr-0 my-0 h-full w-full max-w-[90vw] sm:max-w-md",
+    "slide-over":
+      "ml-auto mr-0 my-0 h-full w-[90vw] max-w-[90vw] sm:w-[448px] sm:max-w-md",
     minimal: "mx-4 my-8 sm:mx-4 sm:my-16", // More white space for minimal variant
   };
 
   const containerClasses = {
-    default: "flex min-h-full items-center justify-center p-4 sm:p-6",
-    centered: "flex min-h-full items-center justify-center p-4 sm:p-6",
-    "slide-over": "flex min-h-full items-start justify-end",
-    minimal: "flex min-h-full items-center justify-center p-6 sm:p-8", // Extra padding for minimal
+    default: "flex h-full items-center justify-center p-4 sm:p-6",
+    centered: "flex h-full items-center justify-center p-4 sm:p-6",
+    "slide-over": "flex h-full items-start justify-end",
+    minimal: "flex h-full items-center justify-center p-6 sm:p-8",
   };
 
   // Modal styling with 2025 trends - clean, minimal, purposeful
@@ -91,7 +92,8 @@ const Modal: React.FC<ModalProps> = ({
 
     return clsx(
       baseClasses,
-      sizeClasses[size],
+      // Only apply size classes for non-slide-over variants
+      variant !== "slide-over" && sizeClasses[size],
       variantClasses[variant],
       variantSpecificClasses[variant],
       className
@@ -183,8 +185,6 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  console.log("Size", sizeClasses[size]);
-
   return (
     <div
       className={clsx("fixed inset-0 z-50 overflow-y-auto", overlayClassName)}
@@ -245,7 +245,7 @@ const Modal: React.FC<ModalProps> = ({
                       "p-2 -m-2 text-neutral-400 hover:text-neutral-900",
                       "transition-colors duration-300",
                       "hover:bg-neutral-50 focus:outline-none",
-                      "focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2",
+                      "focus:ring-1 focus:ring-neutral-200 focus:ring-offset-1",
                       title ? "absolute top-4 right-4" : "ml-auto"
                     )}
                     aria-label="Close modal"
