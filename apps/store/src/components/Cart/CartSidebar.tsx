@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { X, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { config } from "@/config";
-import { getCurrencySymbol } from "@thefolk/utils";
+import { formatPrice } from "@thefolk/utils";
 
 const CartSidebar: React.FC = () => {
   const {
@@ -138,7 +138,7 @@ const CartSidebar: React.FC = () => {
 
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        ${item.total_price.toFixed(2)}
+                        {formatPrice(item.total_price, config.storeCurrency)}
                       </p>
                     </div>
                   </div>
@@ -154,8 +154,9 @@ const CartSidebar: React.FC = () => {
               {cartSummary.shipping > 0 && (
                 <div className="p-4 bg-gray-50 border-b border-gray-100">
                   <div className="text-center text-sm text-gray-600">
-                    Add {getCurrencySymbol(config.storeCurrency)}
-                    {(100 - subtotal).toFixed(2)} more for free shipping
+                    Add
+                    {formatPrice(100 - subtotal, config.storeCurrency)} more for
+                    free shipping
                   </div>
                 </div>
               )}
@@ -174,27 +175,33 @@ const CartSidebar: React.FC = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-900">
-                      ${subtotal.toFixed(2)}
+                      {formatPrice(subtotal, config.storeCurrency)}
                     </span>
                   </div>
                   {cartSummary.shipping > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Shipping</span>
                       <span className="text-gray-900">
-                        ${cartSummary.shipping.toFixed(2)}
+                        {formatPrice(
+                          cartSummary.shipping,
+                          config.storeCurrency
+                        )}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
                     <span className="text-gray-900">
-                      ${cartSummary.tax.toFixed(2)}
+                      {formatPrice(cartSummary.tax, config.storeCurrency)}
                     </span>
                   </div>
                   <div className="flex justify-between text-base font-medium pt-2 border-t border-gray-100">
                     <span className="text-gray-900">Total</span>
                     <span className="text-gray-900">
-                      ${cartSummary.total_amount.toFixed(2)}
+                      {formatPrice(
+                        cartSummary.total_amount,
+                        config.storeCurrency
+                      )}
                     </span>
                   </div>
                 </div>
