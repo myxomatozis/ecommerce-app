@@ -95,16 +95,14 @@ const HomePage: React.FC = () => {
                   {/* Rating Badge */}
                   {product.rating && (
                     <div className="absolute top-4 left-4">
-                      <Badge
-                        variant="default"
-                        size="sm"
-                        className="bg-white/90 backdrop-blur-sm text-neutral-900 border-none shadow-soft"
-                      >
-                        <Star
-                          size={12}
-                          className="text-neutral-600 fill-current mr-1"
-                        />
-                        {product.rating.toFixed(1)}
+                      <Badge variant="default" size="sm">
+                        <div className="flex items-center text-xs text-neutral-900 mr-1 ml-1">
+                          <Star
+                            size={12}
+                            className="text-neutral-600 fill-current mr-1"
+                          />
+                          {product.rating.toFixed(1)}
+                        </div>
                       </Badge>
                     </div>
                   )}

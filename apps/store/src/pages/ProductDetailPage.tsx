@@ -12,7 +12,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { Button, Badge, Spinner, CategoryBadge } from "@thefolk/ui";
+import { Button, Spinner, CategoryBadge, StatusBadge } from "@thefolk/ui";
 import { Product, useAppData, useCartStore } from "@/stores";
 import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
@@ -299,7 +299,7 @@ const ProductDetailPage: React.FC = () => {
               )}
 
               {/* Price */}
-              <div className="mb-6 flex items-center">
+              <div className="mb-6 flex items-center space-x-4">
                 <span className="text-3xl font-light text-neutral-900">
                   {formatPrice(
                     product.price,
@@ -307,9 +307,7 @@ const ProductDetailPage: React.FC = () => {
                   )}
                 </span>
                 {product.price > config.freeShippingThreshold && (
-                  <Badge variant="minimal" size="sm" className="ml-4">
-                    Free shipping
-                  </Badge>
+                  <StatusBadge status={"active"}>Free shipping</StatusBadge>
                 )}
               </div>
             </div>

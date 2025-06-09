@@ -2,7 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
-import { Button, Input, Dropdown, Spinner, Badge } from "@thefolk/ui";
+import {
+  Button,
+  Input,
+  Dropdown,
+  Spinner,
+  Badge,
+  CategoryBadge,
+} from "@thefolk/ui";
 import { ProductFilters } from "@/lib/supabase";
 import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";
@@ -440,13 +447,7 @@ const ProductsPage: React.FC = () => {
                       </p>
 
                       {product.category && (
-                        <Badge
-                          variant="minimal"
-                          size="xs"
-                          className="text-neutral-500"
-                        >
-                          {product.category}
-                        </Badge>
+                        <CategoryBadge category={product.category} />
                       )}
                     </div>
 

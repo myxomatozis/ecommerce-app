@@ -155,7 +155,10 @@ const CartPage: React.FC = () => {
 
                   <div className="text-right">
                     <p className="text-lg font-medium text-gray-900">
-                      {formatPrice(item.total_price)}
+                      {formatPrice(
+                        item.total_price,
+                        item.product_currency || config.storeCurrency
+                      )}
                     </p>
                   </div>
                 </div>
@@ -172,7 +175,9 @@ const CartPage: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">{formatPrice(subtotal)}</span>
+                  <span className="text-gray-900">
+                    {formatPrice(subtotal, config.storeCurrency)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
@@ -180,21 +185,24 @@ const CartPage: React.FC = () => {
                   <span className="text-gray-900">
                     {cartSummary.shipping === 0
                       ? "Free"
-                      : `${formatPrice(cartSummary.shipping)}`}
+                      : formatPrice(cartSummary.shipping, config.storeCurrency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
                   <span className="text-gray-900">
-                    {formatPrice(cartSummary.tax)}
+                    {formatPrice(cartSummary.tax, config.storeCurrency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-medium pt-3 border-t border-gray-100">
                   <span className="text-gray-900">Total</span>
                   <span className="text-gray-900">
-                    {formatPrice(cartSummary.total_amount)}
+                    {formatPrice(
+                      cartSummary.total_amount,
+                      config.storeCurrency
+                    )}
                   </span>
                 </div>
               </div>
@@ -202,7 +210,8 @@ const CartPage: React.FC = () => {
               {/* Free Shipping Notice */}
               {cartSummary.shipping > 0 && (
                 <div className="text-center text-sm text-gray-500 bg-gray-50 p-4 rounded">
-                  Add {formatPrice(100 - subtotal)} more for free shipping
+                  Add {formatPrice(100 - subtotal, config.storeCurrency)} more
+                  for free shipping
                 </div>
               )}
 

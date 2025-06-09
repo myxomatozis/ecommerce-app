@@ -1,17 +1,15 @@
 import React, { HTMLAttributes } from "react";
+import { clsx } from "clsx";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?:
     | "default"
     | "primary"
     | "secondary"
-    | "success"
-    | "warning"
-    | "danger"
-    | "info"
     | "outline"
     | "minimal"
-    | "counter"; // New counter variant for icon overlays
+    | "counter"
+    | "neutral"; // New neutral variant for 2025 minimalism
   size?: "xs" | "sm" | "md" | "lg";
   dot?: boolean;
   icon?: React.ReactNode;
@@ -30,49 +28,78 @@ const Badge: React.FC<BadgeProps> = ({
   onRemove,
   ...props
 }) => {
-  const baseClasses = `
-    inline-flex items-center justify-center font-medium 
-    transition-all duration-300 ease-out
-    ${!dot ? "whitespace-nowrap" : ""}
-  `;
+  // Base classes following 2025 minimalist principles
+  const baseClasses = clsx(
+    "inline-flex items-center justify-center font-medium",
+    "transition-all duration-300 ease-out",
+    "border", // Always include border for consistent structure
+    !dot && "whitespace-nowrap"
+  );
 
+  // Modern variant classes - neutral palette following 2025 trends
   const variantClasses = {
-    default: "bg-neutral-100 text-neutral-800 border border-neutral-200",
-    primary: "bg-neutral-900 text-white border border-neutral-900",
-    secondary: "bg-neutral-200 text-neutral-700 border border-neutral-300",
-    success: "bg-neutral-800 text-neutral-100 border border-neutral-800", // Dark gray instead of green
-    warning: "bg-neutral-600 text-neutral-100 border border-neutral-600", // Medium gray instead of yellow
-    danger: "bg-neutral-700 text-neutral-100 border border-neutral-700", // Dark gray instead of red
-    info: "bg-neutral-500 text-white border border-neutral-500", // Medium gray instead of blue
-    outline:
-      "bg-transparent border border-neutral-300 text-neutral-700 hover:bg-neutral-50",
-    minimal: "bg-neutral-50 text-neutral-600 border border-transparent",
-    counter: "bg-neutral-900 text-white border-none rounded-full", // Special counter style
+    default: clsx(
+      "bg-neutral-50 text-neutral-700",
+      "border-neutral-200",
+      "hover:bg-neutral-100 hover:border-neutral-300"
+    ),
+    primary: clsx(
+      "bg-neutral-900 text-white",
+      "border-neutral-900",
+      "hover:bg-neutral-800 hover:border-neutral-800"
+    ),
+    secondary: clsx(
+      "bg-neutral-100 text-neutral-800",
+      "border-neutral-200",
+      "hover:bg-neutral-200 hover:border-neutral-300"
+    ),
+    outline: clsx(
+      "bg-transparent text-neutral-700",
+      "border-neutral-300",
+      "hover:bg-neutral-50 hover:border-neutral-400"
+    ),
+    minimal: clsx(
+      "bg-transparent text-neutral-600",
+      "border-transparent",
+      "hover:text-neutral-800"
+    ),
+    counter: clsx(
+      "bg-neutral-900 text-white",
+      "border-neutral-900 rounded-full",
+      "shadow-sm"
+    ),
+    neutral: clsx(
+      "bg-neutral-200 text-neutral-700",
+      "border-neutral-200",
+      "hover:bg-neutral-300"
+    ),
   };
 
+  // Size classes - refined for modern proportions
   const sizeClasses = {
     xs: dot
       ? "w-1.5 h-1.5"
       : variant === "counter"
-        ? "w-4 h-4 text-[10px] min-w-[1rem]"
-        : "px-2 py-0.5 text-xs min-h-[1.25rem]",
+        ? "w-4 h-4 text-[10px] min-w-[1rem] leading-none"
+        : "px-2 py-0.5 text-xs h-5 leading-tight",
     sm: dot
       ? "w-2 h-2"
       : variant === "counter"
-        ? "w-5 h-5 text-xs min-w-[1.25rem]"
-        : "px-2.5 py-1 text-xs min-h-[1.5rem]",
+        ? "w-5 h-5 text-xs min-w-[1.25rem] leading-none"
+        : "px-2.5 py-1 text-xs h-6 leading-tight",
     md: dot
       ? "w-2.5 h-2.5"
       : variant === "counter"
-        ? "w-6 h-6 text-xs min-w-[1.5rem]"
-        : "px-3 py-1 text-sm min-h-[1.75rem]",
+        ? "w-6 h-6 text-xs min-w-[1.5rem] leading-none"
+        : "px-3 py-1 text-sm h-7 leading-tight",
     lg: dot
       ? "w-3 h-3"
       : variant === "counter"
-        ? "w-7 h-7 text-sm min-w-[1.75rem]"
-        : "px-4 py-1.5 text-sm min-h-[2rem]",
+        ? "w-7 h-7 text-sm min-w-[1.75rem] leading-none"
+        : "px-4 py-1.5 text-sm h-8 leading-tight",
   };
 
+  // Icon sizes for consistent scaling
   const iconSizes = {
     xs: 10,
     sm: 12,
@@ -80,30 +107,28 @@ const Badge: React.FC<BadgeProps> = ({
     lg: 16,
   };
 
-  const classes = `
-    ${baseClasses} 
-    ${variantClasses[variant]} 
-    ${sizeClasses[size]} 
-    ${className}
-  `
-    .replace(/\s+/g, " ")
-    .trim();
+  // Combine all classes using clsx for proper handling
+  const badgeClasses = clsx(
+    baseClasses,
+    variantClasses[variant],
+    sizeClasses[size],
+    className
+  );
 
+  // Dot variant - simple indicator
   if (dot) {
-    return <span className={classes} {...props} />;
+    return <span className={badgeClasses} {...props} />;
   }
 
   return (
-    <span className={classes} {...props}>
+    <span className={badgeClasses} {...props}>
       {/* Icon */}
       {icon && (
-        <span className="mr-1.5 flex-shrink-0">
+        <span className={clsx("flex-shrink-0", children ? "mr-1.5" : "")}>
           {React.isValidElement(icon)
             ? React.cloneElement(
                 icon as React.ReactElement<{ size?: number }>,
-                {
-                  size: iconSizes[size],
-                }
+                { size: iconSizes[size] }
               )
             : icon}
         </span>
@@ -120,24 +145,24 @@ const Badge: React.FC<BadgeProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className={`
-            ml-1.5 flex-shrink-0 rounded-full p-0.5 
-            hover:bg-black/10 transition-colors duration-200
-            focus:outline-none focus:ring-1 focus:ring-current
-            ${size === "xs" ? "p-0" : ""}
-          `}
+          className={clsx(
+            "flex-shrink-0 rounded-full transition-colors duration-200",
+            "hover:bg-neutral-900/10 focus:outline-none focus:ring-1 focus:ring-current",
+            children || icon ? "ml-1.5" : "",
+            size === "xs" ? "p-0" : "p-0.5"
+          )}
           aria-label="Remove"
         >
           <svg
-            className={`${iconSizes[size] <= 12 ? "w-2.5 h-2.5" : "w-3 h-3"}`}
+            className={clsx(iconSizes[size] <= 12 ? "w-2.5 h-2.5" : "w-3 h-3")}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            strokeWidth={2}
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
@@ -147,17 +172,18 @@ const Badge: React.FC<BadgeProps> = ({
   );
 };
 
-// Specialized Badge variants for common use cases
+// Specialized Badge variants for common use cases - following The Folk's style
 export const StatusBadge: React.FC<
   Omit<BadgeProps, "variant"> & {
     status: "active" | "inactive" | "pending" | "completed";
   }
 > = ({ status, ...props }) => {
+  // Use neutral variants for minimal, professional look
   const statusConfig = {
     active: { variant: "primary" as const, children: "Active" },
-    inactive: { variant: "secondary" as const, children: "Inactive" },
-    pending: { variant: "warning" as const, children: "Pending" },
-    completed: { variant: "success" as const, children: "Completed" },
+    inactive: { variant: "neutral" as const, children: "Inactive" },
+    pending: { variant: "secondary" as const, children: "Pending" },
+    completed: { variant: "minimal" as const, children: "Completed" },
   };
 
   return <Badge {...statusConfig[status]} {...props} />;
@@ -184,36 +210,19 @@ export const CountBadge: React.FC<
 export const CategoryBadge: React.FC<
   Omit<BadgeProps, "variant"> & {
     category: string;
-    style?: "minimal" | "varied"; // New style option
+    style?: "minimal" | "neutral"; // Updated for 2025 aesthetics
   }
 > = ({ category, style = "minimal", ...props }) => {
-  if (style === "minimal") {
-    // All categories use the same neutral style for ultra-minimal look
-    return (
-      <Badge variant="secondary" {...props}>
-        {category}
-      </Badge>
-    );
-  }
-
-  // Varied approach using different neutral shades
-  const getVariantFromString = (str: string) => {
-    const variants = ["secondary", "info", "warning", "success"] as const;
-    const hash = str.split("").reduce((a, b) => {
-      a = (a << 5) - a + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    return variants[Math.abs(hash) % variants.length];
-  };
+  const variant = style === "minimal" ? "minimal" : "neutral";
 
   return (
-    <Badge variant={getVariantFromString(category)} {...props}>
-      {category}
+    <Badge size="xs" variant={variant} {...props}>
+      <span className="mr-1 ml-1">{category}</span>
     </Badge>
   );
 };
 
-// Icon Overlay Counter - Perfect for cart icons, notification badges, etc.
+// Icon Overlay Counter - Perfect for cart icons, notification badges
 export const IconCounter: React.FC<{
   count: number;
   max?: number;
@@ -229,7 +238,7 @@ export const IconCounter: React.FC<{
     <Badge
       variant="counter"
       size={size}
-      className={`absolute -top-1 -right-1 ${className}`}
+      className={clsx("absolute -top-1 -right-1", className)}
     >
       {displayCount}
     </Badge>
