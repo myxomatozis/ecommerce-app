@@ -8,17 +8,8 @@ import {
   CardDescription,
   CardContent,
   Input,
-  Modal,
-  Spinner,
 } from "@thefolk/ui";
-import {
-  Heart,
-  Star,
-  ShoppingCart,
-  Search,
-  Filter,
-  ArrowRight,
-} from "lucide-react";
+import { Heart, Star, Search, Filter, ArrowRight } from "lucide-react";
 
 const meta: Meta = {
   title: "Introduction",

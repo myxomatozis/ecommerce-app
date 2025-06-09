@@ -31,6 +31,5 @@ export const successAddToCartMessage = ({
     undefined,
     {
       duration: 4000,
-      variant: "default",
     }
   );

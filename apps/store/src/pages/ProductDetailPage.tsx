@@ -219,6 +219,7 @@ const ProductDetailPage: React.FC = () => {
           to="/products"
           variant="ghost"
           leftIcon={<ArrowLeft size={16} />}
+          size="xs"
           className="mb-8 text-neutral-600 hover:text-neutral-900"
         >
           Back to Products

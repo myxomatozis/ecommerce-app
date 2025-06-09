@@ -43,12 +43,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         focus:ring-neutral-900 shadow-minimal hover:shadow-soft
       `,
       secondary: `
-        bg-white text-neutral-900 border-neutral-200 
-        hover:border-neutral-300 hover:bg-neutral-50
+        bg-white text-neutral-900 border-neutral-200 border
+        hover:border-neutral-300 hover:bg-neutral-50 hover:bg-neutral-600
         focus:ring-neutral-900 shadow-minimal hover:shadow-soft
       `,
       outline: `
-        bg-transparent text-neutral-900 border-neutral-900 
+        bg-transparent text-neutral-900 border-neutral-900 border
         hover:bg-neutral-900 hover:text-white
         focus:ring-neutral-900
       `,
@@ -67,10 +67,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizeClasses = {
-      xs: "px-0 py-1 text-xs h-4",
-      sm: "px-4 py-2 text-sm h-9",
-      md: "px-6 py-3 text-sm h-11",
-      lg: "px-8 py-4 text-base h-13",
+      xs: "px-2 py-2 text-sm h-4",
+      sm: "px-4 py-2 text-base h-6",
+      md: "px-6 py-3 text-lg h-8",
+      lg: "px-6 py-4 text-xl h-12",
     };
 
     const widthClass = fullWidth ? "w-full" : "";
