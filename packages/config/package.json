@@ -1,0 +1,14 @@
+{
+  "name": "@thefolk/config",
+  "version": "0.1.0",
+  "main": "./tailwind.config.js",
+  "exports": {
+    "./tailwind": "./tailwind.config.js"
+  },
+  "scripts": {
+    "lint": "echo 'Config package - no build needed'"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.8"
+  }
+}
