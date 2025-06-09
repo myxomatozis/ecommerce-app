@@ -100,7 +100,7 @@ const CartSidebar: React.FC = () => {
                         </h3>
                       </Link>
                       <p className="text-sm text-gray-500 mb-3">
-                        ${item.product_price.toFixed(2)}
+                        {formatPrice(item.product_price, item.product_currency)}
                       </p>
 
                       <div className="flex items-center justify-between">

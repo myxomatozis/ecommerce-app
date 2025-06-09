@@ -38,10 +38,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       leftIcon && rightIcon
         ? "pl-12 pr-12"
         : leftIcon
-        ? "pl-12"
-        : rightIcon
-        ? "pr-12"
-        : "";
+          ? "pl-12"
+          : rightIcon
+            ? "pr-12"
+            : "";
 
     const widthClass = fullWidth ? "w-full" : "";
 
@@ -61,7 +61,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="absolute flex items-center pointer-events-none justify-center inset-y-0 left-0 pl-3 w-12 h-full">
               <div className="text-gray-400">{leftIcon}</div>
             </div>
           )}
