@@ -17,7 +17,6 @@ import { Product, useAppData, useCartStore } from "@/stores";
 import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
-import CartButton from "@/components/Cart/CartButton";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct, categories, getCategories } = useAppData();
@@ -399,15 +398,6 @@ const ProductDetailPage: React.FC = () => {
                     <span className="text-sm text-neutral-600">
                       {currentCartQuantity} in cart
                     </span>
-                    <Button
-                      variant="ghost"
-                      to="/cart"
-                      as={Link}
-                      size="sm"
-                      aria-label="Go to Cart"
-                    >
-                      Checkout now
-                    </Button>
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
