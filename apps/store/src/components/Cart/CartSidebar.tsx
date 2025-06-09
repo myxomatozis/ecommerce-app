@@ -4,6 +4,7 @@ import { X, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { config } from "@/config";
 import { formatPrice } from "@thefolk/utils";
+import { Button } from "@thefolk/ui";
 
 const CartSidebar: React.FC = () => {
   const {
@@ -44,12 +45,13 @@ const CartSidebar: React.FC = () => {
                 {cartSummary.item_count === 1 ? "item" : "items"}
               </p>
             </div>
-            <button
+            <Button
+              variant="text"
               onClick={() => setIsCartOpen(false)}
               className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X size={20} />
-            </button>
+              rightIcon={<X size={20} />}
+              aria-label="Close cart"
+            />
           </div>
 
           {/* Content */}
@@ -105,38 +107,42 @@ const CartSidebar: React.FC = () => {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center border border-gray-200 rounded">
-                          <button
+                          <Button
                             onClick={() =>
                               updateQuantity(item.product_id, item.quantity - 1)
                             }
                             disabled={item.quantity <= 1}
                             className="p-1 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="px-3 py-1 text-sm font-medium min-w-[2.5rem] text-center">
+                            aria-label="Decrease quantity"
+                            rightIcon={<Minus size={12} />}
+                            variant="text"
+                          />
+
+                          <span className="px-3 text-sm font-medium min-w-[2.5rem] text-center">
                             {item.quantity}
                           </span>
-                          <button
+                          <Button
+                            variant="text"
+                            aria-label="Increase quantity"
                             onClick={() =>
                               updateQuantity(item.product_id, item.quantity + 1)
                             }
                             className="p-1 hover:bg-gray-50 transition-colors"
-                          >
-                            <Plus size={12} />
-                          </button>
+                            rightIcon={<Plus size={12} />}
+                          />
                         </div>
 
-                        <button
+                        <Button
                           onClick={() => removeFromCart(item.product_id)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
+                          variant="text"
+                          aria-label="Remove item"
+                          rightIcon={<X size={16} />}
+                        />
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right min-w-20">
                       <p className="text-sm font-medium text-gray-900">
                         {formatPrice(item.total_price, config.storeCurrency)}
                       </p>

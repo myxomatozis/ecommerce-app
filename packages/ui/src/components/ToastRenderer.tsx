@@ -34,17 +34,43 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
     };
   }, []);
 
-  const getPositionClasses = () => {
-    const positions = {
-      "top-right": "fixed top-4 right-4 z-50",
-      "top-left": "fixed top-4 left-4 z-50",
-      "bottom-right": "fixed bottom-4 right-4 z-50",
-      "bottom-left": "fixed bottom-4 left-4 z-50",
-      "top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
-      "bottom-center":
-        "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+  const getPositionStyles = (): React.CSSProperties => {
+    const baseStyles: React.CSSProperties = {
+      position: "fixed",
+      zIndex: 50,
+      pointerEvents: "none",
+      maxWidth: "24rem",
+      width: "100%",
     };
-    return positions[position];
+
+    const positions = {
+      "top-right": { top: "1rem", right: "1rem" },
+      "top-left": { top: "1rem", left: "1rem" },
+      "bottom-right": { bottom: "1rem", right: "1rem" },
+      "bottom-left": { bottom: "1rem", left: "1rem" },
+      "top-center": {
+        top: "1rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+      },
+      "bottom-center": {
+        bottom: "1rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+      },
+    };
+
+    return { ...baseStyles, ...positions[position] };
+  };
+
+  const containerStyles: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.75rem",
+  };
+
+  const toastWrapperStyles: React.CSSProperties = {
+    pointerEvents: "auto",
   };
 
   const visibleToasts = toasts.slice(0, maxToasts);
@@ -55,14 +81,20 @@ const ToastRenderer: React.FC<ToastRendererProps> = ({
 
   return (
     <div
-      className={`${getPositionClasses()} pointer-events-none max-w-sm w-full`}
+      id="toast-container"
+      style={getPositionStyles()}
       aria-live="polite"
       aria-label="Notifications"
-      style={{ zIndex: 9999 }} // Ensure high z-index
     >
-      <div className="flex flex-col space-y-3">
+      <div style={containerStyles}>
         {visibleToasts.map((toast, index) => (
-          <div key={toast.id} style={{ animationDelay: `${index * 100}ms` }}>
+          <div
+            key={toast.id}
+            style={{
+              ...toastWrapperStyles,
+              animationDelay: `${index * 100}ms`,
+            }}
+          >
             <Toast
               id={toast.id}
               type={toast.type}

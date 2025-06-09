@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Lock } from "lucide-react";
 import SupabaseAPI from "@/lib/supabase";
 import { useCartStore } from "@/stores";
-import { getCurrencySymbol } from "@thefolk/utils";
+import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";
 import { Checkbox, toast } from "@thefolk/ui";
 
@@ -163,9 +163,7 @@ const CheckoutPage: React.FC = () => {
                     <span>Processing...</span>
                   </div>
                 ) : (
-                  `Continue to Payment — $${cartSummary.total_amount.toFixed(
-                    2
-                  )}`
+                  `Continue to Payment — ${formatPrice(cartSummary.total_amount, config.storeCurrency)}`
                 )}
               </button>
             </form>
@@ -204,12 +202,16 @@ const CheckoutPage: React.FC = () => {
                           {item.product_name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          ${item.product_price.toFixed(2)} × {item.quantity}
+                          {formatPrice(
+                            item.product_price,
+                            item.product_currency
+                          )}{" "}
+                          × {item.quantity}
                         </p>
                       </div>
 
                       <div className="text-sm font-medium text-gray-900">
-                        ${item.total_price.toFixed(2)}
+                        {formatPrice(item.total_price, item.product_currency)}
                       </div>
                     </div>
                   ))}
@@ -220,7 +222,9 @@ const CheckoutPage: React.FC = () => {
               <div className="space-y-3 pt-6 border-t border-gray-100">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${subtotal.toFixed(2)}</span>
+                  <span className="text-gray-900">
+                    {formatPrice(subtotal, config.storeCurrency)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
@@ -228,21 +232,24 @@ const CheckoutPage: React.FC = () => {
                   <span className="text-gray-900">
                     {cartSummary.shipping === 0
                       ? "Free"
-                      : `$${cartSummary.shipping.toFixed(2)}`}
+                      : `${formatPrice(cartSummary.shipping, config.storeCurrency)}`}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
                   <span className="text-gray-900">
-                    ${cartSummary.tax.toFixed(2)}
+                    {formatPrice(cartSummary.tax, config.storeCurrency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-medium pt-3 border-t border-gray-100">
                   <span className="text-gray-900">Total</span>
                   <span className="text-gray-900">
-                    ${cartSummary.total_amount.toFixed(2)}
+                    {formatPrice(
+                      cartSummary.total_amount,
+                      config.storeCurrency
+                    )}
                   </span>
                 </div>
               </div>
@@ -250,8 +257,8 @@ const CheckoutPage: React.FC = () => {
               {/* Free Shipping Notice */}
               {cartSummary.shipping > 0 && (
                 <div className="text-center text-sm text-gray-500 bg-gray-50 p-4 rounded">
-                  Add {getCurrencySymbol(config.storeCurrency)}
-                  {(100 - subtotal).toFixed(2)} more for free shipping
+                  Add {formatPrice(100 - subtotal, config.storeCurrency)} more
+                  for free shipping
                 </div>
               )}
 

@@ -111,7 +111,7 @@ const ProductDetailPage: React.FC = () => {
           <p className="text-neutral-600 mb-8">
             The product you're looking for doesn't exist.
           </p>
-          <Button as={Link} to="/products" variant="primary">
+          <Button as={Link} to="/products" variant="primary" size="sm">
             Back to Products
           </Button>
         </div>
@@ -332,7 +332,7 @@ const ProductDetailPage: React.FC = () => {
                 <SizeGuideButton
                   productCategory={product.category}
                   variant="minimal"
-                  size="sm"
+                  size="xs"
                   className="text-neutral-600 hover:text-neutral-900 pl-0 pr-0"
                 />
               </div>

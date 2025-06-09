@@ -416,17 +416,15 @@ const ProductsPage: React.FC = () => {
                     </Link>
 
                     {/* Quick Add Button Overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none">
-                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-auto">
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleAddToCart(product.id)}
-                          fullWidth
-                        >
-                          Add to Cart
-                        </Button>
-                      </div>
+                    <div className="absolute bottom-6 left-6 right-6 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleAddToCart(product.id)}
+                        fullWidth
+                      >
+                        Add to Cart
+                      </Button>
                     </div>
                   </div>
 
@@ -466,7 +464,7 @@ const ProductsPage: React.FC = () => {
                 <Button
                   onClick={handleLoadMore}
                   variant="outline"
-                  size="lg"
+                  size="md"
                   disabled={loadingMore}
                   className="px-12"
                 >

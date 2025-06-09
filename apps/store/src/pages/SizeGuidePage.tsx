@@ -57,6 +57,7 @@ const SizeGuidePage: React.FC = () => {
           <Button
             as={Link}
             to="/products"
+            size="sm"
             variant="ghost"
             leftIcon={<ArrowLeft size={16} />}
             className="text-neutral-600 hover:text-neutral-900"

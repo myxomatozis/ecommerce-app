@@ -2,13 +2,13 @@
 import React, { useState } from "react";
 import { Ruler } from "lucide-react";
 import SizeGuideModal from "./SizeGuideModal";
-import { Button } from "@thefolk/ui";
+import { Button, ButtonProps } from "@thefolk/ui";
 
 interface SizeGuideButtonProps {
   productCategory?: string;
   productType?: "tops" | "bottoms" | "shoes" | "accessories";
   variant?: "ghost" | "outline" | "minimal";
-  size?: "sm" | "md" | "lg";
+  size?: ButtonProps["size"];
   className?: string;
 }
 

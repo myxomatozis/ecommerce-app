@@ -36,8 +36,8 @@ function App() {
           <Route path="/terms" element={<LegalPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <ToastRenderer position="top-right" maxToasts={4} />
       </Layout>
+      <ToastRenderer position="top-right" />
     </CartProvider>
   );
 }

@@ -132,7 +132,7 @@ const Header: React.FC = () => {
                 <IconCounter
                   count={cartSummary.item_count}
                   max={9}
-                  size="xs"
+                  size="sm"
                   className="top-0 right-0"
                 />
               </Button>
@@ -213,6 +213,13 @@ const Header: React.FC = () => {
     return "text-white/90 hover:text-white";
   };
 
+  const getCartBadgeClasses = () => {
+    if (isScrolled) {
+      return "bg-neutral-900 border-neutral-900 text-white";
+    }
+    return "bg-white border-white text-black!";
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${getHeaderClasses()}`}
@@ -285,8 +292,8 @@ const Header: React.FC = () => {
               <IconCounter
                 count={cartSummary.item_count}
                 max={9}
-                size="xs"
-                className="top-0 right-0"
+                size="sm"
+                className={`top-0 right-0 ${getCartBadgeClasses()}`}
               />
             </Button>
 

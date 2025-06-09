@@ -240,7 +240,7 @@ export const IconCounter: React.FC<{
       size={size}
       className={clsx("absolute -top-1 -right-1", className)}
     >
-      {displayCount}
+      <span className="text-xs">{displayCount}</span>
     </Badge>
   );
 };

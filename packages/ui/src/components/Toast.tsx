@@ -92,7 +92,6 @@ const Toast: React.FC<ToastProps> = ({
       };
     }
 
-    // Default variant - modern with subtle glassmorphism
     return {
       success: `${baseClasses} bg-white border-emerald-200 text-neutral-900`,
       error: `${baseClasses} bg-white border-red-200 text-neutral-900`,
@@ -137,13 +136,13 @@ const Toast: React.FC<ToastProps> = ({
   return (
     <div
       className={`
-        pointer-events-auto relative w-full transform transition-all duration-300 ease-out
-        ${
-          isVisible && !isRemoving
-            ? "translate-x-0 opacity-100 scale-100"
-            : "translate-x-full opacity-0 scale-95"
-        }
-      `}
+      relative w-full transform transition-all duration-300 ease-out
+      ${
+        isVisible && !isRemoving
+          ? "translate-x-0 opacity-100 scale-100"
+          : "translate-x-full opacity-0 scale-95"
+      }
+    `}
       role="alert"
       aria-live="assertive"
       aria-atomic="true"

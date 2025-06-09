@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Minus, X } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { config } from "@/config";
 import { formatPrice } from "@thefolk/utils";
+import { Button } from "@thefolk/ui";
 
 const CartPage: React.FC = () => {
   const cartItems = useCartStore((state) => state.cartItems);
@@ -121,35 +122,38 @@ const CartPage: React.FC = () => {
                     {/* Quantity Controls */}
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center border border-gray-200 rounded">
-                        <button
+                        <Button
                           onClick={() =>
                             updateQuantity(item.product_id, item.quantity - 1)
                           }
                           disabled={item.quantity <= 1}
                           className="p-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
+                          aria-label="Decrease quantity"
+                          variant="text"
+                          rightIcon={<Minus size={14} />}
+                        />
+
+                        <span className="px-4 text-sm font-medium min-w-[3rem] text-center">
                           {item.quantity}
                         </span>
-                        <button
+                        <Button
                           onClick={() =>
                             updateQuantity(item.product_id, item.quantity + 1)
                           }
                           className="p-2 hover:bg-gray-50 transition-colors"
-                        >
-                          <Plus size={14} />
-                        </button>
+                          rightIcon={<Plus size={14} />}
+                          aria-label="Increase quantity"
+                          variant="text"
+                        />
                       </div>
 
-                      <button
+                      <Button
                         onClick={() => removeFromCart(item.product_id)}
                         className="text-gray-400 hover:text-gray-600 transition-colors"
                         aria-label="Remove item"
-                      >
-                        <X size={16} />
-                      </button>
+                        variant="text"
+                        rightIcon={<X size={16} />}
+                      />
                     </div>
                   </div>
 
@@ -234,25 +238,6 @@ const CartPage: React.FC = () => {
                 Secure checkout powered by Stripe
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Recommended Products Section */}
-        <div className="mt-24 pt-16 border-t border-gray-100">
-          <h2 className="text-xl font-light text-gray-900 mb-8 text-center">
-            You might also like
-          </h2>
-
-          <div className="text-center text-gray-500">
-            <p className="mb-4">
-              Discover more products tailored to your style
-            </p>
-            <Link
-              to="/products"
-              className="inline-block text-gray-900 underline hover:no-underline transition-all"
-            >
-              Browse products
-            </Link>
           </div>
         </div>
       </div>

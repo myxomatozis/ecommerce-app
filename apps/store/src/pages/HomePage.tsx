@@ -199,7 +199,7 @@ const HomePage: React.FC = () => {
                 key={product.id}
                 variant="minimal"
                 padding="none"
-                className="group cursor-pointer overflow-hidden hover:shadow-2xl transition-all duration-700 hover:-translate-y-1"
+                className="group cursor-pointer overflow-hidden hover:shadow-md transition-all duration-700"
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
@@ -207,7 +207,7 @@ const HomePage: React.FC = () => {
                     <img
                       src={product.image_url || "/placeholder.jpg"}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                      className="w-full h-full object-cover"
                     />
                   </Link>
 

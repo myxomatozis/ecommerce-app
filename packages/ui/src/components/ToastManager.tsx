@@ -16,7 +16,7 @@ export interface ToastData {
 
 export type ToastListener = (toasts: ToastData[]) => void;
 
-export class ToastManager {
+class ToastManager {
   private toasts: ToastData[] = [];
   private listeners: Set<ToastListener> = new Set();
 
@@ -52,7 +52,6 @@ export class ToastManager {
   }
 
   private getDefaultDuration(type?: string) {
-    // Modern, clean UX - shorter durations
     switch (type) {
       case "success":
         return 3000;
@@ -84,10 +83,8 @@ export class ToastManager {
   }
 }
 
-// Global toast manager instance
 export const toastManager = new ToastManager();
 
-// Modern, clean toast API
 const toast = {
   success: (
     message: string | React.ReactNode,
@@ -160,7 +157,6 @@ const toast = {
     });
   },
 
-  // Ultra-clean minimal toasts for modern design
   minimal: (
     message: string | React.ReactNode,
     type: "success" | "error" | "warning" | "info" = "info",
