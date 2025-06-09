@@ -51,3 +51,4 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+packages/storybook/storybook-static
