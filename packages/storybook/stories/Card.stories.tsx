@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import {
   Card,
+  type CardProps,
   CardHeader,
   CardTitle,
   CardDescription,
@@ -20,7 +21,7 @@ import {
   Badge,
 } from "@thefolk/ui";
 
-const meta: Meta<typeof Card> = {
+const meta: Meta<CardProps> = {
   title: "Components/Card",
   component: Card,
   parameters: {

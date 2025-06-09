@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 import { Heart, Download, ArrowRight, Plus, Search } from "lucide-react";
-import { Button } from "@thefolk/ui";
+import { Button, type ButtonProps } from "@thefolk/ui";
 
-const meta: Meta<typeof Button> = {
+const meta: Meta<ButtonProps> = {
   title: "Components/Button",
   component: Button,
   parameters: {

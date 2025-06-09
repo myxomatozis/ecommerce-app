@@ -3,13 +3,14 @@ import { fn } from "@storybook/test";
 import { Star, Tag, CheckCircle, AlertCircle, Clock, X } from "lucide-react";
 import {
   Badge,
+  type BadgeProps,
   StatusBadge,
   CountBadge,
   CategoryBadge,
   IconCounter,
 } from "@thefolk/ui";
 
-const meta: Meta<typeof Badge> = {
+const meta: Meta<BadgeProps> = {
   title: "Components/Badge",
   component: Badge,
   parameters: {

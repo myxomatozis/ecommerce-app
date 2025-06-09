@@ -10,6 +10,11 @@
       "cache": false,
       "persistent": true
     },
+    "storybook": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
     "lint": {},
     "type-check": {
       "dependsOn": ["^type-check"]
