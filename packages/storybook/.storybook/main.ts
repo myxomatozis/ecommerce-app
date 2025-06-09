@@ -1,6 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
-import tailwindcss from "@tailwindcss/vite";
 
 const config: StorybookConfig = {
   stories: [
@@ -12,11 +11,6 @@ const config: StorybookConfig = {
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
-    "@storybook/addon-docs",
-    "@storybook/addon-controls",
-    "@storybook/addon-actions",
-    "@storybook/addon-viewport",
-    "@storybook/addon-backgrounds",
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
   ],
@@ -34,13 +28,28 @@ const config: StorybookConfig = {
     },
   },
   async viteFinal(config, { configType }) {
+    // Try to load Tailwind v4 plugin with error handling
+    let plugins: any[] = [];
+
+    try {
+      // Use dynamic import to avoid CJS/ESM issues
+      const tailwindModule = await import("@tailwindcss/vite");
+      const tailwindcss = tailwindModule.default || tailwindModule;
+      plugins.push(tailwindcss());
+      console.log("✅ Tailwind CSS v4 plugin loaded successfully");
+    } catch (error) {
+      console.warn(
+        "⚠️ Could not load @tailwindcss/vite plugin:",
+        error.message
+      );
+      console.log("📝 Falling back to CSS-only mode");
+    }
+
     return mergeConfig(config, {
-      plugins: [tailwindcss()],
-      resolve: {
-        alias: {
-          "@thefolk/ui": new URL("../../packages/ui/src", import.meta.url)
-            .pathname,
-        },
+      plugins,
+      esbuild: {
+        // Automatically inject React import for JSX
+        jsxInject: `import React from 'react'`,
       },
     });
   },

@@ -317,18 +317,6 @@ pnpm build-storybook
 }
 ```
 
-## 🔍 Visual Regression Testing
-
-For teams wanting to add visual testing:
-
-```bash
-# Install Chromatic
-npm install --save-dev chromatic
-
-# Run visual tests
-npx chromatic --project-token=<your-token>
-```
-
 ## 🤝 Contributing
 
 ### Adding New Components
