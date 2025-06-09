@@ -121,7 +121,7 @@ const ProductDetailPage: React.FC = () => {
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     addToCart(product.id, selectedQuantity);
     setIsAddingToCart(false);
     setCurrentCartQuantity((prev) => prev + selectedQuantity);

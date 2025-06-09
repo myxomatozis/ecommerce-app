@@ -71,9 +71,6 @@ export const useCartStore = create<CartStore>()(
 
         // Add item to cart
         addToCart: async (productId: string, quantity: number = 1) => {
-          const product = get().cartItems.find(
-            (item) => item.product_id === productId
-          );
           try {
             set({ loading: true, error: null });
             // Check if item already exists in cart, if so, update quantity with increment
@@ -87,11 +84,8 @@ export const useCartStore = create<CartStore>()(
 
             await SupabaseAPI.addToCart(productId, quantity);
             await get().loadCartData(); // Refresh cart data
-            if (product) {
-              successAddToCartMessage({ productName: product.product_name });
-            } else {
-              successAddToCartMessage({ productName: "Item" });
-            }
+
+            successAddToCartMessage({ productName: "Item" });
           } catch (err) {
             const errorMessage =
               err instanceof Error ? err.message : "Failed to add to cart";

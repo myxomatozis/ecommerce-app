@@ -14,9 +14,9 @@ export interface ToastData {
   };
 }
 
-type ToastListener = (toasts: ToastData[]) => void;
+export type ToastListener = (toasts: ToastData[]) => void;
 
-class ToastManager {
+export class ToastManager {
   private toasts: ToastData[] = [];
   private listeners: Set<ToastListener> = new Set();
 
@@ -34,7 +34,7 @@ class ToastManager {
     const newToast: ToastData = {
       ...toast,
       id,
-      variant: toast.variant || "default", // Default to clean minimal style
+      variant: toast.variant || "default",
     };
 
     this.toasts.push(newToast);
@@ -52,7 +52,7 @@ class ToastManager {
   }
 
   private getDefaultDuration(type?: string) {
-    // Minimalistic approach - shorter durations for cleaner UX
+    // Modern, clean UX - shorter durations
     switch (type) {
       case "success":
         return 3000;
@@ -85,9 +85,9 @@ class ToastManager {
 }
 
 // Global toast manager instance
-const toastManager = new ToastManager();
+export const toastManager = new ToastManager();
 
-// Clean, minimalistic toast functions
+// Modern, clean toast API
 const toast = {
   success: (
     message: string | React.ReactNode,
@@ -160,7 +160,7 @@ const toast = {
     });
   },
 
-  // For ultra-clean minimal toasts
+  // Ultra-clean minimal toasts for modern design
   minimal: (
     message: string | React.ReactNode,
     type: "success" | "error" | "warning" | "info" = "info",
@@ -185,7 +185,44 @@ const toast = {
   clear: () => {
     toastManager.clear();
   },
+
+  // Modern promise-based loading states
+  promise: <T,>(
+    promise: Promise<T>,
+    {
+      loading,
+      success,
+      error,
+    }: {
+      loading: string | React.ReactNode;
+      success:
+        | string
+        | React.ReactNode
+        | ((data: T) => string | React.ReactNode);
+      error:
+        | string
+        | React.ReactNode
+        | ((error: any) => string | React.ReactNode);
+    }
+  ) => {
+    const loadingId = toast.loading(loading);
+
+    promise
+      .then((data) => {
+        toast.dismiss(loadingId);
+        const successMessage =
+          typeof success === "function" ? success(data) : success;
+        toast.success(successMessage);
+      })
+      .catch((err) => {
+        toast.dismiss(loadingId);
+        const errorMessage = typeof error === "function" ? error(err) : error;
+        toast.error(errorMessage);
+      });
+
+    return promise;
+  },
 };
 
-export { toastManager };
+export { toast };
 export default toast;

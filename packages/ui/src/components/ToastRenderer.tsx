@@ -15,56 +15,68 @@ interface ToastRendererProps {
 
 const ToastRenderer: React.FC<ToastRendererProps> = ({
   position = "top-right",
-  maxToasts = 3, // Reduced for cleaner appearance
+  maxToasts = 4,
 }) => {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   useEffect(() => {
+    // Subscribe to toast manager
     const unsubscribe = toastManager.subscribe((newToasts) => {
       setToasts(newToasts);
     });
 
     // Initialize with current toasts
-    setToasts(toastManager.getToasts());
+    const currentToasts = toastManager.getToasts();
+    setToasts(currentToasts);
 
     return () => {
       unsubscribe();
     };
   }, []);
 
-  const positionClasses = {
-    "top-right": "top-22 right-6",
-    "top-left": "top-22 left-6",
-    "bottom-right": "bottom-6 right-6",
-    "bottom-left": "bottom-6 left-6",
-    "top-center": "top-6 left-1/2 -translate-x-1/2",
-    "bottom-center": "bottom-6 left-1/2 -translate-x-1/2",
+  const getPositionClasses = () => {
+    const positions = {
+      "top-right": "fixed top-4 right-4 z-50",
+      "top-left": "fixed top-4 left-4 z-50",
+      "bottom-right": "fixed bottom-4 right-4 z-50",
+      "bottom-left": "fixed bottom-4 left-4 z-50",
+      "top-center": "fixed top-4 left-1/2 transform -translate-x-1/2 z-50",
+      "bottom-center":
+        "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+    };
+    return positions[position];
   };
 
   const visibleToasts = toasts.slice(0, maxToasts);
 
-  if (visibleToasts.length === 0) return null;
+  if (visibleToasts.length === 0) {
+    return null;
+  }
 
   return (
     <div
-      className={`fixed z-50 pointer-events-none ${positionClasses[position]} max-w-sm w-full`}
+      className={`${getPositionClasses()} pointer-events-none max-w-sm w-full`}
       aria-live="polite"
       aria-label="Notifications"
+      style={{ zIndex: 9999 }} // Ensure high z-index
     >
       <div className="flex flex-col space-y-3">
-        {visibleToasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            id={toast.id}
-            type={toast.type}
-            variant={toast.variant || "default"}
-            title={toast.title}
-            message={toast.message}
-            duration={toast.duration}
-            persistent={toast.persistent}
-            action={toast.action}
-            onClose={toastManager.remove.bind(toastManager)}
-          />
+        {visibleToasts.map((toast, index) => (
+          <div key={toast.id} style={{ animationDelay: `${index * 100}ms` }}>
+            <Toast
+              id={toast.id}
+              type={toast.type}
+              variant={toast.variant || "default"}
+              title={toast.title}
+              message={toast.message}
+              duration={toast.duration}
+              persistent={toast.persistent}
+              action={toast.action}
+              onClose={(id) => {
+                toastManager.remove(id);
+              }}
+            />
+          </div>
         ))}
       </div>
     </div>
