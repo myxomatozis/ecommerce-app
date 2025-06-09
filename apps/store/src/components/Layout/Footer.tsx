@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Twitter, Instagram } from "lucide-react";
+import { Facebook, Twitter, Instagram } from "@thefolk/ui/icons";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
