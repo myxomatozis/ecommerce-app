@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          is_active?: boolean | null
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -333,12 +357,99 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_users_with_email: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          email_confirmed_at: string | null
+          id: string | null
+          is_active: boolean | null
+          last_sign_in_at: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_image_to_gallery: {
         Args: { product_id: string; image_url: string }
         Returns: boolean
+      }
+      admin_delete_product: {
+        Args: { product_id: string }
+        Returns: boolean
+      }
+      admin_get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_products: number
+          active_products: number
+          inactive_products: number
+          low_stock_products: number
+          total_orders: number
+          pending_orders: number
+          total_revenue: number
+          total_categories: number
+          active_categories: number
+        }[]
+      }
+      admin_get_products: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_category_id?: string
+          p_is_active?: boolean
+        }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          price: number
+          currency: string
+          image_url: string
+          images_gallery: string[]
+          stripe_price_id: string
+          stock_quantity: number
+          category_id: string
+          category_name: string
+          rating: number
+          reviews_count: number
+          is_active: boolean
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      admin_get_recent_orders: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          external_id: string
+          customer_email: string
+          customer_name: string
+          total_amount: number
+          status: string
+          created_at: string
+        }[]
+      }
+      admin_upsert_product: {
+        Args: {
+          product_id?: string
+          product_name?: string
+          product_description?: string
+          product_price?: number
+          product_currency?: string
+          product_image_url?: string
+          product_images_gallery?: string[]
+          product_stripe_price_id?: string
+          product_stock_quantity?: number
+          product_category_id?: string
+          product_is_active?: boolean
+          product_metadata?: Json
+        }
+        Returns: string
       }
       cleanup_expired_cart_items: {
         Args: Record<PropertyKey, never>
@@ -383,6 +494,17 @@ export type Database = {
       generate_order_external_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_admin_user_by_email: {
+        Args: { user_email: string }
+        Returns: {
+          id: string
+          email: string
+          role: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }[]
       }
       get_cart_items: {
         Args: { session_id_param: string }
@@ -524,6 +646,18 @@ export type Database = {
           rating: number
           reviews_count: number
         }[]
+      }
+      is_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
+      promote_user_to_admin: {
+        Args: { user_email: string; admin_role?: string }
+        Returns: string
       }
       remove_cart_item: {
         Args: { session_id_param: string; product_id_param: string }

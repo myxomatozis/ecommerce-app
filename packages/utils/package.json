@@ -22,6 +22,11 @@
       "types": "./dist/supabase.d.ts",
       "import": "./dist/supabase.mjs",
       "require": "./dist/supabase.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.mjs",
+      "require": "./dist/admin.js"
     }
   },
   "scripts": {
