@@ -224,7 +224,7 @@ const CartSidebar: React.FC = () => {
                   <Link
                     to="/cart"
                     onClick={() => setIsCartOpen(false)}
-                    className="block w-full text-center py-3 text-gray-600 hover:text-gray-900 transition-colors"
+                    className="block w-full text-sm text-center py-3 text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     View Full Cart
                   </Link>

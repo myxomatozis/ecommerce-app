@@ -376,6 +376,7 @@ export type Database = {
           customer_phone_param?: string
           shipping_address_param?: Json
           billing_address_param?: Json
+          currency_param?: string
         }
         Returns: string
       }
@@ -515,13 +516,13 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
-          category: string
-          rating: number
-          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
+          category: string
+          rating: number
+          reviews_count: number
         }[]
       }
       remove_cart_item: {

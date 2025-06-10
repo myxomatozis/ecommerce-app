@@ -12,10 +12,12 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo build && changeset publish",
-    "storybook": "turbo run storybook --filter @thefolk/storybook"
+    "storybook": "turbo run storybook --filter @thefolk/storybook",
+    "supabase:database:types": "supabase gen types typescript --linked > types/database.types.ts",
+    "supabase:functions:deploy": "supabase functions deploy"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
+    "@changesets/cli": "^2.29.4",
     "@turbo/gen": "^2.5.4",
     "prettier": "^3.5.3",
     "turbo": "^2.5.4",

@@ -701,7 +701,16 @@ $$;
 -- Name: create_order_from_cart(text, text, text, text, text, jsonb, jsonb); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.create_order_from_cart(session_id_param text, stripe_session_id_param text, customer_email_param text, customer_name_param text, customer_phone_param text DEFAULT NULL::text, shipping_address_param jsonb DEFAULT NULL::jsonb, billing_address_param jsonb DEFAULT NULL::jsonb) RETURNS uuid
+CREATE FUNCTION public.create_order_from_cart(
+  session_id_param text, 
+  stripe_session_id_param text, 
+  customer_email_param text, 
+  customer_name_param text, 
+  customer_phone_param text DEFAULT NULL::text, 
+  shipping_address_param jsonb DEFAULT NULL::jsonb, 
+  billing_address_param jsonb DEFAULT NULL::jsonb,
+  currency_param text DEFAULT 'USD'::text
+  ) RETURNS uuid
     LANGUAGE plpgsql
     AS $$
 DECLARE
@@ -723,7 +732,8 @@ BEGIN
     customer_name,
     customer_phone,
     shipping_address,
-    billing_address
+    billing_address,
+    currency
   ) VALUES (
     stripe_session_id_param,
     cart_summary.total_amount,
@@ -734,7 +744,8 @@ BEGIN
     customer_name_param,
     customer_phone_param,
     shipping_address_param,
-    billing_address_param
+    billing_address_param,
+    currency_param
   ) RETURNING id INTO order_id;
 
   -- Create order items from cart

@@ -6,7 +6,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import type { Database } from "../../../types/database.types.ts";
+import type { Database } from "../../../apps/store/types/database.types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -176,8 +176,8 @@ Deno.serve(async (req) => {
       error instanceof Error
         ? error.message
         : typeof error === "string"
-        ? error
-        : "Unknown error";
+          ? error
+          : "Unknown error";
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

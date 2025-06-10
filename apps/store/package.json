@@ -8,8 +8,7 @@
     "dev": "vite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit",
-    "update:db-types": "supabase gen types typescript --linked > types/database.types.ts"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@stripe/stripe-js": "^7.3.1",

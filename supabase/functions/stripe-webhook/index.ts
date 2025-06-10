@@ -76,6 +76,7 @@ const sendOrderConfirmationEmail = async (orderId: string) => {
       templateId: "order-confirmation",
       to: order.customer_email || "",
       variables: {
+        currency: order.currency || "USD",
         orderNumber: order.external_id || "",
         customerName: order.customer_name || "Valued Customer",
         customerEmail: order.customer_email || "",
@@ -217,6 +218,7 @@ Deno.serve(async (req) => {
               session.metadata?.customer_phone,
             shipping_address_param: shippingAddress,
             billing_address_param: billingAddress,
+            currency_param: session.currency?.toUpperCase() || "USD",
           }
         );
 
@@ -247,6 +249,7 @@ Deno.serve(async (req) => {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
         // Update order status
+        console.log(paymentIntent);
         const { error } = await supabase
           .from("orders")
           .update({
