@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, MapPin, CheckCircle } from "lucide-react";
 import { Button, Input, Card, CardContent, toast } from "@thefolk/ui";
-import SupabaseAPI from "@/lib/supabase";
+import SupabaseAPI from "@thefolk/utils/supabase";
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({

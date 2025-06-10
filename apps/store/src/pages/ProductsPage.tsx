@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
 import { Button, Input, Dropdown, Spinner, Badge } from "@thefolk/ui";
-import { ProductFilters } from "@/lib/supabase";
+import { ProductFilters } from "@thefolk/utils/supabase";
 import ProductCard from "@/components/Product/ProductCard";
 
 const ProductsPage: React.FC = () => {

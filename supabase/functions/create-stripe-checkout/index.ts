@@ -6,7 +6,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import type { Database } from "../../../apps/store/types/database.types.ts";
+import type { Database } from "../../../packages/utils/types/database.types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle, ArrowRight } from "lucide-react";
-import SupabaseAPI, { Order } from "@/lib/supabase";
+import SupabaseAPI, { Order } from "@thefolk/utils/supabase";
 import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";
 

@@ -11,17 +11,17 @@
       "require": "./dist/index.js"
     },
     "./types": {
-      "types": "./dist/database.types.d.ts"
+      "types": "./dist/database.d.ts"
     },
     "./stripe": {
-      "types": "./dist/lib/stripe.d.ts",
-      "import": "./dist/lib/stripe.mjs",
-      "require": "./dist/lib/stripe.js"
+      "types": "./dist/stripe.d.ts",
+      "import": "./dist/stripe.mjs",
+      "require": "./dist/stripe.js"
     },
     "./supabase": {
-      "types": "./dist/lib/supabase.d.ts",
-      "import": "./dist/lib/supabase.mjs",
-      "require": "./dist/lib/supabase.js"
+      "types": "./dist/supabase.d.ts",
+      "import": "./dist/supabase.mjs",
+      "require": "./dist/supabase.js"
     }
   },
   "scripts": {
