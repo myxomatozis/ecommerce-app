@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 export default {
   ...require("@thefolk/config/tailwind"),
   content: [
