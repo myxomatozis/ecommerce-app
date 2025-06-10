@@ -6,7 +6,6 @@ export default defineConfig({
     database: "types/database.types.ts",
     supabase: "src/lib/supabase.ts",
     stripe: "src/lib/stripe.ts",
-    admin: "src/lib/admin.ts",
   },
   format: ["cjs", "esm"],
   dts: true,
