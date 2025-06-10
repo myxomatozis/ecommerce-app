@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Lock } from "lucide-react";
-import SupabaseAPI from "@/lib/supabase";
+import SupabaseAPI from "@thefolk/utils/supabase";
 import { useCartStore } from "@/stores";
 import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";

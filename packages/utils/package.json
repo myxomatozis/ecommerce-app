@@ -9,12 +9,29 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/database.types.d.ts"
+    },
+    "./stripe": {
+      "types": "./dist/lib/stripe.d.ts",
+      "import": "./dist/lib/stripe.mjs",
+      "require": "./dist/lib/stripe.js"
+    },
+    "./supabase": {
+      "types": "./dist/lib/supabase.d.ts",
+      "import": "./dist/lib/supabase.mjs",
+      "require": "./dist/lib/supabase.js"
     }
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^7.3.1",
+    "@supabase/supabase-js": "^2.49.10"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

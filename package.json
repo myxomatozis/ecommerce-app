@@ -13,7 +13,7 @@
     "version-packages": "changeset version",
     "release": "turbo build && changeset publish",
     "storybook": "turbo run storybook --filter @thefolk/storybook",
-    "supabase:database:types": "supabase gen types typescript --linked > types/database.types.ts",
+    "supabase:database:types": "supabase gen types typescript --linked > packages/utils/types/database.types.ts",
     "supabase:functions:deploy": "supabase functions deploy"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 // src/stores/useCategoriesStore.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { SupabaseAPI, Category } from "@/lib/supabase";
+import { SupabaseAPI, Category } from "@thefolk/utils/supabase";
 
 interface CategoriesState {
   categories: Category[];

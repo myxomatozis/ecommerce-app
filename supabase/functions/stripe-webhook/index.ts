@@ -6,7 +6,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import type { Database } from "../../../types/database.types.ts";
+import type { Database } from "../../../packages/utils/types/database.types.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2025-05-28.basil",
@@ -249,7 +249,6 @@ Deno.serve(async (req) => {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
         // Update order status
-        console.log(paymentIntent);
         const { error } = await supabase
           .from("orders")
           .update({

@@ -217,10 +217,10 @@ const ProductsPage: React.FC = () => {
           {/* Top Bar */}
           <div className="flex items-center gap-4 mb-6">
             {/* Left: Filter Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-[33.33%]">
               <Button
                 variant="ghost"
-                size="sm"
+                size="xs"
                 onClick={() => setShowFilters(!showFilters)}
                 leftIcon={<SlidersHorizontal size={16} />}
                 className="text-neutral-600"
@@ -231,7 +231,7 @@ const ProductsPage: React.FC = () => {
               {hasActiveFilters && (
                 <Button
                   variant="minimal"
-                  size="sm"
+                  size="xs"
                   onClick={clearFilters}
                   className="text-neutral-500"
                 >
@@ -241,25 +241,21 @@ const ProductsPage: React.FC = () => {
             </div>
 
             {/* Center: Search Bar */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center w-[33.33%]">
               <div className="relative max-w-sm w-full">
                 <Input
                   type="text"
                   placeholder="Search products..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="h-10 pl-10 pr-4 text-sm border-neutral-200 focus:border-neutral-400"
+                  leftIcon={<Search size={16} />}
                   fullWidth
-                />
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
                 />
               </div>
             </div>
 
             {/* Right: Product Count */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-[33.33%] text-right">
               {products.length > 0 && (
                 <p className="text-sm text-neutral-600">
                   {products.length} {products.length === 1 ? "item" : "items"}

@@ -8,8 +8,9 @@ if (!stripePubKey) {
   );
 }
 
-export const stripe = await loadStripe(stripePubKey, {
-  // Optional: You can specify additional options here if needed
-  // For example, you can set the locale or other configurations
-  // locale: 'en',
-});
+export const stripe = async () =>
+  await loadStripe(stripePubKey, {
+    // Optional: You can specify additional options here if needed
+    // For example, you can set the locale or other configurations
+    // locale: 'en',
+  });

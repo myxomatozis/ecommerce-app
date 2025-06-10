@@ -5,7 +5,7 @@ import {
   SupabaseAPI,
   ProductFilters,
   Product as DBProduct,
-} from "@/lib/supabase";
+} from "@thefolk/utils/supabase";
 
 // Create a cache key for product lists based on filters
 const createCacheKey = (filters: ProductFilters = {}) => {

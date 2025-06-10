@@ -1,7 +1,7 @@
 // src/store/useCartStore.ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { SupabaseAPI, CartItem, CartSummary } from "@/lib/supabase";
+import { SupabaseAPI, CartItem, CartSummary } from "@thefolk/utils/supabase";
 import { successAddToCartMessage } from "@/components/Cart/CartButton";
 
 interface CartStore {
@@ -13,7 +13,11 @@ interface CartStore {
   error: string | null;
 
   // Actions
-  addToCart: (productId: string, quantity?: number) => Promise<void>;
+  addToCart: (
+    productId: string,
+    quantity?: number,
+    notification?: boolean
+  ) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -70,7 +74,11 @@ export const useCartStore = create<CartStore>()(
         },
 
         // Add item to cart
-        addToCart: async (productId: string, quantity: number = 1) => {
+        addToCart: async (
+          productId: string,
+          quantity: number = 1,
+          notification: boolean = true
+        ) => {
           try {
             set({ loading: true, error: null });
             // Check if item already exists in cart, if so, update quantity with increment
@@ -85,7 +93,7 @@ export const useCartStore = create<CartStore>()(
             await SupabaseAPI.addToCart(productId, quantity);
             await get().loadCartData(); // Refresh cart data
 
-            successAddToCartMessage({ productName: "Item" });
+            if (notification) successAddToCartMessage({ productName: "Item" });
           } catch (err) {
             const errorMessage =
               err instanceof Error ? err.message : "Failed to add to cart";
