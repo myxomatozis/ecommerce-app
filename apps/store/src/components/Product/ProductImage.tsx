@@ -15,6 +15,7 @@ const ProductImage = ({ product }: { product: Product }) => {
   return (
     <img
       src={product.image_url}
+      loading="lazy"
       onError={() => setLoadingError(true)}
       alt={product.name}
       className="w-full h-full object-cover"

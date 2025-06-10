@@ -236,7 +236,7 @@ const FAQPage: React.FC = () => {
                     variant={
                       selectedCategory === category.id ? "primary" : "ghost"
                     }
-                    size="sm"
+                    size="md"
                     fullWidth
                     className="justify-start"
                   >

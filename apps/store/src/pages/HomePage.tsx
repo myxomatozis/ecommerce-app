@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Star,
   Award,
   Truck,
   RotateCcw,
@@ -10,16 +9,14 @@ import {
   Users,
   Leaf,
 } from "lucide-react";
-import { Button, Card, Badge } from "@thefolk/ui";
-import { Product, useAppData, useCartStore } from "@/stores";
-import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
+import { Button, Card } from "@thefolk/ui";
+import { Product, useAppData } from "@/stores";
+import { getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
 import { useScroll } from "@/context/ScrollContext";
-import ProductImage from "@/components/Product/ProductImage";
 import FeaturedProduct from "@/components/Product/FeaturedProduct";
 
 const HomePage: React.FC = () => {
-  const { addToCart, loading } = useCartStore();
   const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
   const { getProducts } = useAppData();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -201,11 +198,7 @@ const HomePage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProducts.map((product) => (
-              <FeaturedProduct
-                product={product}
-                key={product.id}
-                loading={loading}
-              />
+              <FeaturedProduct product={product} key={product.id} />
             ))}
           </div>
 
@@ -242,7 +235,7 @@ const HomePage: React.FC = () => {
               styling inspiration from The Folk
             </p>
 
-            <form className="max-w-lg mx-auto flex gap-4 mt-12">
+            <form className="max-w-lg mx-auto flex gap-4 mt-12 items-center">
               <input
                 type="email"
                 placeholder="Enter your email"

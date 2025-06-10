@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
 import { Product, useAppData, useCartStore } from "@/stores";
-import {
-  Button,
-  Input,
-  Dropdown,
-  Spinner,
-  Badge,
-  CategoryBadge,
-} from "@thefolk/ui";
+import { Button, Input, Dropdown, Spinner, Badge } from "@thefolk/ui";
 import { ProductFilters } from "@/lib/supabase";
-import { formatPrice } from "@thefolk/utils";
-import { config } from "@/config";
+import ProductCard from "@/components/Product/ProductCard";
 
 const ProductsPage: React.FC = () => {
   const { addToCart } = useCartStore();
@@ -119,7 +111,7 @@ const ProductsPage: React.FC = () => {
       setLoadingMore(true);
       const data = await loadMoreProducts(currentFilters);
       setProducts(data);
-      setHasMore(data.length > products.length);
+      setHasMore(data.length <= ITEMS_PER_PAGE);
     } catch (err) {
       console.error("Failed to load more products:", err);
     } finally {
@@ -333,6 +325,7 @@ const ProductsPage: React.FC = () => {
                 <Badge
                   variant="outline"
                   removable
+                  size="xs"
                   onRemove={() => {
                     setSearchInput("");
                     updateParams({ search: null });
@@ -345,6 +338,7 @@ const ProductsPage: React.FC = () => {
                 <Badge
                   variant="outline"
                   removable
+                  size="xs"
                   onRemove={() => updateParams({ category: null })}
                 >
                   Category:{" "}
@@ -359,6 +353,7 @@ const ProductsPage: React.FC = () => {
                 <Badge
                   variant="outline"
                   removable
+                  size="xs"
                   onRemove={() => updateParams({ sort: null })}
                 >
                   Sort:{" "}
@@ -397,64 +392,13 @@ const ProductsPage: React.FC = () => {
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
               {products.map((product, index) => (
-                <article
+                <ProductCard
+                  product={product}
                   key={product.id}
-                  className="group"
-                  style={{
-                    animation: `fadeIn 0.6s ease-out forwards`,
-                    animationDelay: `${(index % ITEMS_PER_PAGE) * 50}ms`,
-                  }}
-                >
-                  <div className="aspect-[4/5] overflow-hidden bg-neutral-50 mb-4 relative">
-                    <Link to={`/products/${product.id}`}>
-                      <img
-                        src={product.image_url || "/placeholder.jpg"}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.02] cursor-pointer"
-                        loading="lazy"
-                      />
-                    </Link>
-
-                    {/* Quick Add Button Overlay */}
-                    <div className="absolute bottom-6 left-6 right-6 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleAddToCart(product.id)}
-                        fullWidth
-                      >
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="space-y-2">
-                    <Link to={`/products/${product.id}`}>
-                      <h3 className="font-medium text-neutral-900 hover:text-neutral-600 transition-colors line-clamp-1 group-hover:text-neutral-600">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    <div className="flex items-baseline justify-between">
-                      <p className="text-lg font-medium text-neutral-900">
-                        {formatPrice(
-                          product.price,
-                          product.currency || config.storeCurrency
-                        )}
-                      </p>
-
-                      {product.category && (
-                        <CategoryBadge category={product.category} />
-                      )}
-                    </div>
-
-                    {/* Free shipping indicator */}
-                    {product.price > config.freeShippingThreshold && (
-                      <p className="text-xs text-neutral-500">Free shipping</p>
-                    )}
-                  </div>
-                </article>
+                  onAddToCart={handleAddToCart}
+                  index={index}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                />
               ))}
             </div>
 

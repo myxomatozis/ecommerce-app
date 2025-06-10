@@ -1,5 +1,7 @@
 import React, { HTMLAttributes } from "react";
 import { clsx } from "clsx";
+import Button from "./Button";
+import { X } from "lucide-react";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?:
@@ -85,26 +87,26 @@ const Badge: React.FC<BadgeProps> = ({
     sm: dot
       ? "w-2 h-2"
       : variant === "counter"
-        ? "w-5 h-5 text-xs min-w-[1.25rem] leading-none"
-        : "px-2.5 py-1 text-xs h-6 leading-tight",
+        ? "w-5 h-5 text-sm min-w-[1.25rem] leading-none"
+        : "px-2.5 py-1 text-sm h-6 leading-tight",
     md: dot
       ? "w-2.5 h-2.5"
       : variant === "counter"
-        ? "w-6 h-6 text-xs min-w-[1.5rem] leading-none"
-        : "px-3 py-1 text-sm h-7 leading-tight",
+        ? "w-6 h-6 text-md min-w-[1.5rem] leading-none"
+        : "px-3 py-1 text-md h-7 leading-tight",
     lg: dot
       ? "w-3 h-3"
       : variant === "counter"
-        ? "w-7 h-7 text-sm min-w-[1.75rem] leading-none"
-        : "px-4 py-1.5 text-sm h-8 leading-tight",
+        ? "w-7 h-7 text-lg min-w-[1.75rem] leading-none"
+        : "px-4 py-1.5 text-lg h-8 leading-tight",
   };
 
   // Icon sizes for consistent scaling
   const iconSizes = {
-    xs: 10,
-    sm: 12,
-    md: 14,
-    lg: 16,
+    xs: 12,
+    sm: 14,
+    md: 16,
+    lg: 18,
   };
 
   // Combine all classes using clsx for proper handling
@@ -135,38 +137,23 @@ const Badge: React.FC<BadgeProps> = ({
       )}
 
       {/* Content */}
-      {children && <span className="flex-1 min-w-0 truncate">{children}</span>}
+      {children && (
+        <span className="flex-1 min-w-0 truncate ml-1 mr-1">{children}</span>
+      )}
 
       {/* Remove button */}
       {removable && onRemove && (
-        <button
+        <Button
+          variant="text"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onRemove();
           }}
-          className={clsx(
-            "flex-shrink-0 rounded-full transition-colors duration-200",
-            "hover:bg-neutral-900/10 focus:outline-none focus:ring-1 focus:ring-current",
-            children || icon ? "ml-1.5" : "",
-            size === "xs" ? "p-0" : "p-0.5"
-          )}
           aria-label="Remove"
         >
-          <svg
-            className={clsx(iconSizes[size] <= 12 ? "w-2.5 h-2.5" : "w-3 h-3")}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+          <X size={iconSizes[size]} />
+        </Button>
       )}
     </span>
   );
@@ -217,7 +204,7 @@ export const CategoryBadge: React.FC<
 
   return (
     <Badge size="xs" variant={variant} {...props}>
-      <span className="mr-1 ml-1">{category}</span>
+      {category}
     </Badge>
   );
 };
@@ -240,7 +227,7 @@ export const IconCounter: React.FC<{
       size={size}
       className={clsx("absolute -top-1 -right-1", className)}
     >
-      <span className="text-xs">{displayCount}</span>
+      {displayCount}
     </Badge>
   );
 };
