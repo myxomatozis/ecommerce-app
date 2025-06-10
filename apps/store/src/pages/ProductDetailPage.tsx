@@ -26,6 +26,7 @@ const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
   const getCartItemQuantity = useCartStore(
     (state) => state.getCartItemQuantity
   );
@@ -71,10 +72,9 @@ const ProductDetailPage: React.FC = () => {
   const [currentCartQuantity, setCurrentCartQuantity] = useState(
     getCartItemQuantity(id || "")
   );
-
-  const productImages = product
-    ? product.images_gallery?.filter(Boolean) || []
-    : [];
+  const productImage = product?.image_url || "";
+  const imagesGallery = product?.images_gallery?.filter(Boolean) || [];
+  const productImages = product ? [productImage, ...imagesGallery] : [];
 
   // Check if this product would benefit from size guide (clothing items)
   const isClothingItem =
@@ -231,11 +231,16 @@ const ProductDetailPage: React.FC = () => {
           {/* Product Images */}
           <div>
             <div className="aspect-square mb-4 overflow-hidden bg-neutral-50">
-              <ProductImage product={product} />
+              <ProductImage
+                product={{
+                  ...product,
+                  image_url: productImages[selectedImage],
+                }}
+              />
             </div>
 
             {/* Image Thumbnails */}
-            {productImages.length > 1 && (
+            {productImages.length > 2 && (
               <div className="grid grid-cols-4 gap-2">
                 {productImages.map((image, index) => (
                   <button
@@ -243,7 +248,7 @@ const ProductDetailPage: React.FC = () => {
                     onClick={() => setSelectedImage(index)}
                     className={`aspect-square overflow-hidden border transition-colors ${
                       selectedImage === index
-                        ? "border-neutral-900"
+                        ? "border-neutral-600"
                         : "border-neutral-200 hover:border-neutral-400"
                     }`}
                   >
@@ -396,7 +401,14 @@ const ProductDetailPage: React.FC = () => {
                 <div className="p-4 bg-neutral-50 border border-neutral-200">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-600">
-                      {currentCartQuantity} in cart
+                      {currentCartQuantity}{" "}
+                      <Button
+                        variant="text"
+                        onClick={() => setIsCartOpen(true)}
+                        className="underline decoration-dashed"
+                      >
+                        in cart
+                      </Button>
                     </span>
                     <div className="flex items-center space-x-2">
                       <Button

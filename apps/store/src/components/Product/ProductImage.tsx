@@ -1,5 +1,5 @@
 import { Product } from "@/stores";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductImagePlaceholder from "./ImagePlaceholder";
 
 const ProductImage = ({
@@ -10,6 +10,9 @@ const ProductImage = ({
   imageProps?: React.ImgHTMLAttributes<HTMLImageElement>;
 }) => {
   const [loadingError, setLoadingError] = useState(false);
+  useEffect(() => {
+    setLoadingError(false);
+  }, [product.image_url]);
   if (!product.image_url || loadingError)
     return (
       <ProductImagePlaceholder
