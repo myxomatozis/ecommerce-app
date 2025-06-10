@@ -17,6 +17,7 @@ import { Product, useAppData, useCartStore } from "@/stores";
 import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
+import ProductImage from "@/components/Product/ProductImage";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct, categories, getCategories } = useAppData();
@@ -230,11 +231,7 @@ const ProductDetailPage: React.FC = () => {
           {/* Product Images */}
           <div>
             <div className="aspect-square mb-4 overflow-hidden bg-neutral-50">
-              <img
-                src={product.image_url || "/placeholder.jpg"}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+              <ProductImage product={product} />
             </div>
 
             {/* Image Thumbnails */}
@@ -250,10 +247,12 @@ const ProductDetailPage: React.FC = () => {
                         : "border-neutral-200 hover:border-neutral-400"
                     }`}
                   >
-                    <img
-                      src={image || "/placeholder.jpg"}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                    <ProductImage
+                      product={product}
+                      imageProps={{
+                        src: image,
+                        alt: `${product.name} image ${index + 1}`,
+                      }}
                     />
                   </button>
                 ))}

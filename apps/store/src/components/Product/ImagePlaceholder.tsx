@@ -71,7 +71,6 @@ const ProductImagePlaceholder: React.FC<ProductImagePlaceholderProps> = ({
       className={`
         w-full ${config.container} 
         ${variantStyles[variant]}
-        rounded-2xl
         flex flex-col items-center justify-center
         relative overflow-hidden
         group hover:scale-[1.02] transition-transform duration-300

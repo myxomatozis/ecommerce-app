@@ -2,7 +2,13 @@ import { Product } from "@/stores";
 import { useState } from "react";
 import ProductImagePlaceholder from "./ImagePlaceholder";
 
-const ProductImage = ({ product }: { product: Product }) => {
+const ProductImage = ({
+  product,
+  imageProps,
+}: {
+  product: Product;
+  imageProps?: React.ImgHTMLAttributes<HTMLImageElement>;
+}) => {
   const [loadingError, setLoadingError] = useState(false);
   if (!product.image_url || loadingError)
     return (
@@ -17,8 +23,9 @@ const ProductImage = ({ product }: { product: Product }) => {
       src={product.image_url}
       loading="lazy"
       onError={() => setLoadingError(true)}
-      alt={product.name}
       className="w-full h-full object-cover"
+      {...imageProps}
+      alt={imageProps?.alt || product.name}
     />
   );
 };
