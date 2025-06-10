@@ -99,12 +99,6 @@ importers:
 
   apps/store:
     dependencies:
-      '@stripe/stripe-js':
-        specifier: ^7.3.1
-        version: 7.3.1
-      '@supabase/supabase-js':
-        specifier: ^2.49.10
-        version: 2.50.0
       '@thefolk/ui':
         specifier: workspace:*
         version: link:../../packages/ui
