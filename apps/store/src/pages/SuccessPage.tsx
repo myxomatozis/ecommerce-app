@@ -4,7 +4,6 @@ import { CheckCircle, ArrowRight } from "lucide-react";
 import SupabaseAPI, { Order } from "@/lib/supabase";
 import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";
-import { stripe } from "@/lib/stripe";
 
 const SuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,7 +14,7 @@ const SuccessPage: React.FC = () => {
 
   const estimatedDelivery = new Date(
     Date.now() + 5 * 24 * 60 * 60 * 1000
-  ).toLocaleDateString("en-US", {
+  ).toLocaleDateString("en-GB", {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -32,19 +31,6 @@ const SuccessPage: React.FC = () => {
       .then((fetchedOrder) => {
         if (fetchedOrder) {
           setOrder(fetchedOrder);
-          console.log("Fetched Order:", fetchedOrder);
-          if (fetchedOrder.stripe_payment_intent_secret) {
-            stripe
-              ?.retrievePaymentIntent(fetchedOrder.stripe_payment_intent_secret)
-              .then((paymentIntent) => {
-                console.log("Payment Intent:", paymentIntent);
-              })
-              .catch((err) => {
-                console.error("Error retrieving payment intent:", err);
-                setError("Failed to retrieve payment intent details");
-              });
-            console.log(stripe);
-          }
         } else {
           setError("Order not found");
         }

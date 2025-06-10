@@ -14,12 +14,16 @@ import { Button, Card, Badge } from "@thefolk/ui";
 import { Product, useAppData, useCartStore } from "@/stores";
 import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
+import { useScroll } from "@/context/ScrollContext";
+import ProductImage from "@/components/Product/ProductImage";
+import FeaturedProduct from "@/components/Product/FeaturedProduct";
 
 const HomePage: React.FC = () => {
   const { addToCart, loading } = useCartStore();
   const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
   const { getProducts } = useAppData();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { isScrolled } = useScroll();
 
   const heroImages = [
     "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=1080&fit=crop&auto=format",
@@ -118,11 +122,13 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse" />
+        {!isScrolled && (
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse" />
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Values Section - Modern cards */}
@@ -162,7 +168,7 @@ const HomePage: React.FC = () => {
               <Card
                 key={feature.title}
                 variant="minimal"
-                className="group p-10 text-center hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm"
+                className="group p-10 text-center hover:shadow-md transition-all duration-700 border-0 bg-white/80 backdrop-blur-sm"
                 style={{ animationDelay: `${index * 200}ms` }}
               >
                 <div className="w-16 h-16 bg-gradient-to-br from-neutral-900 to-neutral-700 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
@@ -194,88 +200,12 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts.map((product, index) => (
-              <Card
+            {featuredProducts.map((product) => (
+              <FeaturedProduct
+                product={product}
                 key={product.id}
-                variant="minimal"
-                padding="none"
-                className="group cursor-pointer overflow-hidden hover:shadow-md transition-all duration-700"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-                  <Link to={`/products/${product.id}`}>
-                    <img
-                      src={product.image_url || "/placeholder.jpg"}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </Link>
-
-                  {/* Floating Badge */}
-                  {product.rating && (
-                    <div className="absolute top-6 left-6">
-                      <Badge
-                        variant="default"
-                        size="sm"
-                        className="bg-white/90 backdrop-blur-sm"
-                      >
-                        <div className="flex items-center text-xs text-neutral-900">
-                          <Star
-                            size={12}
-                            className="text-yellow-500 fill-current mr-1"
-                          />
-                          {product.rating.toFixed(1)}
-                        </div>
-                      </Badge>
-                    </div>
-                  )}
-
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  {/* Quick Add Button */}
-                  <div className="absolute bottom-6 left-6 right-6 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                    <Button
-                      variant="minimal"
-                      size="sm"
-                      isLoading={loading}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart(product.id);
-                      }}
-                      className="w-full bg-white text-neutral-900 hover:bg-gray-100 font-medium"
-                    >
-                      Quick Add
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="p-8 space-y-4">
-                  <div className="space-y-3">
-                    <Link to={`/products/${product.id}`}>
-                      <h3 className="text-xl font-medium text-neutral-900 group-hover:text-neutral-600 transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <p className="text-neutral-600 line-clamp-2 leading-relaxed">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="space-y-1">
-                      <span className="text-2xl font-light text-neutral-900">
-                        {formatPrice(product.price, product.currency || "USD")}
-                      </span>
-                      {product.price > config.freeShippingThreshold && (
-                        <p className="text-sm text-green-600 font-medium">
-                          Free shipping
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+                loading={loading}
+              />
             ))}
           </div>
 

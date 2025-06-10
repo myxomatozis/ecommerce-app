@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { ShoppingBag, Search, Menu, X } from "lucide-react";
 import { useCartStore } from "@/stores";
 import { Button, IconCounter } from "@thefolk/ui";
+import { useScroll } from "@/context/ScrollContext";
 
 const Header: React.FC = () => {
   const { cartSummary, isCartOpen, setIsCartOpen } = useCartStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const { isScrolled } = useScroll();
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
@@ -21,19 +22,6 @@ const Header: React.FC = () => {
 
   // Check if we're on homepage for overlay behavior
   const isHomePage = location.pathname === "/";
-
-  // Scroll detection - only for homepage
-  useEffect(() => {
-    if (!isHomePage) return;
-
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage]);
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (location.pathname !== "/products") return false;
