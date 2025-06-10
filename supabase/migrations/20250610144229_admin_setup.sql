@@ -61,7 +61,7 @@ BEGIN
     RETURN QUERY
     SELECT 
         au.id,
-        u.email,
+        u.email::text,  -- Cast VARCHAR(255) to TEXT
         au.role,
         au.is_active,
         au.created_at,
