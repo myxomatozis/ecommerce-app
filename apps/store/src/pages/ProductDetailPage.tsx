@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   CheckCircle,
   AlertCircle,
+  ZoomIn,
 } from "lucide-react";
 import { Button, Spinner, CategoryBadge, StatusBadge } from "@thefolk/ui";
 import { Product, useAppData, useCartStore } from "@/stores";
@@ -18,10 +19,12 @@ import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
 import ProductImage from "@/components/Product/ProductImage";
+import ProductImageCarousel from "@/components/Product/ImageCaroucel";
 
 const ProductDetailPage: React.FC = () => {
   const { getProduct, categories, getCategories } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
+  const [isCarouselOpen, setIsCarouselOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
 
@@ -229,14 +232,22 @@ const ProductDetailPage: React.FC = () => {
         {/* Product Detail */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Product Images */}
-          <div>
-            <div className="aspect-square mb-4 overflow-hidden bg-neutral-50">
+          <div onDoubleClick={() => setIsCarouselOpen(true)}>
+            <div className="aspect-square mb-4 overflow-hidden bg-neutral-50 relative group">
               <ProductImage
                 product={{
                   ...product,
                   image_url: productImages[selectedImage],
                 }}
               />
+
+              {/* Tiny zoom button - bottom right */}
+              <button
+                onClick={() => setIsCarouselOpen(true)}
+                className="absolute cursor-pointer bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0"
+              >
+                <ZoomIn size={16} className="text-neutral-800" />
+              </button>
             </div>
 
             {/* Image Thumbnails */}
@@ -465,6 +476,13 @@ const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+      <ProductImageCarousel
+        productImages={productImages}
+        product={product}
+        isOpen={isCarouselOpen}
+        onClose={() => setIsCarouselOpen(false)}
+        initialIndex={selectedImage}
+      />
     </div>
   );
 };
