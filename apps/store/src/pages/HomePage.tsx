@@ -1,26 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Award,
-  Truck,
-  RotateCcw,
-  Sparkles,
-  Users,
-  Leaf,
-} from "lucide-react";
-import { Button, Card } from "@thefolk/ui";
+import { ArrowRight, Award, Truck, RotateCcw } from "lucide-react";
+import { Button } from "@thefolk/ui";
 import { Product, useAppData } from "@/stores";
 import { getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
-import { useScroll } from "@/context/ScrollContext";
 import FeaturedProduct from "@/components/Product/FeaturedProduct";
+import { useScroll } from "@/context/ScrollContext";
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
   const { getProducts } = useAppData();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { isScrolled } = useScroll();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = [
     "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=1080&fit=crop&auto=format",
@@ -51,74 +43,51 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="bg-white">
-      {/* Hero Section - Full-screen with dynamic backgrounds */}
+      {/* Hero Section - Sophisticated full-screen presentation */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Dynamic Background Images */}
+        {/* Dynamic Background Images with improved transitions */}
         {heroImages.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-2000 ${
-              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            className={`absolute inset-0 transition-all duration-[3000ms] ease-in-out ${
+              index === currentImageIndex
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-105"
             }`}
-          >
-            <img
-              src={image}
-              alt={`Fashion Collection ${index + 1}`}
-              className="w-full h-full object-cover scale-105 transition-transform duration-[20000ms]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
-          </div>
+            style={{
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url(${image})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
         ))}
 
-        {/* Floating Elements */}
-        <div className="absolute top-1/4 left-10 w-2 h-2 bg-white/40 rounded-full animate-pulse" />
-        <div className="absolute top-1/3 right-20 w-1 h-1 bg-white/60 rounded-full animate-pulse delay-1000" />
-        <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse delay-2000" />
-
-        {/* Content */}
-        <div className="relative z-20 text-center px-6 max-w-6xl mx-auto">
-          <div className="space-y-8 animate-fade-in-up">
-            <div className="space-y-6">
-              <h1
-                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight text-white leading-none"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                Curated for the
-                <span className="block italic text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
-                  Modern Folk
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
-                Discover timeless pieces that tell your story through
-                thoughtfully selected fashion and lifestyle essentials
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+        {/* Hero Content - Refined typography and positioning */}
+        <div className="relative z-10 text-center text-white max-w-2xl mx-auto px-6">
+          <div className="space-y-8">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.9]">
+              The Folk
+            </h1>
+            <p className="text-lg md:text-xl font-light tracking-wide opacity-90 max-w-lg mx-auto leading-relaxed">
+              Curated fashion for the modern minimalist
+            </p>
+            <div className="pt-4">
               <Button
                 as={Link}
                 to="/products"
-                variant="minimal"
+                variant="ghost"
                 size="lg"
-                rightIcon={<ArrowRight size={20} />}
-                className="bg-white text-neutral-900 hover:bg-gray-100 px-12 py-4 text-lg font-medium shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105"
+                rightIcon={<ArrowRight size={18} />}
+                className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-500 px-12 py-4 text-base font-normal tracking-wide"
               >
                 Explore Collection
-              </Button>
-              <Button
-                as={Link}
-                to="/about"
-                variant="outline"
-                size="lg"
-                className="border-2 border-white/50 text-white hover:bg-white/10 px-12 py-4 text-lg backdrop-blur-sm transition-all duration-500"
-              >
-                Our Story
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Elegant scroll indicator */}
         {!isScrolled && (
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
             <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
@@ -128,88 +97,34 @@ const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* Values Section - Modern cards */}
-      <section className="py-32 bg-gradient-to-b from-white to-gray-50/50">
-        <div className="container-modern">
+      {/* Featured Products - Toteme-inspired clean grid */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Section Header - Minimal and sophisticated */}
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-light text-neutral-900 mb-6 tracking-tight">
-              Why Choose The Folk
+            <h2 className="text-3xl md:text-4xl font-light text-neutral-900 tracking-tight mb-4">
+              Featured Selection
             </h2>
-            <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              Every piece in our collection is carefully curated to meet our
-              standards of quality, sustainability, and timeless design
-            </p>
+            <div className="w-12 h-px bg-neutral-900 mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Sparkles,
-                title: "Curated Quality",
-                description:
-                  "Each item is hand-selected by our team for exceptional craftsmanship and lasting appeal that transcends seasons.",
-              },
-              {
-                icon: Leaf,
-                title: "Sustainable Choice",
-                description:
-                  "We partner with brands committed to ethical practices and environmental responsibility for a better tomorrow.",
-              },
-              {
-                icon: Users,
-                title: "Community Driven",
-                description:
-                  "Join thousands of style enthusiasts who trust us to bring them the finest in contemporary fashion.",
-              },
-            ].map((feature, index) => (
-              <Card
-                key={feature.title}
-                variant="minimal"
-                className="group p-10 text-center hover:shadow-md transition-all duration-700 border-0 bg-white/80 backdrop-blur-sm"
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-neutral-900 to-neutral-700 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
-                  <feature.icon size={28} className="text-white" />
-                </div>
-                <h3 className="text-2xl font-medium text-neutral-900 mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-neutral-600 leading-relaxed text-lg">
-                  {feature.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products Section */}
-      <section className="py-32 bg-white">
-        <div className="container-modern">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-light text-neutral-900 mb-6 tracking-tight">
-              Featured Collection
-            </h2>
-            <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              Discover our handpicked selection of premium products that define
-              contemporary style
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Products Grid - Clean and spacious */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
             {featuredProducts.map((product) => (
-              <FeaturedProduct product={product} key={product.id} />
+              <div key={product.id} className="group">
+                <FeaturedProduct product={product} />
+              </div>
             ))}
           </div>
 
-          <div className="text-center mt-16">
+          {/* View All Products - Subtle call-to-action */}
+          <div className="text-center mt-20">
             <Button
               as={Link}
               to="/products"
-              variant="outline"
+              variant="ghost"
               size="lg"
-              rightIcon={<ArrowRight size={20} />}
-              className="px-12 py-4 text-lg border-2 hover:bg-neutral-900 hover:text-white transition-all duration-500"
+              className="border border-neutral-200 text-neutral-900 hover:bg-neutral-50 px-12 py-4 font-normal tracking-wide"
             >
               View All Products
             </Button>
@@ -217,75 +132,113 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Newsletter Section - Modern gradient */}
-      <section className="py-24 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000" />
+      {/* Brand Philosophy - New section inspired by luxury fashion sites */}
+      <section className="py-24 bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <h2 className="text-3xl md:text-4xl font-light text-neutral-900 tracking-tight leading-tight">
+                Timeless pieces for the conscious wardrobe
+              </h2>
+              <p className="text-lg text-neutral-600 leading-relaxed font-light">
+                Each piece in our collection is carefully selected for its
+                craftsmanship, sustainability, and enduring style. We believe in
+                quality over quantity, creating a wardrobe that transcends
+                seasons.
+              </p>
+              <Button
+                as={Link}
+                to="/about"
+                variant="ghost"
+                rightIcon={<ArrowRight size={16} />}
+                className="text-neutral-900 hover:text-neutral-600 font-normal tracking-wide px-0"
+              >
+                Our Story
+              </Button>
+            </div>
+            <div className="relative">
+              <div className="aspect-[4/5] bg-neutral-200 rounded-sm overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&auto=format"
+                  alt="The Folk Philosophy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div className="container-modern relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h2 className="text-4xl md:text-5xl font-light tracking-tight">
-              Join Our Community
+      {/* Newsletter - Refined and minimal */}
+      <section className="py-24 bg-white">
+        <div className="max-w-2xl mx-auto px-6 text-center">
+          <div className="space-y-8">
+            <h2 className="text-3xl md:text-4xl font-light text-neutral-900 tracking-tight">
+              Stay Updated
             </h2>
-            <p className="text-xl text-white/90 leading-relaxed max-w-2xl mx-auto">
-              Be the first to discover new arrivals, exclusive events, and
-              styling inspiration from The Folk
+            <p className="text-lg text-neutral-600 leading-relaxed font-light max-w-lg mx-auto">
+              Be the first to discover new arrivals, exclusive pieces, and
+              stories from our carefully curated world.
             </p>
 
-            <form className="max-w-lg mx-auto flex gap-4 mt-12 items-center">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 text-lg"
-                required
-              />
-              <Button
-                type="submit"
-                variant="minimal"
-                size="lg"
-                className="bg-white text-neutral-900 hover:bg-gray-100 px-8 py-4 text-lg font-medium hover:scale-105 transition-all duration-300"
-              >
-                Subscribe
-              </Button>
+            {/* Newsletter Form - Clean and sophisticated */}
+            <form className="max-w-md mx-auto">
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-6 py-4 border border-neutral-200 focus:border-neutral-400 focus:outline-none text-neutral-900 placeholder-neutral-400 font-light tracking-wide"
+                  required
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="h-full"
+                >
+                  Subscribe
+                </Button>
+              </div>
             </form>
           </div>
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="py-16 bg-gray-50 border-t border-gray-100">
-        <div className="container-modern">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      {/* Services - Refined features section */}
+      <section className="py-24 bg-neutral-50 border-t border-neutral-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
             {[
               {
                 icon: Award,
-                title: "Premium Quality",
-                description: `Carefully curated products that meet our high standards`,
+                title: "Curated Quality",
+                description:
+                  "Every piece is carefully selected for exceptional craftsmanship and enduring style",
               },
               {
                 icon: Truck,
-                title: "Fast Shipping",
-                description: `Free shipping on orders over ${getCurrencySymbol(config.storeCurrency)}${config.freeShippingThreshold}, delivered to your door`,
+                title: "Complimentary Delivery",
+                description: `Free shipping on orders over ${getCurrencySymbol(config.storeCurrency)}${config.freeShippingThreshold} with carbon-neutral delivery`,
               },
               {
                 icon: RotateCcw,
-                title: "Easy Returns",
-                description: "30-day return policy with hassle-free exchanges",
+                title: "Effortless Returns",
+                description:
+                  "30-day return policy with complimentary exchanges for the perfect fit",
               },
             ].map((feature) => (
-              <div key={feature.title} className="text-center space-y-4">
-                <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center mx-auto">
-                  <feature.icon size={24} className="text-white" />
+              <div key={feature.title} className="text-center space-y-6 group">
+                <div className="w-16 h-16 bg-white border border-neutral-200 rounded-full flex items-center justify-center mx-auto group-hover:border-neutral-300 transition-colors duration-300">
+                  <feature.icon size={24} className="text-neutral-700" />
                 </div>
-                <h3 className="text-xl font-medium text-neutral-900">
-                  {feature.title}
-                </h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <div className="space-y-3">
+                  <h3 className="text-xl font-normal text-neutral-900 tracking-wide">
+                    {feature.title}
+                  </h3>
+                  <p className="text-neutral-600 leading-relaxed font-light max-w-xs mx-auto">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
