@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     const baseClasses =
-      "block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200";
+      "block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-transparent transition-all duration-200";
 
     const errorClasses = error
       ? "border-red-300 focus:ring-red-500 focus:border-transparent"

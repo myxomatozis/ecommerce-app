@@ -26,6 +26,7 @@ export interface DropdownProps {
   size?: "sm" | "md" | "lg";
   variant?: "default" | "bordered" | "filled";
   position?: "auto" | "top" | "bottom";
+  maxHeight?: number; // New prop for customizable max height
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -43,6 +44,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   multiple = false,
   size = "md",
   variant = "default",
+  maxHeight = 320, // Default max height in pixels
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +55,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionsContainerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((option) => option.value === value);
   const selectedOptions = multiple
@@ -167,11 +170,11 @@ const Dropdown: React.FC<DropdownProps> = ({
   // Variant classes
   const variantClasses = {
     default:
-      "bg-white border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20",
+      "bg-white border border-gray-300 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20",
     bordered:
-      "bg-white border-2 border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20",
+      "bg-white border-2 border-gray-300 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20",
     filled:
-      "bg-gray-50 border border-transparent focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20",
+      "bg-gray-50 border border-transparent focus:bg-white focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20",
   };
 
   const baseClasses = "relative inline-block text-left z-20";
@@ -284,9 +287,12 @@ const Dropdown: React.FC<DropdownProps> = ({
         </button>
 
         {isOpen && (
-          <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-hidden">
+          <div
+            className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+            style={{ maxHeight: `${maxHeight}px` }}
+          >
             {searchable && (
-              <div className="p-3 border-b border-gray-100">
+              <div className="p-3 border-b border-gray-100 bg-white sticky top-0 z-20">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -295,18 +301,36 @@ const Dropdown: React.FC<DropdownProps> = ({
                     placeholder="Search options..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500/20 focus:border-neutral-500"
                   />
                 </div>
               </div>
             )}
 
-            <div className="py-1 overflow-y-auto max-h-64">
+            <div
+              ref={optionsContainerRef}
+              className="py-1 overflow-y-auto bg-white"
+              style={{
+                maxHeight: searchable
+                  ? `${maxHeight - 80}px`
+                  : `${maxHeight - 16}px`,
+              }}
+            >
               {filteredOptions.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                  {searchable && searchTerm
-                    ? "No options found"
-                    : "No options available"}
+                <div className="px-4 py-8 text-sm text-gray-500 text-center">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Search className="w-8 h-8 text-gray-300" />
+                    <p className="font-medium">
+                      {searchable && searchTerm
+                        ? "No options found"
+                        : "No options available"}
+                    </p>
+                    {searchable && searchTerm && (
+                      <p className="text-xs text-gray-400">
+                        Try adjusting your search terms
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 Object.keys(groupedOptions).map((groupName) => {
@@ -319,7 +343,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   return (
                     <div key={groupName}>
                       {groupName !== "default" && (
-                        <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50 sticky top-0 z-10">
                           {groupName}
                         </div>
                       )}
@@ -336,39 +360,35 @@ const Dropdown: React.FC<DropdownProps> = ({
                             className={`
                               w-full text-left px-4 py-3 ${
                                 sizeClasses[size].dropdown
-                              } transition-colors duration-150 flex items-center justify-between
+                              } transition-colors duration-150 flex items-center justify-between group
                               ${
                                 option.disabled
-                                  ? "text-gray-400 cursor-not-allowed"
-                                  : "text-gray-900 hover:bg-gray-50 cursor-pointer"
-                              }
-                              ${
-                                isSelected
-                                  ? "bg-primary-50 text-primary-700"
-                                  : ""
+                                  ? "text-gray-400 cursor-not-allowed bg-gray-50"
+                                  : isSelected
+                                    ? "bg-neutral-50 text-neutral-900 border-l-4 border-neutral-900"
+                                    : "text-gray-700 hover:bg-neutral-50 hover:text-neutral-900"
                               }
                             `}
                           >
                             <div className="flex items-center min-w-0 flex-1">
                               {option.icon && (
-                                <span className="mr-3 flex-shrink-0">
+                                <span className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-600">
                                   {option.icon}
                                 </span>
                               )}
                               <div className="min-w-0 flex-1">
-                                <div className="font-medium">
+                                <div className="block truncate font-medium">
                                   {option.label}
                                 </div>
                                 {option.description && (
-                                  <div className="text-xs text-gray-500 mt-0.5">
+                                  <div className="block truncate text-xs text-gray-500 mt-0.5">
                                     {option.description}
                                   </div>
                                 )}
                               </div>
                             </div>
-
                             {isSelected && (
-                              <Check className="w-4 h-4 text-primary-600 flex-shrink-0 ml-2" />
+                              <Check className="w-4 h-4 text-neutral-900 flex-shrink-0 ml-2" />
                             )}
                           </button>
                         );
@@ -378,28 +398,18 @@ const Dropdown: React.FC<DropdownProps> = ({
                 })
               )}
             </div>
+
+            {/* Scroll indicator at bottom */}
+            {filteredOptions.length > 6 && (
+              <div className="sticky bottom-0 h-2 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+            )}
           </div>
         )}
       </div>
 
       {(error || helperText) && (
-        <div className="mt-2">
-          {error && (
-            <p className="text-sm text-red-600 flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {error}
-            </p>
-          )}
+        <div className="mt-1">
+          {error && <p className="text-sm text-red-600">{error}</p>}
           {helperText && !error && (
             <p className="text-sm text-gray-500">{helperText}</p>
           )}
