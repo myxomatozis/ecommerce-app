@@ -45,6 +45,7 @@ interface ProductsState {
 
   // Actions
   getProduct: (id: string, forceRefresh?: boolean) => Promise<Product | null>;
+  getProductSKU: (id: string) => Promise<string | null>;
   getProducts: (
     filters?: ProductFilters,
     forceRefresh?: boolean
@@ -247,6 +248,14 @@ export const useProductsStore = create<ProductsState>()(
 
           return [];
         }
+      },
+
+      getProductSKU: async (id: string) => {
+        return get()
+          .getProduct(id)
+          .then((product) => {
+            return product ? product.id.slice(-8).toUpperCase() : null;
+          });
       },
 
       searchProducts: async (searchTerm: string, forceRefresh = false) => {

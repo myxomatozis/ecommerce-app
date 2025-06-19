@@ -21,13 +21,14 @@ import ProductImage from "@/components/Product/ProductImage";
 import ProductImageCarousel from "@/components/Product/ImageCaroucel";
 
 const ProductDetailPage: React.FC = () => {
-  const { getProduct, categories, getCategories } = useAppData();
+  const { getProduct, categories, getCategories, getProductSKU } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
+  const [sku, setSKU] = useState<string | null>(null);
   const [isCarouselOpen, setIsCarouselOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [categorySlug, setCategorySlug] = useState("");
+  const [_, setCategorySlug] = useState("");
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
@@ -48,6 +49,9 @@ const ProductDetailPage: React.FC = () => {
       .then((data) => {
         if (data) {
           setProduct(data);
+          getProductSKU(data.id).then((skuData) => {
+            setSKU(skuData || null);
+          });
           if (categories.length === 0) {
             getCategories().then((cat) => {
               setCategorySlug(
@@ -144,79 +148,78 @@ const ProductDetailPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Modern Header - Minimal Navigation */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Button
-              as={Link}
-              to="/products"
-              variant="ghost"
-              leftIcon={<ArrowLeft size={16} />}
-              className="text-neutral-600 hover:text-neutral-900 font-normal"
-            >
-              Back
-            </Button>
-
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="p-2">
-                <Heart size={18} className="text-neutral-600" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-white">
       {/* Product Content - Toteme-inspired Layout */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-4rem)]">
-          {/* Image Gallery - Left Side (Larger) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+          {/* Image Gallery - Left Side (Scrollable) */}
           <div className="lg:col-span-8 bg-neutral-50">
-            <div className="sticky top-16 h-[calc(100vh-4rem)] flex items-center justify-center">
-              <div className="w-full top-0 aspect-[3/4] bg-white shadow-sm">
+            {/* Back Button - Only on mobile */}
+            <div className="lg:hidden p-6 bg-white">
+              <Button
+                as={Link}
+                to="/products"
+                variant="ghost"
+                leftIcon={<ArrowLeft size={16} />}
+                className="text-neutral-600 hover:text-neutral-900 font-normal"
+              >
+                Back
+              </Button>
+            </div>
+
+            {/* Image Gallery */}
+            <div className="space-y-1 lg:space-y-2 bg-white">
+              {productImages.map((image, index) => (
                 <div
-                  className="relative w-full h-full overflow-hidden cursor-zoom-in group"
-                  onClick={() => setIsCarouselOpen(true)}
+                  key={index}
+                  className={`relative w-full transition-all duration-300 cursor-zoom-in group aspect-[2.5/4]`}
+                  onClick={() => {
+                    setSelectedImage(index);
+                    setIsCarouselOpen(true);
+                  }}
                 >
                   <ProductImage
                     product={{
                       ...product,
-                      image_url: productImages[selectedImage] || productImage,
+                      image_url: image,
+                    }}
+                    imageProps={{
+                      className:
+                        "w-full h-full object-cover object-center transition-transform duration-700",
                     }}
                   />
-                </div>
 
-                {/* Image Thumbnails */}
-                {productImages.length > 1 && (
-                  <div className="flex space-x-2 mt-4 justify-center">
-                    {productImages.slice(0, 4).map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`w-12 h-12 overflow-hidden transition-all duration-300 ${
-                          selectedImage === index
-                            ? "ring-2 ring-neutral-900 ring-offset-2"
-                            : "hover:opacity-75"
-                        }`}
-                      >
-                        <img
-                          src={image}
-                          alt={`${product.name} ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+
+                  {/* Zoom indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm">
+                      <ZoomIn size={14} className="text-neutral-700" />
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Product Details - Right Side (Narrower) */}
-          <div className="lg:col-span-4 bg-white">
-            <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-              <div className="p-8 lg:p-12 space-y-8">
+          {/* Product Details - Right Side (Sticky) */}
+          <div className="lg:col-span-4 bg-white border-l border-neutral-100">
+            <div className="sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto">
+              <div className="p-6 lg:p-8 space-y-6 lg:space-y-8">
+                {/* Back Button - Desktop only */}
+                <div className="hidden lg:block">
+                  <Button
+                    as={Link}
+                    to="/products"
+                    variant="ghost"
+                    leftIcon={<ArrowLeft size={16} />}
+                    className="text-neutral-600 hover:text-neutral-900 font-normal -ml-2"
+                  >
+                    Back
+                  </Button>
+                </div>
+
                 {/* Category & Status */}
                 <div className="flex items-center justify-between">
                   <CategoryBadge category={product.category || ""} size="sm" />
@@ -232,18 +235,18 @@ const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* Product Title & Price */}
-                <div className="space-y-4">
-                  <h1 className="text-2xl lg:text-3xl font-light text-neutral-900 leading-tight">
+                <div className="space-y-3">
+                  <h1 className="text-xl lg:text-2xl font-light text-neutral-900 leading-tight">
                     {product.name}
                   </h1>
-                  <div className="text-xl text-neutral-900 font-normal">
+                  <div className="text-lg lg:text-xl text-neutral-900 font-normal">
                     {formatPrice(product.price, config.storeCurrency)}
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="prose prose-neutral prose-sm max-w-none">
-                  <p className="text-neutral-600 leading-relaxed">
+                  <p className="text-neutral-600 leading-relaxed text-sm lg:text-base">
                     {product.description}
                   </p>
                 </div>
@@ -254,7 +257,7 @@ const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* Quantity & Add to Cart */}
-                <div className="space-y-6 pt-6 border-t border-neutral-100">
+                <div className="space-y-4 pt-4 border-t border-neutral-100">
                   {currentCartQuantity === 0 ? (
                     <Button
                       onClick={handleAddToCart}
@@ -266,20 +269,20 @@ const ProductDetailPage: React.FC = () => {
                         isAddingToCart ? (
                           <Spinner size="sm" />
                         ) : (
-                          <ShoppingCart size={18} />
+                          <ShoppingCart size={16} />
                         )
                       }
-                      className="h-12 text-sm font-medium tracking-wide"
+                      className="h-11 text-sm font-medium tracking-wide"
                     >
                       {isAddingToCart ? "Adding..." : "Add to Bag"}
                     </Button>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-neutral-50 rounded">
                         <span className="text-sm font-medium text-neutral-900">
                           In your bag
                         </span>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
                           <Button
                             variant="ghost"
                             size="xs"
@@ -287,11 +290,11 @@ const ProductDetailPage: React.FC = () => {
                               handleUpdateCartQuantity(currentCartQuantity - 1)
                             }
                             disabled={currentCartQuantity <= 1}
-                            className="w-8 h-8 p-0"
+                            className="w-7 h-7 p-0"
                           >
-                            <Minus size={14} />
+                            <Minus size={12} />
                           </Button>
-                          <span className="font-medium text-neutral-900 min-w-[2rem] text-center text-sm">
+                          <span className="font-medium text-neutral-900 min-w-[1.5rem] text-center text-sm">
                             {currentCartQuantity}
                           </span>
                           <Button
@@ -304,9 +307,9 @@ const ProductDetailPage: React.FC = () => {
                               currentCartQuantity >=
                               (product?.stock_quantity || 0)
                             }
-                            className="w-8 h-8 p-0"
+                            className="w-7 h-7 p-0"
                           >
-                            <Plus size={14} />
+                            <Plus size={12} />
                           </Button>
                         </div>
                       </div>
@@ -317,7 +320,7 @@ const ProductDetailPage: React.FC = () => {
                         variant="outline"
                         size="lg"
                         fullWidth
-                        className="h-12 text-sm font-medium"
+                        className="h-11 text-sm font-medium"
                       >
                         View Bag
                       </Button>
@@ -326,12 +329,12 @@ const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* Features */}
-                <div className="space-y-4 pt-6 border-t border-neutral-100">
+                <div className="space-y-3 pt-4 border-t border-neutral-100">
                   {features.map((feature, index) => {
                     const Icon = feature.icon;
                     return (
                       <div key={index} className="flex items-start space-x-3">
-                        <Icon size={16} className="text-neutral-600 mt-0.5" />
+                        <Icon size={14} className="text-neutral-600 mt-1" />
                         <div className="space-y-1">
                           <div className="text-sm font-medium text-neutral-900">
                             {feature.title}
@@ -346,12 +349,12 @@ const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* Additional Product Details */}
-                <div className="space-y-4 pt-6 border-t border-neutral-100">
-                  <div className="space-y-3 text-sm">
+                <div className="space-y-3 pt-4 border-t border-neutral-100">
+                  <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-neutral-600">SKU</span>
-                      <span className="text-neutral-900 font-mono">
-                        {product.id.slice(-8).toUpperCase()}
+                      <span className="text-neutral-900 font-mono text-xs">
+                        {sku || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -361,6 +364,19 @@ const ProductDetailPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Wishlist */}
+                <div className="pt-4 border-t border-neutral-100">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    leftIcon={<Heart size={14} />}
+                    className="text-neutral-600 hover:text-neutral-900"
+                  >
+                    Add to Wishlist
+                  </Button>
                 </div>
               </div>
             </div>
