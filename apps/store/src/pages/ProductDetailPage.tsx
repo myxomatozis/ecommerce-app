@@ -19,16 +19,16 @@ import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
 import ProductImage from "@/components/Product/ProductImage";
 import ProductImageCarousel from "@/components/Product/ImageCaroucel";
+import MobileProductCarousel from "@/components/Product/MobileProductCarousel";
 
 const ProductDetailPage: React.FC = () => {
-  const { getProduct, categories, getCategories, getProductSKU } = useAppData();
+  const { getProduct, categories, getCategories } = useAppData();
   const [product, setProduct] = useState<Product | null>(null);
-  const [sku, setSKU] = useState<string | null>(null);
   const [isCarouselOpen, setIsCarouselOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [_, setCategorySlug] = useState("");
+  const [categorySlug, setCategorySlug] = useState("");
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
@@ -49,9 +49,6 @@ const ProductDetailPage: React.FC = () => {
       .then((data) => {
         if (data) {
           setProduct(data);
-          getProductSKU(data.id).then((skuData) => {
-            setSKU(skuData || null);
-          });
           if (categories.length === 0) {
             getCategories().then((cat) => {
               setCategorySlug(
@@ -149,11 +146,21 @@ const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="bg-white">
-      {/* Product Content - Toteme-inspired Layout */}
+      {/* Mobile Product Carousel */}
+      <MobileProductCarousel
+        product={product}
+        productImages={productImages}
+        onImageClick={(index) => {
+          setSelectedImage(index);
+          setIsCarouselOpen(true);
+        }}
+      />
+
+      {/* Product Content - Desktop Layout */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-          {/* Image Gallery - Left Side (Scrollable) */}
-          <div className="lg:col-span-8 bg-neutral-50">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-0">
+          {/* Image Gallery - Left Side (Desktop Only) */}
+          <div className="hidden lg:block lg:col-span-8 bg-white">
             {/* Back Button - Only on mobile */}
             <div className="lg:hidden p-6 bg-white">
               <Button
@@ -168,11 +175,15 @@ const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Image Gallery */}
-            <div className="space-y-1 lg:space-y-2 bg-white">
+            <div className="space-y-2 lg:space-y-4">
               {productImages.map((image, index) => (
                 <div
                   key={index}
-                  className={`relative w-full transition-all duration-300 cursor-zoom-in group aspect-[2.5/4]`}
+                  className={`
+                    relative w-full transition-all duration-300
+                    aspect-[2.5/4]
+                    cursor-zoom-in group
+                  `}
                   onClick={() => {
                     setSelectedImage(index);
                     setIsCarouselOpen(true);
@@ -185,7 +196,7 @@ const ProductDetailPage: React.FC = () => {
                     }}
                     imageProps={{
                       className:
-                        "w-full h-full object-cover object-center transition-transform duration-700",
+                        "w-full h-full object-cover transition-transform duration-700",
                     }}
                   />
 
@@ -203,11 +214,24 @@ const ProductDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Product Details - Right Side (Sticky) */}
-          <div className="lg:col-span-4 bg-white border-l border-neutral-100">
-            <div className="sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto">
+          {/* Product Details - Right Side (Desktop) / Full Width (Mobile) */}
+          <div className="w-full lg:col-span-4 bg-white lg:border-l border-neutral-100">
+            {/* Mobile Back Button */}
+            <div className="lg:hidden p-4 border-b border-neutral-100">
+              <Button
+                as={Link}
+                to="/products"
+                variant="ghost"
+                leftIcon={<ArrowLeft size={16} />}
+                className="text-neutral-600 hover:text-neutral-900 font-normal"
+              >
+                Back
+              </Button>
+            </div>
+
+            <div className="lg:sticky lg:top-32 lg:self-start">
               <div className="p-6 lg:p-8 space-y-6 lg:space-y-8">
-                {/* Back Button - Desktop only */}
+                {/* Desktop Back Button */}
                 <div className="hidden lg:block">
                   <Button
                     as={Link}
@@ -354,7 +378,7 @@ const ProductDetailPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-neutral-600">SKU</span>
                       <span className="text-neutral-900 font-mono text-xs">
-                        {sku || "N/A"}
+                        {product.id.slice(-8).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex justify-between">
