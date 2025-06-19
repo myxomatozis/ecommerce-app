@@ -2,149 +2,162 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    // Mobile-first breakpoints with better xs handling
     screens: {
-      xs: "475px", // Extra small devices
-      sm: "640px", // Small devices
-      md: "768px", // Medium devices
-      lg: "1024px", // Large devices
-      xl: "1280px", // Extra large devices
-      "2xl": "1536px", // 2X large devices
+      xs: "475px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        // TOTEME Sans inspired stack - clean, minimal sans-serif
+        sans: [
+          "Neue Haas Grotesk Text",
+          "Helvetica Neue",
+          "Helvetica",
+          "Arial",
+          "system-ui",
+          "sans-serif",
+        ],
+        // Alternative luxury font stack
+        display: [
+          "GT America",
+          "Suisse Int'l",
+          "Neue Haas Grotesk Text",
+          "Helvetica Neue",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       colors: {
-        // Refined neutral palette - modern and sophisticated
+        // TOTEME inspired ultra-minimal palette
         neutral: {
-          50: "#fafafa",
-          100: "#f5f5f5",
-          200: "#e5e5e5",
-          300: "#d4d4d4",
-          400: "#a3a3a3",
-          500: "#737373",
-          600: "#525252",
-          700: "#404040",
-          800: "#262626",
-          900: "#171717",
-          950: "#0a0a0a",
-        },
-        // Sophisticated primary - subtle and elegant
-        primary: {
           50: "#fafaf9",
           100: "#f5f5f4",
           200: "#e7e5e4",
           300: "#d6d3d1",
           400: "#a8a29e",
-          500: "#78716c", // Main primary - sophisticated stone
+          500: "#78716c",
           600: "#57534e",
           700: "#44403c",
           800: "#292524",
           900: "#1c1917",
+          950: "#0c0a09",
         },
-        // Very subtle accent - barely noticeable for special cases
+        stone: {
+          50: "#fafaf9",
+          100: "#f5f5f4",
+          200: "#e7e5e4",
+          300: "#d6d3d1",
+          400: "#a8a29e",
+          500: "#78716c", // Primary brand color
+          600: "#57534e",
+          700: "#44403c",
+          800: "#292524",
+          900: "#1c1917",
+          950: "#0c0a09",
+        },
+        // Warm off-whites like TOTEME
+        cream: {
+          50: "#fefefe",
+          100: "#fefefe",
+          200: "#fdfdfc",
+          300: "#fbfbf9",
+          400: "#f8f8f6",
+          500: "#f5f5f2",
+          600: "#e8e8e5",
+          700: "#d6d3d1",
+        },
+        // Desert tones for leather/accent elements
+        sand: {
+          50: "#faf9f7",
+          100: "#f4f3f0",
+          200: "#e9e6e0",
+          300: "#ddd8d0",
+          400: "#c4bdb1",
+          500: "#ab9f8f",
+          600: "#8b7d6b",
+          700: "#6b5d4f",
+        },
+        // Minimal accent - use sparingly
         accent: {
           50: "#fefcf8",
           100: "#fef7ed",
           200: "#feeddb",
           300: "#fddfb8",
           400: "#fbc985",
-          500: "#f59e0b", // Very muted warm accent - use sparingly
+          500: "#f59e0b",
           600: "#d97706",
           700: "#b45309",
           800: "#92400e",
           900: "#78350f",
         },
-        // Minimal semantic colors - very subtle when needed
+        // Semantic colors using stone palette
         semantic: {
-          success: "#404040", // Dark gray instead of green
-          warning: "#525252", // Medium gray instead of yellow
-          danger: "#262626", // Very dark gray instead of red
-          info: "#737373", // Medium gray instead of blue
+          success: "#44403c",
+          warning: "#57534e",
+          danger: "#292524",
+          info: "#78716c",
         },
       },
-      // Mobile-friendly max-width utilities
-      maxWidth: {
-        xs: "20rem", // 320px
-        sm: "24rem", // 384px
-        md: "28rem", // 448px
-        lg: "32rem", // 512px
-        xl: "36rem", // 576px
-        "2xl": "42rem", // 672px
-        "3xl": "48rem", // 768px
-        "4xl": "56rem", // 896px
-        "5xl": "64rem", // 1024px
-        "6xl": "72rem", // 1152px
-        "7xl": "80rem", // 1280px
-        // Mobile-specific sizes
-        "mobile-xs": "16rem", // 256px - very small modals
-        "mobile-sm": "18rem", // 288px - small modals
-        "mobile-md": "20rem", // 320px - medium modals
-      },
-      // Minimal border radius - very clean
-      borderRadius: {
-        none: "0px",
-        sm: "0px", // No rounding for modern look
-        DEFAULT: "0px", // Sharp edges
-        md: "2px", // Very minimal
-        lg: "4px", // Slightly rounded for cards
-        xl: "6px", // For special elements
-        "2xl": "8px", // For modals
-        "3xl": "12px", // Rare use
-        full: "9999px", // Keep for pills/avatars
-      },
-      // Refined animations - subtle and purposeful
-      animation: {
-        "fade-in": "fadeIn 0.7s ease-out forwards",
-        "slide-up": "slideUp 0.6s ease-out",
-        "scale-in": "scaleIn 0.5s ease-out",
-        shimmer: "shimmer 3s ease-in-out infinite",
-        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-      },
-      keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        slideUp: {
-          "0%": { transform: "translateY(30px)", opacity: "0" },
-          "100%": { transform: "translateY(0)", opacity: "1" },
-        },
-        scaleIn: {
-          "0%": { transform: "scale(0.95)", opacity: "0" },
-          "100%": { transform: "scale(1)", opacity: "1" },
-        },
-        shimmer: {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(100%)" },
-        },
-      },
-      // Subtle, modern shadows
-      boxShadow: {
-        minimal: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
-        soft: "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
-        elegant: "0 8px 40px 0 rgba(0, 0, 0, 0.12)",
-        crisp: "0 2px 8px 0 rgba(0, 0, 0, 0.1)",
-      },
-      // Modern spacing scale
       spacing: {
         18: "4.5rem",
-        88: "22rem",
-        128: "32rem",
+        22: "5.5rem",
+        26: "6.5rem",
+        30: "7.5rem",
+        34: "8.5rem",
+        38: "9.5rem",
+        42: "10.5rem",
+        46: "11.5rem",
+        50: "12.5rem",
       },
-      // Typography scale
+      maxWidth: {
+        xs: "20rem",
+        sm: "24rem",
+        md: "28rem",
+        lg: "32rem",
+        xl: "36rem",
+        "2xl": "42rem",
+        "3xl": "48rem",
+        "4xl": "56rem",
+        "5xl": "64rem",
+        "6xl": "72rem",
+        "7xl": "80rem",
+        "mobile-xs": "16rem",
+        "mobile-sm": "18rem",
+        "mobile-md": "20rem",
+      },
+      // Sharp edges like TOTEME's aesthetic
+      borderRadius: {
+        none: "0px",
+        sm: "0px",
+        DEFAULT: "0px",
+        md: "1px",
+        lg: "2px",
+        xl: "3px",
+        "2xl": "4px",
+        "3xl": "6px",
+        full: "9999px",
+      },
+      // TOTEME Sans inspired typography
       fontSize: {
-        "2xs": ["0.625rem", { lineHeight: "0.75rem" }],
-        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
-        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
-        "5xl": ["3rem", { lineHeight: "1" }],
-        "6xl": ["3.75rem", { lineHeight: "1" }],
-        "7xl": ["4.5rem", { lineHeight: "1" }],
-        "8xl": ["6rem", { lineHeight: "1" }],
-        "9xl": ["8rem", { lineHeight: "1" }],
+        xs: ["0.75rem", { lineHeight: "1.5", letterSpacing: "0.05em" }],
+        sm: ["0.875rem", { lineHeight: "1.6", letterSpacing: "0.025em" }],
+        base: ["1rem", { lineHeight: "1.7", letterSpacing: "0.01em" }],
+        lg: ["1.125rem", { lineHeight: "1.7", letterSpacing: "0.01em" }],
+        xl: ["1.25rem", { lineHeight: "1.6", letterSpacing: "0.005em" }],
+        "2xl": ["1.5rem", { lineHeight: "1.5", letterSpacing: "0" }],
+        "3xl": ["1.875rem", { lineHeight: "1.4", letterSpacing: "-0.01em" }],
+        "4xl": ["2.25rem", { lineHeight: "1.3", letterSpacing: "-0.02em" }],
+        "5xl": ["3rem", { lineHeight: "1.2", letterSpacing: "-0.025em" }],
+        "6xl": ["3.75rem", { lineHeight: "1.1", letterSpacing: "-0.03em" }],
+        "7xl": ["4.5rem", { lineHeight: "1", letterSpacing: "-0.035em" }],
+        "8xl": ["6rem", { lineHeight: "1", letterSpacing: "-0.04em" }],
+        "9xl": ["8rem", { lineHeight: "1", letterSpacing: "-0.045em" }],
       },
-      // Letter spacing
+      // Wide spacing for brand headers like TOTEME
       letterSpacing: {
         tighter: "-0.05em",
         tight: "-0.025em",
@@ -152,8 +165,9 @@ export default {
         wide: "0.025em",
         wider: "0.05em",
         widest: "0.1em",
+        "ultra-wide": "0.15em",
+        "mega-wide": "0.25em", // For "THE FOLK" style headers
       },
-      // Line height
       lineHeight: {
         3: ".75rem",
         4: "1rem",
@@ -163,19 +177,33 @@ export default {
         8: "2rem",
         9: "2.25rem",
         10: "2.5rem",
+        11: "2.75rem",
+        12: "3rem",
       },
-      // Modern gradients - very subtle
       backgroundImage: {
-        "gradient-minimal": "linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)",
-        "gradient-subtle": "linear-gradient(135deg, #ffffff 0%, #fafafa 100%)",
+        "gradient-minimal": "linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%)",
+        "gradient-subtle": "linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)",
+        "gradient-warm": "linear-gradient(135deg, #fefefe 0%, #f5f5f2 100%)",
         "shimmer-gradient":
           "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
       },
-      // Backdrop blur
+      // Subtle shadows using stone colors
+      boxShadow: {
+        xs: "0 1px 2px 0 rgba(28, 25, 23, 0.02)",
+        sm: "0 1px 3px 0 rgba(28, 25, 23, 0.04), 0 1px 2px -1px rgba(28, 25, 23, 0.04)",
+        DEFAULT:
+          "0 4px 6px -1px rgba(28, 25, 23, 0.05), 0 2px 4px -2px rgba(28, 25, 23, 0.05)",
+        md: "0 10px 15px -3px rgba(28, 25, 23, 0.05), 0 4px 6px -4px rgba(28, 25, 23, 0.05)",
+        lg: "0 20px 25px -5px rgba(28, 25, 23, 0.05), 0 8px 10px -6px rgba(28, 25, 23, 0.05)",
+        xl: "0 25px 50px -12px rgba(28, 25, 23, 0.08)",
+        "2xl": "0 25px 50px -12px rgba(28, 25, 23, 0.1)",
+        inner: "inset 0 2px 4px 0 rgba(28, 25, 23, 0.02)",
+        none: "none",
+      },
       backdropBlur: {
         xs: "2px",
+        sm: "4px",
       },
-      // Modern transitions
       transitionDuration: {
         400: "400ms",
         600: "600ms",
@@ -183,9 +211,21 @@ export default {
         1200: "1200ms",
       },
       transitionTimingFunction: {
-        "out-expo": "cubic-bezier(0.19, 1, 0.22, 1)",
+        "out-expo": "cubic-bezier(0.19, 1, 0.22, 1)", // Luxury easing
         "out-circ": "cubic-bezier(0.08, 0.82, 0.17, 1)",
         "in-out-back": "cubic-bezier(0.68, -0.6, 0.32, 1.6)",
+        elegant: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      },
+      animation: {
+        "fade-in": "fadeIn 0.8s cubic-bezier(0.19, 1, 0.22, 1)",
+        "slide-up": "slideUp 0.6s cubic-bezier(0.19, 1, 0.22, 1)",
+        "scale-in": "scaleIn 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
+        float: "float 3s ease-in-out infinite",
+      },
+      aspectRatio: {
+        "4/5": "4 / 5",
+        "3/4": "3 / 4",
+        "5/6": "5 / 6",
       },
     },
   },
