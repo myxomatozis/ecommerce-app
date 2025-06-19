@@ -12,24 +12,17 @@ export default {
     },
     extend: {
       fontFamily: {
-        // TOTEME Sans inspired stack - clean, minimal sans-serif
+        // TOTEME Sans - actual font from website
         sans: [
-          "Neue Haas Grotesk Text",
+          "TOTEME Sans",
           "Helvetica Neue",
           "Helvetica",
           "Arial",
           "system-ui",
           "sans-serif",
         ],
-        // Alternative luxury font stack
-        display: [
-          "GT America",
-          "Suisse Int'l",
-          "Neue Haas Grotesk Text",
-          "Helvetica Neue",
-          "system-ui",
-          "sans-serif",
-        ],
+        // Brand display font
+        display: ["TOTEME Sans", "Helvetica Neue", "system-ui", "sans-serif"],
       },
       colors: {
         // TOTEME inspired ultra-minimal palette
@@ -222,6 +215,7 @@ export default {
         "scale-in": "scaleIn 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
         float: "float 3s ease-in-out infinite",
       },
+      // Product image ratios like TOTEME
       aspectRatio: {
         "4/5": "4 / 5",
         "3/4": "3 / 4",

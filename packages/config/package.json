@@ -3,8 +3,15 @@
   "version": "0.1.0",
   "main": "./tailwind.config.js",
   "exports": {
-    "./tailwind": "./tailwind.config.js"
+    "./tailwind": "./tailwind.config.js",
+    "./fonts.css": "./fonts.css",
+    "./fonts/*": "./fonts/*"
   },
+  "files": [
+    "tailwind.config.js",
+    "fonts.css",
+    "fonts/"
+  ],
   "scripts": {
     "lint": "echo 'Config package - no build needed'"
   },
