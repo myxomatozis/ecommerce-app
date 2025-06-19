@@ -14,13 +14,7 @@ const ProductImage = ({
     setLoadingError(false);
   }, [product.image_url]);
   if (!product.image_url || loadingError)
-    return (
-      <ProductImagePlaceholder
-        category={product.category}
-        size="md"
-        className="w-full h-full object-cover"
-      />
-    );
+    return <ProductImagePlaceholder className="w-full h-full object-cover" />;
   return (
     <img
       src={product.image_url}
