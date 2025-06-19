@@ -20,16 +20,13 @@ const Header: React.FC = () => {
     { name: "Sale", category: null, sort: null, sale: "true" },
   ];
 
-  // Check if we're on homepage for overlay behavior
   const isHomePage = location.pathname === "/";
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (location.pathname !== "/products") return false;
-
     const currentCategory = searchParams.get("category");
     const currentSort = searchParams.get("sort");
     const currentSale = searchParams.get("sale");
-
     return (
       currentCategory === item.category &&
       currentSort === item.sort &&
@@ -39,310 +36,166 @@ const Header: React.FC = () => {
 
   const buildToOptions = (item: (typeof navigation)[0]) => {
     const params = new URLSearchParams();
-
     if (item.category) params.set("category", item.category);
     if (item.sort) params.set("sort", item.sort);
     if (item.sale) params.set("sale", item.sale);
-
     const queryString = params.toString();
     if (queryString) {
-      return {
-        pathname: "/products",
-        search: `?${queryString}`,
-      };
+      return { pathname: "/products", search: `?${queryString}` };
     }
     return "/products";
   };
 
-  // For non-homepage, use original styling. For homepage, use overlay behavior
-  if (!isHomePage) {
-    return (
-      <header className="bg-white border-b border-neutral-200/50 sticky top-0 z-50 backdrop-blur-md">
-        <div className="container-modern">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link
-                to="/"
-                className="text-xl font-medium text-neutral-900 hover:text-neutral-600 transition-colors duration-300"
-              >
-                The Folk
-              </Link>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {navigation.map((item, idx) => {
-                const isItemActive = isActive(item);
-                const to = buildToOptions(item);
-                return (
-                  <Link
-                    key={`${item.name}-${idx}`}
-                    to={to}
-                    className={`text-sm font-medium transition-colors duration-300 relative py-2 ${
-                      isItemActive
-                        ? "text-neutral-900"
-                        : "text-neutral-600 hover:text-neutral-900"
-                    }`}
-                  >
-                    {item.name}
-                    {isItemActive && (
-                      <div className="absolute bottom-0 left-0 right-0 h-px bg-neutral-900" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center space-x-2">
-              {/* Search Icon */}
-              <Button
-                as={Link}
-                to="/products"
-                variant="ghost"
-                size="sm"
-                className="p-2 text-neutral-600 hover:text-neutral-900 h-9 w-9"
-                aria-label="Search"
-              >
-                <Search size={24} />
-              </Button>
-
-              {/* Cart Icon */}
-              <Button
-                onClick={() => setIsCartOpen(!isCartOpen)}
-                variant="ghost"
-                size="sm"
-                className="relative p-2 text-neutral-600 hover:text-neutral-900 h-9 w-9"
-                aria-label="Shopping cart"
-              >
-                <ShoppingBag size={24} />
-                <IconCounter
-                  count={cartSummary.item_count}
-                  max={9}
-                  size="sm"
-                  className="top-0 right-0"
-                />
-              </Button>
-
-              {/* Mobile Menu Toggle */}
-              <Button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                variant="ghost"
-                size="sm"
-                className="md:hidden p-2 text-neutral-600 hover:text-neutral-900 h-9 w-9"
-                aria-label="Menu"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-neutral-200/50 py-4">
-              <nav className="space-y-1">
-                {navigation.map((item) => {
-                  const isItemActive = isActive(item);
-                  const url = buildToOptions(item);
-                  return (
-                    <Link
-                      key={`mobile-${item.name}-${url}`}
-                      to={url}
-                      reloadDocument={location.pathname === "/products"}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`block px-4 py-3 text-sm font-medium transition-colors duration-300 ${
-                        isItemActive
-                          ? "text-neutral-900 bg-neutral-50"
-                          : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  );
-                })}
-
-                {/* Mobile User Link */}
-                <Link
-                  to="/account"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 transition-colors duration-300"
-                >
-                  My Account
-                </Link>
-              </nav>
-            </div>
-          )}
-        </div>
-      </header>
-    );
-  }
-
-  // Homepage overlay behavior
-  const getHeaderClasses = () => {
-    if (isScrolled) {
-      return "bg-white/95 border-b border-neutral-200/50 backdrop-blur-md";
-    } else {
-      return "bg-transparent border-b border-white/10";
-    }
-  };
-
-  const getTextClasses = (baseClass: string = "") => {
-    if (isScrolled) {
-      return `${baseClass} text-neutral-900`;
-    }
-    return `${baseClass} text-white`;
-  };
-
-  const getButtonClasses = () => {
-    if (isScrolled) {
-      return "text-neutral-600 hover:text-neutral-900";
-    }
-    return "text-white/90 hover:text-white";
-  };
-
-  const getCartBadgeClasses = () => {
-    if (isScrolled) {
-      return "bg-neutral-900 border-neutral-900 text-white";
-    }
-    return "bg-white border-white text-black!";
-  };
-
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${getHeaderClasses()}`}
-    >
-      <div className="container-modern">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
+    <>
+      {/* Main Header */}
+      <header
+        className={`
+          fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out
+          ${
+            isHomePage
+              ? isScrolled
+                ? "bg-white/95 backdrop-blur-lg border-b border-neutral-100 shadow-sm"
+                : "bg-transparent"
+              : "bg-white/95 backdrop-blur-lg border-b border-neutral-100"
+          }
+        `}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2"
+              >
+                {isMobileMenuOpen ? (
+                  <X size={20} className="text-neutral-700" />
+                ) : (
+                  <Menu size={20} className="text-neutral-700" />
+                )}
+              </Button>
+            </div>
+
+            {/* Logo */}
             <Link
               to="/"
-              className={getTextClasses(
-                "text-xl font-medium hover:text-neutral-600 transition-colors duration-300"
-              )}
+              className={`
+                text-2xl font-light tracking-tight transition-colors duration-300
+                ${isHomePage && !isScrolled ? "text-white" : "text-neutral-900"}
+                hover:opacity-75
+              `}
             >
               The Folk
             </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item, idx) => {
-              const isItemActive = isActive(item);
-              const to = buildToOptions(item);
-              return (
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              {navigation.map((item) => (
                 <Link
-                  key={`${item.name}-${idx}`}
-                  to={to}
-                  className={`text-sm font-medium transition-colors duration-300 relative py-2 ${
-                    isItemActive
-                      ? getTextClasses()
-                      : getTextClasses("opacity-90 hover:opacity-100")
-                  }`}
+                  key={item.name}
+                  to={buildToOptions(item)}
+                  className={`
+                    text-sm font-normal tracking-wide transition-all duration-300 relative
+                    ${
+                      isActive(item)
+                        ? "text-neutral-900"
+                        : isHomePage && !isScrolled
+                          ? "text-white/90 hover:text-white"
+                          : "text-neutral-600 hover:text-neutral-900"
+                    }
+                  `}
                 >
                   {item.name}
-                  {isItemActive && (
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 h-px transition-colors duration-300 ${
-                        isScrolled ? "bg-neutral-900" : "bg-white"
-                      }`}
-                    />
+                  {/* Active indicator */}
+                  {isActive(item) && (
+                    <div className="absolute -bottom-6 left-0 right-0 h-px bg-neutral-900" />
                   )}
                 </Link>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-2">
-            {/* Search Icon */}
-            <Button
-              as={Link}
-              to="/products"
-              variant="ghost"
-              size="sm"
-              className={`p-2 transition-colors duration-300 h-9 w-9 ${getButtonClasses()}`}
-              aria-label="Search"
-            >
-              <Search size={24} />
-            </Button>
-
-            {/* Cart Icon */}
-            <Button
-              onClick={() => setIsCartOpen(!isCartOpen)}
-              variant="ghost"
-              size="sm"
-              className={`relative p-2 transition-colors duration-300 h-9 w-9 ${getButtonClasses()}`}
-              aria-label="Shopping cart"
-            >
-              <ShoppingBag size={24} />
-              <IconCounter
-                count={cartSummary.item_count}
-                max={9}
+            {/* Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Search Button */}
+              <Button
+                variant="ghost"
                 size="sm"
-                className={`top-0 right-0 ${getCartBadgeClasses()}`}
-              />
-            </Button>
+                className={`
+                  p-2 transition-colors duration-300
+                  ${
+                    isHomePage && !isScrolled
+                      ? "text-white hover:text-white/75"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }
+                `}
+              >
+                <Search size={18} />
+              </Button>
 
-            {/* Mobile Menu Toggle */}
-            <Button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              variant="ghost"
-              size="sm"
-              className={`md:hidden p-2 transition-colors duration-300 h-9 w-9 ${getButtonClasses()}`}
-              aria-label="Menu"
-            >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </Button>
+              {/* Cart */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCartOpen(true)}
+                className={`
+                  p-2 relative transition-colors duration-300
+                  ${
+                    isHomePage && !isScrolled
+                      ? "text-white hover:text-white/75"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }
+                `}
+              >
+                <ShoppingBag size={18} />
+                {cartSummary.totalItems > 0 && (
+                  <IconCounter
+                    count={cartSummary.totalItems}
+                    className="absolute -top-1 -right-1 bg-neutral-900 text-white"
+                  />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          {/* Backdrop */}
           <div
-            className={`md:hidden border-t py-4 ${
-              isScrolled
-                ? "border-neutral-200/50 bg-white/95"
-                : "border-white/10 bg-black/20 backdrop-blur-md"
-            }`}
-          >
-            <nav className="space-y-1">
-              {navigation.map((item) => {
-                const isItemActive = isActive(item);
-                const url = buildToOptions(item);
-                return (
-                  <Link
-                    key={`mobile-${item.name}-${url}`}
-                    to={url}
-                    reloadDocument={location.pathname === "/products"}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`block px-4 py-3 text-sm font-medium transition-colors duration-300 ${
-                      isItemActive
-                        ? getTextClasses("bg-white/20")
-                        : getTextClasses("hover:bg-white/10")
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                );
-              })}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
 
-              {/* Mobile User Link */}
-              <Link
-                to="/account"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={getTextClasses(
-                  "block px-4 py-3 text-sm font-medium transition-colors duration-300 hover:bg-white/10"
-                )}
-              >
-                My Account
-              </Link>
+          {/* Menu Panel */}
+          <div className="fixed top-20 left-0 right-0 bg-white border-b border-neutral-100 shadow-lg">
+            <nav className="max-w-7xl mx-auto px-6 py-6 space-y-4">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={buildToOptions(item)}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`
+                    block text-lg font-normal tracking-wide transition-colors duration-300
+                    ${
+                      isActive(item)
+                        ? "text-neutral-900 font-medium"
+                        : "text-neutral-600 hover:text-neutral-900"
+                    }
+                  `}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </nav>
           </div>
-        )}
-      </div>
-    </header>
+        </div>
+      )}
+    </>
   );
 };
 

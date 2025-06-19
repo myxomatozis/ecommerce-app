@@ -2,20 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Star,
   Truck,
   Shield,
   RefreshCw,
   Plus,
   Minus,
   ShoppingCart,
-  CheckCircle,
   AlertCircle,
   ZoomIn,
+  Heart,
 } from "lucide-react";
 import { Button, Spinner, CategoryBadge, StatusBadge } from "@thefolk/ui";
 import { Product, useAppData, useCartStore } from "@/stores";
-import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
+import { formatPrice } from "@thefolk/utils";
 import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
 import ProductImage from "@/components/Product/ProductImage";
@@ -26,6 +25,9 @@ const ProductDetailPage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [isCarouselOpen, setIsCarouselOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [categorySlug, setCategorySlug] = useState("");
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
@@ -34,6 +36,10 @@ const ProductDetailPage: React.FC = () => {
     (state) => state.getCartItemQuantity
   );
   const updateQuantity = useCartStore((state) => state.updateQuantity);
+
+  const [currentCartQuantity, setCurrentCartQuantity] = useState(
+    getCartItemQuantity(id || "")
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -66,416 +72,303 @@ const ProductDetailPage: React.FC = () => {
       });
   }, [id]);
 
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-
-  const [categorySlug, setCategorySlug] = useState("");
-
-  const [currentCartQuantity, setCurrentCartQuantity] = useState(
-    getCartItemQuantity(id || "")
-  );
   const productImage = product?.image_url || "";
   const imagesGallery = product?.images_gallery?.filter(Boolean) || [];
   const productImages = product ? [productImage, ...imagesGallery] : [];
 
-  // Check if this product would benefit from size guide (clothing items)
-  const isClothingItem =
-    product?.category &&
-    [
-      "women",
-      "men",
-      "clothing",
-      "tops",
-      "bottoms",
-      "dresses",
-      "shirts",
-      "pants",
-      "jeans",
-      "shoes",
-      "sneakers",
-      "boots",
-    ].some((cat) => product.category?.toLowerCase().includes(cat));
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setIsAddingToCart(true);
+    try {
+      await addToCart(product.id, 1, false);
+      setCurrentCartQuantity(getCartItemQuantity(product.id));
+      setIsCartOpen(true);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleUpdateCartQuantity = async (newQuantity: number) => {
+    if (!product || newQuantity < 0) return;
+
+    if (newQuantity === 0) {
+      updateQuantity(product.id, 0);
+    } else {
+      updateQuantity(product.id, newQuantity);
+    }
+    setCurrentCartQuantity(newQuantity);
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Spinner size="lg" variant="primary" text="Loading product..." inline />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Spinner size="lg" />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-6">
-          <h1 className="text-2xl font-light text-neutral-900 mb-4">
-            Product Not Found
-          </h1>
-          <p className="text-neutral-600 mb-8">
-            The product you're looking for doesn't exist.
-          </p>
-          <Button as={Link} to="/products" variant="primary" size="sm">
-            Back to Products
-          </Button>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center space-y-4">
+          <AlertCircle size={48} className="text-neutral-400 mx-auto" />
+          <h2 className="text-xl font-light text-neutral-900">
+            Product not found
+          </h2>
+          <Link to="/products">
+            <Button variant="outline">Browse Products</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
-  const handleAddToCart = async () => {
-    setIsAddingToCart(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    addToCart(product.id, selectedQuantity, false);
-    setIsAddingToCart(false);
-    setCurrentCartQuantity((prev) => prev + selectedQuantity);
-  };
-
-  const handleUpdateCartQuantity = (newQuantity: number) => {
-    updateQuantity(product.id, newQuantity);
-    setCurrentCartQuantity(newQuantity);
-  };
-
   const features = [
     {
       icon: Truck,
       title: "Free Shipping",
-      description:
-        product.price > config.freeShippingThreshold
-          ? "Free delivery on this item"
-          : `Add ${getCurrencySymbol(config.storeCurrency)}${(
-              config.freeShippingThreshold - product.price
-            ).toFixed(2)} for free shipping`,
-      available: product.price > config.freeShippingThreshold,
-    },
-    {
-      icon: Shield,
-      title: "Secure Payment",
-      description: "100% secure checkout with Stripe",
-      available: true,
+      description: "On orders over $100",
     },
     {
       icon: RefreshCw,
-      title: "Easy Returns",
+      title: "Free Returns",
       description: "30-day return policy",
-      available: true,
+    },
+    {
+      icon: Shield,
+      title: "Secure Checkout",
+      description: "SSL encrypted payments",
     },
   ];
 
-  const getStockStatus = () => {
-    if (product?.stock_quantity && product.stock_quantity > 10) {
-      return {
-        status: "In Stock",
-        icon: CheckCircle,
-      };
-    } else if (product?.stock_quantity && product.stock_quantity > 0) {
-      return {
-        status: `Only ${product.stock_quantity} left`,
-        icon: AlertCircle,
-      };
-    } else {
-      return {
-        status: "Out of Stock",
-        icon: AlertCircle,
-      };
-    }
-  };
-
-  const stockStatus = getStockStatus();
-  const StockIcon = stockStatus.icon;
-
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-neutral-600 mb-8">
-          <Link to="/" className="hover:text-neutral-900 transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link
-            to="/products"
-            className="hover:text-neutral-900 transition-colors"
-          >
-            Products
-          </Link>
-          {categorySlug && (
-            <>
-              <span>/</span>
-              <Link
-                to={{
-                  pathname: "/products",
-                  search: `?category=${categorySlug}`,
-                }}
-                className="hover:text-neutral-900 transition-colors"
-              >
-                {product.category}
-              </Link>
-            </>
-          )}
-          <span>/</span>
-          <span className="text-neutral-900">{product.name}</span>
-        </nav>
+      {/* Modern Header - Minimal Navigation */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Button
+              as={Link}
+              to="/products"
+              variant="ghost"
+              leftIcon={<ArrowLeft size={16} />}
+              className="text-neutral-600 hover:text-neutral-900 font-normal"
+            >
+              Back
+            </Button>
 
-        {/* Back Button */}
-        <Button
-          as={Link}
-          to="/products"
-          variant="ghost"
-          leftIcon={<ArrowLeft size={16} />}
-          size="xs"
-          className="mb-8 text-neutral-600 hover:text-neutral-900"
-        >
-          Back to Products
-        </Button>
-
-        {/* Product Detail */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Product Images */}
-          <div onDoubleClick={() => setIsCarouselOpen(true)}>
-            <div className="aspect-square mb-4 overflow-hidden bg-neutral-50 relative group">
-              <ProductImage
-                product={{
-                  ...product,
-                  image_url: productImages[selectedImage],
-                }}
-              />
-
-              {/* Tiny zoom button - bottom right */}
-              <button
-                onClick={() => setIsCarouselOpen(true)}
-                className="absolute cursor-pointer bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0"
-              >
-                <ZoomIn size={16} className="text-neutral-800" />
-              </button>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" className="p-2">
+                <Heart size={18} className="text-neutral-600" />
+              </Button>
             </div>
-
-            {/* Image Thumbnails */}
-            {productImages.length > 2 && (
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`aspect-square overflow-hidden border transition-colors ${
-                      selectedImage === index
-                        ? "border-neutral-600"
-                        : "border-neutral-200 hover:border-neutral-400"
-                    }`}
-                  >
-                    <ProductImage
-                      product={product}
-                      imageProps={{
-                        src: image,
-                        alt: `${product.name} image ${index + 1}`,
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
+        </div>
+      </header>
 
-          {/* Product Info */}
-          <div className="space-y-8">
-            {product.category && (
-              <div>
-                <CategoryBadge category={product.category} />
-              </div>
-            )}
+      {/* Product Content - Toteme-inspired Layout */}
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-4rem)]">
+          {/* Image Gallery - Left Side (Larger) */}
+          <div className="lg:col-span-8 bg-neutral-50">
+            <div className="sticky top-16 h-[calc(100vh-4rem)] flex items-center justify-center">
+              <div className="w-full top-0 aspect-[3/4] bg-white shadow-sm">
+                <div
+                  className="relative w-full h-full overflow-hidden cursor-zoom-in group"
+                  onClick={() => setIsCarouselOpen(true)}
+                >
+                  <ProductImage
+                    product={{
+                      ...product,
+                      image_url: productImages[selectedImage] || productImage,
+                    }}
+                  />
+                </div>
 
-            <div>
-              <h1 className="text-3xl font-light text-neutral-900 mb-4">
-                {product.name}
-              </h1>
-
-              {/* Rating */}
-              {product.rating && (
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        className={`${
-                          i < Math.floor(product.rating!)
-                            ? "text-neutral-900 fill-current"
-                            : "text-neutral-300"
+                {/* Image Thumbnails */}
+                {productImages.length > 1 && (
+                  <div className="flex space-x-2 mt-4 justify-center">
+                    {productImages.slice(0, 4).map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`w-12 h-12 overflow-hidden transition-all duration-300 ${
+                          selectedImage === index
+                            ? "ring-2 ring-neutral-900 ring-offset-2"
+                            : "hover:opacity-75"
                         }`}
-                      />
+                      >
+                        <img
+                          src={image}
+                          alt={`${product.name} ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
                     ))}
                   </div>
-                  <span className="text-sm text-neutral-900">
-                    {product.rating}
-                  </span>
-                  <span className="text-sm text-neutral-600">
-                    ({product.reviews_count} reviews)
-                  </span>
-                </div>
-              )}
-
-              {/* Price */}
-              <div className="mb-6 flex items-center space-x-4">
-                <span className="text-3xl font-light text-neutral-900">
-                  {formatPrice(
-                    product.price,
-                    product.currency || config.storeCurrency
-                  )}
-                </span>
-                {product.price > config.freeShippingThreshold && (
-                  <StatusBadge status={"active"}>Free shipping</StatusBadge>
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Description */}
-            <p className="text-neutral-600 leading-relaxed">
-              {product.description}
-            </p>
+          {/* Product Details - Right Side (Narrower) */}
+          <div className="lg:col-span-4 bg-white">
+            <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+              <div className="p-8 lg:p-12 space-y-8">
+                {/* Category & Status */}
+                <div className="flex items-center justify-between">
+                  <CategoryBadge category={product.category || ""} size="sm" />
+                  {product.stock_quantity && product.stock_quantity > 0 ? (
+                    <StatusBadge status="active" size="sm">
+                      In Stock
+                    </StatusBadge>
+                  ) : (
+                    <StatusBadge status="inactive" size="sm">
+                      Out of Stock
+                    </StatusBadge>
+                  )}
+                </div>
 
-            {/* Stock Status */}
-            <div className="flex items-center space-x-2">
-              <StockIcon size={14} className="text-neutral-600" />
-              <span className="text-sm text-neutral-600">
-                {stockStatus.status}
-              </span>
-            </div>
+                {/* Product Title & Price */}
+                <div className="space-y-4">
+                  <h1 className="text-2xl lg:text-3xl font-light text-neutral-900 leading-tight">
+                    {product.name}
+                  </h1>
+                  <div className="text-xl text-neutral-900 font-normal">
+                    {formatPrice(product.price, config.storeCurrency)}
+                  </div>
+                </div>
 
-            {/* Size Guide for Clothing Items */}
-            {isClothingItem && (
-              <div>
-                <SizeGuideButton
-                  productCategory={product.category}
-                  variant="minimal"
-                  size="xs"
-                  className="text-neutral-600 hover:text-neutral-900 pl-0 pr-0"
-                />
-              </div>
-            )}
+                {/* Description */}
+                <div className="prose prose-neutral prose-sm max-w-none">
+                  <p className="text-neutral-600 leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
 
-            {/* Quantity Selector and Add to Cart */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-neutral-600">Quantity:</span>
-                  <div className="flex items-center border border-neutral-200">
+                {/* Size Guide */}
+                <div className="flex items-center space-x-4">
+                  <SizeGuideButton />
+                </div>
+
+                {/* Quantity & Add to Cart */}
+                <div className="space-y-6 pt-6 border-t border-neutral-100">
+                  {currentCartQuantity === 0 ? (
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setSelectedQuantity(Math.max(1, selectedQuantity - 1))
-                      }
-                      disabled={selectedQuantity <= 1}
-                    >
-                      <Minus size={14} />
-                    </Button>
-                    <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
-                      {selectedQuantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setSelectedQuantity(
-                          Math.min(
-                            product?.stock_quantity || 0,
-                            selectedQuantity + 1
-                          )
+                      onClick={handleAddToCart}
+                      disabled={isAddingToCart || product.stock_quantity === 0}
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      leftIcon={
+                        isAddingToCart ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <ShoppingCart size={18} />
                         )
                       }
-                      disabled={
-                        selectedQuantity >= (product?.stock_quantity || 0)
-                      }
+                      className="h-12 text-sm font-medium tracking-wide"
                     >
-                      <Plus size={14} />
+                      {isAddingToCart ? "Adding..." : "Add to Bag"}
                     </Button>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleAddToCart}
-                disabled={product.stock_quantity === 0 || isAddingToCart}
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isAddingToCart}
-                leftIcon={
-                  !isAddingToCart ? <ShoppingCart size={18} /> : undefined
-                }
-              >
-                {isAddingToCart ? "Adding..." : "Add to Cart"}
-              </Button>
-
-              {/* Current Cart Status */}
-              {currentCartQuantity > 0 && (
-                <div className="p-4 bg-neutral-50 border border-neutral-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-600">
-                      {currentCartQuantity}{" "}
-                      <Button
-                        variant="text"
-                        onClick={() => setIsCartOpen(true)}
-                        className="underline decoration-dashed"
-                      >
-                        in cart
-                      </Button>
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() =>
-                          handleUpdateCartQuantity(currentCartQuantity - 1)
-                        }
-                      >
-                        <Minus size={14} />
-                      </Button>
-                      <span className="font-medium text-neutral-900 min-w-[2rem] text-center text-sm">
-                        {currentCartQuantity}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() =>
-                          handleUpdateCartQuantity(currentCartQuantity + 1)
-                        }
-                        disabled={
-                          currentCartQuantity >= (product?.stock_quantity || 0)
-                        }
-                      >
-                        <Plus size={14} />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Features */}
-            <div className="border-t border-neutral-100 pt-8">
-              <div className="space-y-3">
-                {features.map((feature, index) => {
-                  const Icon = feature.icon;
-                  return (
-                    <div key={index} className="flex items-center space-x-3">
-                      <Icon size={16} className="text-neutral-600" />
-                      <div>
-                        <span className="text-sm text-neutral-900">
-                          {feature.title}
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-neutral-50 rounded">
+                        <span className="text-sm font-medium text-neutral-900">
+                          In your bag
                         </span>
-                        <span className="text-sm text-neutral-600 ml-1">
-                          — {feature.description}
-                        </span>
+                        <div className="flex items-center space-x-3">
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() =>
+                              handleUpdateCartQuantity(currentCartQuantity - 1)
+                            }
+                            disabled={currentCartQuantity <= 1}
+                            className="w-8 h-8 p-0"
+                          >
+                            <Minus size={14} />
+                          </Button>
+                          <span className="font-medium text-neutral-900 min-w-[2rem] text-center text-sm">
+                            {currentCartQuantity}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() =>
+                              handleUpdateCartQuantity(currentCartQuantity + 1)
+                            }
+                            disabled={
+                              currentCartQuantity >=
+                              (product?.stock_quantity || 0)
+                            }
+                            className="w-8 h-8 p-0"
+                          >
+                            <Plus size={14} />
+                          </Button>
+                        </div>
                       </div>
+
+                      <Button
+                        as={Link}
+                        to="/cart"
+                        variant="outline"
+                        size="lg"
+                        fullWidth
+                        className="h-12 text-sm font-medium"
+                      >
+                        View Bag
+                      </Button>
                     </div>
-                  );
-                })}
+                  )}
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4 pt-6 border-t border-neutral-100">
+                  {features.map((feature, index) => {
+                    const Icon = feature.icon;
+                    return (
+                      <div key={index} className="flex items-start space-x-3">
+                        <Icon size={16} className="text-neutral-600 mt-0.5" />
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-neutral-900">
+                            {feature.title}
+                          </div>
+                          <div className="text-xs text-neutral-600">
+                            {feature.description}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Additional Product Details */}
+                <div className="space-y-4 pt-6 border-t border-neutral-100">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">SKU</span>
+                      <span className="text-neutral-900 font-mono">
+                        {product.id.slice(-8).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Availability</span>
+                      <span className="text-neutral-900">
+                        {product.stock_quantity} in stock
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Image Carousel Modal */}
       <ProductImageCarousel
         productImages={productImages}
         product={product}

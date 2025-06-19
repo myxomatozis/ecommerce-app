@@ -223,5 +223,68 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Add plugins for enhanced functionality
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/aspect-ratio"),
+
+    // Custom utility classes
+    function ({ addUtilities }) {
+      const newUtilities = {
+        // Modern Text Utilities
+        ".text-balance": {
+          "text-wrap": "balance",
+        },
+        ".text-pretty": {
+          "text-wrap": "pretty",
+        },
+
+        // Glassmorphism Utility
+        ".glass": {
+          background: "rgba(255, 255, 255, 0.25)",
+          "backdrop-filter": "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.18)",
+        },
+
+        // Luxury Card Style
+        ".luxury-card": {
+          background: "rgba(255, 255, 255, 0.95)",
+          "backdrop-filter": "blur(20px)",
+          border: "1px solid rgba(0, 0, 0, 0.05)",
+          "box-shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.08)",
+        },
+
+        // Modern Gradients
+        ".gradient-minimal": {
+          background: "linear-gradient(135deg, #fafafa 0%, #ffffff 100%)",
+        },
+        ".gradient-subtle": {
+          background:
+            "linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #ffffff 100%)",
+        },
+
+        // Custom Scrollbar
+        ".scrollbar-minimal": {
+          "scrollbar-width": "thin",
+          "scrollbar-color": "#e5e5e5 transparent",
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "#e5e5e5",
+            "border-radius": "3px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            background: "#d4d4d4",
+          },
+        },
+      };
+
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+  ],
 };
