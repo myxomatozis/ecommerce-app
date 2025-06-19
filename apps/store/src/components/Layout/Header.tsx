@@ -214,7 +214,7 @@ const Header: React.FC = () => {
                   count={cartSummary.item_count}
                   max={9}
                   size="sm"
-                  className="top-0 right-2"
+                  className="top-0 right-1"
                 />
               </Button>
             </div>

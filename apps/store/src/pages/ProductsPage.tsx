@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, SlidersHorizontal, X } from "lucide-react";
-import { Product, useAppData, useCartStore } from "@/stores";
+import { Product, useAppData } from "@/stores";
 import { Button, Input, Dropdown, Spinner, Badge } from "@thefolk/ui";
 import { ProductFilters } from "@thefolk/utils/supabase";
 import ProductCard from "@/components/Product/ProductCard";
 
 const ProductsPage: React.FC = () => {
-  const { addToCart } = useCartStore();
   const {
     getProducts,
     loadMoreProducts,
@@ -94,11 +93,14 @@ const ProductsPage: React.FC = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await getProducts(currentFilters);
-      setProducts(data);
-      setHasMore(data.length === ITEMS_PER_PAGE);
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
+      const result = await getProducts(currentFilters);
+      if (result) {
+        setProducts(result);
+        // Determine hasMore based on whether we got a full page
+        setHasMore(result.length === ITEMS_PER_PAGE);
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
     } finally {
       setLoading(false);
     }
@@ -109,32 +111,20 @@ const ProductsPage: React.FC = () => {
 
     try {
       setLoadingMore(true);
-      const data = await loadMoreProducts(currentFilters);
-      setProducts(data);
-      setHasMore(data.length <= ITEMS_PER_PAGE);
-    } catch (err) {
-      console.error("Failed to load more products:", err);
+      const result = await loadMoreProducts(currentFilters);
+
+      if (result) {
+        setProducts(result); // loadMoreProducts returns the full concatenated array
+        // Determine hasMore based on whether we got new products
+        const newProductsCount = result.length - products.length;
+        setHasMore(newProductsCount === ITEMS_PER_PAGE);
+      }
+    } catch (error) {
+      console.error("Error loading more products:", error);
     } finally {
       setLoadingMore(false);
     }
   };
-
-  const handleAddToCart = async (productId: string) => {
-    try {
-      await addToCart(productId);
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-    }
-  };
-
-  // Dropdown options
-  const categoryOptions = useMemo(
-    () => [
-      { value: "", label: "All Categories" },
-      ...categories.map((cat) => ({ value: cat.slug, label: cat.name })),
-    ],
-    [categories]
-  );
 
   const sortOptions = [
     { value: "name", label: "Name" },
@@ -143,97 +133,47 @@ const ProductsPage: React.FC = () => {
     { value: "newest", label: "Newest" },
   ];
 
-  // Filter handlers
-  const handleCategoryChange = (category: string) => {
-    updateParams({ category: category || null });
-  };
-
-  const handleSortChange = (sort: string) => {
-    updateParams({ sort: sort === "name" ? null : sort });
-  };
-
-  const clearFilters = () => {
-    setSearchInput("");
-    updateParams({ search: null, category: null, sort: null });
-    setShowFilters(false);
-  };
-
-  // Derived state
-  const hasActiveFilters =
-    currentFilters.searchTerm ||
-    currentFilters.categorySlug ||
-    currentFilters.sortBy !== "name";
-
-  // Loading state
-  if (loading && products.length === 0) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="container-modern py-24">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-8 h-8 mx-auto mb-6">
-              <Spinner size="lg" />
-            </div>
-            <p className="text-neutral-600">Loading products...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (productsError && products.length === 0) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="container-modern py-24">
-          <div className="text-center max-w-md mx-auto">
-            <AlertCircle size={32} className="mx-auto text-neutral-400 mb-6" />
-            <h2 className="text-lg font-medium text-neutral-900 mb-2">
-              Unable to load products
-            </h2>
-            <p className="text-neutral-600 mb-8">{productsError}</p>
-            <Button onClick={loadProducts} variant="outline">
-              Try Again
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
-      {/* Minimal Header */}
-      <section className="border-b border-neutral-100">
-        <div className="container-modern py-8">
+      {/* Header Section */}
+      <div className="border-b border-neutral-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-xl font-medium text-neutral-900">Products</h1>
+            <h1 className="text-2xl sm:text-3xl font-light text-neutral-900 tracking-wide">
+              Collection
+            </h1>
           </div>
         </div>
-      </section>
+      </div>
 
-      <div className="container-modern py-8">
-        {/* Search & Filters Section */}
-        <div className="mb-12">
-          {/* Top Bar */}
+      {/* Search & Filters Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          {/* Top Bar - Original Layout */}
           <div className="flex items-center gap-4 mb-6">
             {/* Left: Filter Controls */}
             <div className="flex items-center gap-4 w-[33.33%]">
               <Button
                 variant="ghost"
-                size="xs"
-                onClick={() => setShowFilters(!showFilters)}
+                size="sm"
                 leftIcon={<SlidersHorizontal size={16} />}
-                className="text-neutral-600"
+                onClick={() => setShowFilters(!showFilters)}
               >
                 Filters
               </Button>
 
-              {hasActiveFilters && (
+              {(currentFilters.searchTerm ||
+                currentFilters.categorySlug ||
+                currentFilters.sortBy !== "name") && (
                 <Button
-                  variant="minimal"
-                  size="xs"
-                  onClick={clearFilters}
-                  className="text-neutral-500"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchInput("");
+                    updateParams({ search: null, category: null, sort: null });
+                    setShowFilters(false);
+                  }}
+                  className="text-neutral-500 hover:text-neutral-700 font-light"
                 >
                   Clear All
                 </Button>
@@ -249,15 +189,15 @@ const ProductsPage: React.FC = () => {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   leftIcon={<Search size={16} />}
-                  fullWidth
+                  className="border-neutral-200 focus:border-neutral-400 text-sm font-light"
                 />
               </div>
             </div>
 
             {/* Right: Product Count */}
             <div className="flex-shrink-0 w-[33.33%] text-right">
-              {products.length > 0 && (
-                <p className="text-sm text-neutral-600">
+              {!loading && products.length > 0 && (
+                <p className="text-sm text-neutral-500 font-light">
                   {products.length} {products.length === 1 ? "item" : "items"}
                 </p>
               )}
@@ -268,45 +208,52 @@ const ProductsPage: React.FC = () => {
           {showFilters && (
             <div className="bg-neutral-50 p-6 mb-8 border border-neutral-200">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-neutral-900">
-                  Filter Products
-                </h3>
+                <h3 className="font-light text-neutral-900">Filter Products</h3>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowFilters(false)}
+                  className="text-neutral-500 hover:text-neutral-700"
                 >
                   <X size={16} />
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-light text-neutral-700 mb-2">
                     Category
                   </label>
                   <Dropdown
-                    options={categoryOptions}
+                    options={[
+                      { value: "", label: "All Categories" },
+                      ...categories.map((cat) => ({
+                        value: cat.slug,
+                        label: cat.name,
+                      })),
+                    ]}
                     value={currentFilters.categorySlug || ""}
-                    onChange={handleCategoryChange}
+                    onChange={(category) =>
+                      updateParams({ category: category || null })
+                    }
                     placeholder="All Categories"
                     disabled={categoriesLoading}
-                    variant="bordered"
-                    size="sm"
+                    size="md"
                     fullWidth
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-light text-neutral-700 mb-2">
                     Sort By
                   </label>
                   <Dropdown
                     options={sortOptions}
                     value={currentFilters.sortBy || "name"}
-                    onChange={handleSortChange}
-                    variant="bordered"
-                    size="sm"
+                    onChange={(sort) =>
+                      updateParams({ sort: sort === "name" ? null : sort })
+                    }
+                    size="md"
                     fullWidth
                   />
                 </div>
@@ -314,18 +261,21 @@ const ProductsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Active Filters */}
-          {hasActiveFilters && (
-            <div className="flex flex-wrap gap-2 mb-8">
+          {/* Active Filters Badges */}
+          {(currentFilters.searchTerm ||
+            currentFilters.categorySlug ||
+            currentFilters.sortBy !== "name") && (
+            <div className="flex flex-wrap gap-2 mb-6">
               {currentFilters.searchTerm && (
                 <Badge
                   variant="outline"
+                  size="sm"
                   removable
-                  size="xs"
                   onRemove={() => {
                     setSearchInput("");
                     updateParams({ search: null });
                   }}
+                  className="font-light"
                 >
                   Search: {currentFilters.searchTerm}
                 </Badge>
@@ -333,9 +283,10 @@ const ProductsPage: React.FC = () => {
               {currentFilters.categorySlug && (
                 <Badge
                   variant="outline"
+                  size="sm"
                   removable
-                  size="xs"
                   onRemove={() => updateParams({ category: null })}
+                  className="font-light"
                 >
                   Category:{" "}
                   {
@@ -348,9 +299,10 @@ const ProductsPage: React.FC = () => {
               {currentFilters.sortBy !== "name" && (
                 <Badge
                   variant="outline"
+                  size="sm"
                   removable
-                  size="xs"
                   onRemove={() => updateParams({ sort: null })}
+                  className="font-light"
                 >
                   Sort:{" "}
                   {
@@ -362,57 +314,73 @@ const ProductsPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Products Grid */}
-        {products.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-                <Search size={24} className="text-neutral-400" />
-              </div>
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">
-                No products found
-              </h3>
-              <p className="text-neutral-600 mb-6">
-                Try adjusting your search terms or filters
-              </p>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  Clear Filters
-                </Button>
-              )}
-            </div>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spinner size="lg" />
+          </div>
+        ) : productsError ? (
+          <div className="text-center py-16">
+            <AlertCircle className="mx-auto h-12 w-12 text-neutral-400 mb-4" />
+            <h3 className="text-lg font-light text-neutral-900 mb-2">
+              Something went wrong
+            </h3>
+            <p className="text-neutral-600 font-light mb-6">
+              We couldn't load the products. Please try again.
+            </p>
+            <Button
+              variant="primary"
+              onClick={loadProducts}
+              className="font-light"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-16">
+            <h3 className="text-lg font-light text-neutral-900 mb-2">
+              No products found
+            </h3>
+            <p className="text-neutral-600 font-light mb-6">
+              Try adjusting your search or filter criteria
+            </p>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchInput("");
+                updateParams({ search: null, category: null });
+              }}
+              className="font-light"
+            >
+              Clear all filters
+            </Button>
           </div>
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
-              {products.map((product, index) => (
-                <ProductCard
-                  product={product}
-                  key={product.id}
-                  onAddToCart={handleAddToCart}
-                  index={index}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-12">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
-            {/* Load More */}
+            {/* Load More Button */}
             {hasMore && (
-              <div className="text-center">
+              <div className="text-center mt-16">
                 <Button
+                  variant="ghost"
                   onClick={handleLoadMore}
-                  variant="outline"
-                  size="md"
                   disabled={loadingMore}
-                  className="px-12"
+                  className="border border-neutral-200 hover:border-neutral-400 px-8 py-3 text-sm font-light tracking-wide transition-colors"
                 >
                   {loadingMore ? (
-                    <>
-                      <Spinner size="sm" className="mr-2" />
-                      Loading...
-                    </>
+                    <div className="flex items-center space-x-2">
+                      <Spinner size="sm" />
+                      <span>Loading...</span>
+                    </div>
                   ) : (
                     "Load More"
                   )}

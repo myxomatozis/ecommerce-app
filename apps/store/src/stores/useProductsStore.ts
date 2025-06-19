@@ -7,7 +7,7 @@ import {
   Product as DBProduct,
 } from "@thefolk/utils/supabase";
 
-// Create a cache key for product lists based on filters
+// Create a cache key for product lists based on filters, hash it to ensure uniqueness
 const createCacheKey = (filters: ProductFilters = {}) => {
   const key = {
     categorySlug: filters.categorySlug || "",
@@ -18,7 +18,13 @@ const createCacheKey = (filters: ProductFilters = {}) => {
     limit: filters.limit || 50,
     offset: filters.offset || 0,
   };
-  return JSON.stringify(key);
+  const str = JSON.stringify(key);
+  // Simple hash function (djb2)
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i);
+  }
+  return hash.toString();
 };
 
 export type Product = Omit<DBProduct, "category_id"> & {
