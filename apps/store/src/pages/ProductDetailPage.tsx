@@ -28,7 +28,7 @@ const ProductDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [categorySlug, setCategorySlug] = useState("");
+  const [_, setCategorySlug] = useState("");
   const { id } = useParams<{ id: string }>();
 
   const addToCart = useCartStore((state) => state.addToCart);
@@ -378,7 +378,7 @@ const ProductDetailPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-neutral-600">SKU</span>
                       <span className="text-neutral-900 font-mono text-xs">
-                        {product.id.slice(-8).toUpperCase()}
+                        {product.sku || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">

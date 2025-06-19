@@ -13,7 +13,6 @@ export const useAppData = () => {
     // Products
     products: products.products,
     getProduct: products.getProduct,
-    getProductSKU: products.getProductSKU,
     getProducts: products.getProducts,
     searchProducts: products.searchProducts,
     getProductsByCategory: products.getProductsByCategory,

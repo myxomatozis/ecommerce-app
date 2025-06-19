@@ -1,5 +1,5 @@
-import { useState, useEffect, FC } from "react";
-import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { useState, useEffect, useRef, FC } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Product } from "@/stores";
 import ProductImage from "./ProductImage";
 
@@ -20,37 +20,166 @@ const ProductImageCarousel: FC<Props> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
   }, [initialIndex]);
 
+  // Reset zoom and pan when image changes
   useEffect(() => {
-    setImageLoaded(false);
-    const timer = setTimeout(() => setImageLoaded(true), 100);
-    return () => clearTimeout(timer);
+    setIsZoomed(false);
+    setZoomLevel(1);
+    setPanPosition({ x: 0, y: 0 });
   }, [currentIndex]);
 
   const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % productImages.length);
-    setIsZoomed(false);
+    if (currentIndex < productImages.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
   };
 
   const prevImage = () => {
-    setCurrentIndex(
-      (prev) => (prev - 1 + productImages.length) % productImages.length
-    );
-    setIsZoomed(false);
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
   };
 
-  const goToImage = (index: number) => {
-    setCurrentIndex(index);
-    setIsZoomed(false);
+  const handleZoom = (e: React.MouseEvent) => {
+    if (!imageRef.current || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (!isZoomed) {
+      setIsZoomed(true);
+      setZoomLevel(2);
+
+      // Calculate pan position to zoom into click point
+      const containerCenterX = rect.width / 2;
+      const containerCenterY = rect.height / 2;
+      const panX = (containerCenterX - x) * 0.5;
+      const panY = (containerCenterY - y) * 0.5;
+
+      // Get image dimensions for constraints
+      const imgElement = imageRef.current.querySelector("img");
+      if (imgElement) {
+        const containerWidth = rect.width - 160; // Account for padding
+        const containerHeight = rect.height - 160; // Account for padding
+        const imageWidth = imgElement.offsetWidth;
+        const imageHeight = imgElement.offsetHeight;
+        const scaledWidth = imageWidth * 2; // zoom level 2
+        const scaledHeight = imageHeight * 2; // zoom level 2
+
+        // Calculate maximum pan distances
+        const maxPanX = Math.max(0, (scaledWidth - containerWidth) / 2);
+        const maxPanY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+        setPanPosition({
+          x: Math.max(-maxPanX, Math.min(maxPanX, panX)),
+          y: Math.max(-maxPanY, Math.min(maxPanY, panY)),
+        });
+      } else {
+        setPanPosition({ x: panX, y: panY });
+      }
+    } else {
+      setIsZoomed(false);
+      setZoomLevel(1);
+      setPanPosition({ x: 0, y: 0 });
+    }
   };
 
-  const toggleZoom = () => {
-    setIsZoomed(!isZoomed);
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isZoomed) return;
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - panPosition.x,
+      y: e.clientY - panPosition.y,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !isZoomed || !containerRef.current || !imageRef.current)
+      return;
+
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width - 160; // Account for padding
+    const containerHeight = containerRect.height - 160; // Account for padding
+
+    // Get the image element to calculate its natural dimensions
+    const imgElement = imageRef.current.querySelector("img");
+    if (!imgElement) return;
+
+    const imageWidth = imgElement.offsetWidth;
+    const imageHeight = imgElement.offsetHeight;
+
+    // Calculate the scaled dimensions
+    const scaledWidth = imageWidth * zoomLevel;
+    const scaledHeight = imageHeight * zoomLevel;
+
+    // Calculate maximum pan distances
+    const maxPanX = Math.max(0, (scaledWidth - containerWidth) / 2);
+    const maxPanY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+    setPanPosition({
+      x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
+      y: Math.max(-maxPanY, Math.min(maxPanY, newY)),
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: WheelEvent) => {
+    if (!isZoomed || !containerRef.current || !imageRef.current) return;
+
+    e.preventDefault();
+
+    // Convert scroll to pan movement
+    const scrollSpeed = 1;
+    const deltaX = e.deltaX * scrollSpeed;
+    const deltaY = e.deltaY * scrollSpeed;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width - 160; // Account for padding
+    const containerHeight = containerRect.height - 160; // Account for padding
+
+    // Get the image element to calculate its natural dimensions
+    const imgElement = imageRef.current.querySelector("img");
+    if (!imgElement) return;
+
+    const imageWidth = imgElement.offsetWidth;
+    const imageHeight = imgElement.offsetHeight;
+
+    // Calculate the scaled dimensions
+    const scaledWidth = imageWidth * zoomLevel;
+    const scaledHeight = imageHeight * zoomLevel;
+
+    // Calculate maximum pan distances
+    const maxPanX = Math.max(0, (scaledWidth - containerWidth) / 2);
+    const maxPanY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+    setPanPosition((prev) => {
+      const newX = prev.x - deltaX;
+      const newY = prev.y - deltaY;
+
+      return {
+        x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
+        y: Math.max(-maxPanY, Math.min(maxPanY, newY)),
+      };
+    });
   };
 
   useEffect(() => {
@@ -67,15 +196,29 @@ const ProductImageCarousel: FC<Props> = ({
         case "ArrowRight":
           nextImage();
           break;
-        case " ":
-          e.preventDefault();
-          toggleZoom();
-          break;
       }
     };
 
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    // Add wheel event listener to container
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("wheel", handleWheel, { passive: false });
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+      if (container) {
+        container.removeEventListener("wheel", handleWheel);
+      }
+    };
   }, [isOpen, currentIndex, isZoomed]);
 
   useEffect(() => {
@@ -93,147 +236,126 @@ const ProductImageCarousel: FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-neutral-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-neutral-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      {/* Header with controls */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-6">
+    <div className="fixed inset-0 z-50 bg-white">
+      {/* Minimal header */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-6">
         <div className="flex items-center justify-between">
-          <div className="text-white">
-            <h3 className="text-lg font-light">{product.name}</h3>
-            <p className="text-white/60 text-sm">
-              {currentIndex + 1} of {productImages.length}
+          <div className="text-black">
+            <p className="text-sm font-light tracking-wide uppercase">
+              {product.name}
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={toggleZoom}
-              className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200"
-              title={isZoomed ? "Zoom Out" : "Zoom In"}
-            >
-              <ZoomIn size={18} />
-            </button>
-
-            <button
-              onClick={onClose}
-              className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200"
-            >
-              <X size={18} />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full hover:bg-black/5 flex items-center justify-center text-black transition-colors duration-200"
+          >
+            <X size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Navigation arrows */}
+      {/* Navigation arrows - only show when multiple images */}
       {productImages.length > 1 && (
         <>
           <button
             onClick={prevImage}
-            className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200 z-10"
+            disabled={currentIndex === 0}
+            className={`absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full hover:bg-black/5 flex items-center justify-center text-black transition-all duration-200 z-20 ${
+              currentIndex === 0
+                ? "opacity-30 cursor-not-allowed"
+                : "opacity-60 hover:opacity-100"
+            }`}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={24} />
           </button>
 
           <button
             onClick={nextImage}
-            className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-200 z-10"
+            disabled={currentIndex === productImages.length - 1}
+            className={`absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full hover:bg-black/5 flex items-center justify-center text-black transition-all duration-200 z-20 ${
+              currentIndex === productImages.length - 1
+                ? "opacity-30 cursor-not-allowed"
+                : "opacity-60 hover:opacity-100"
+            }`}
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={24} />
           </button>
         </>
       )}
 
       {/* Main image container */}
-      <div className="absolute inset-0 flex items-center justify-center p-20">
+      <div
+        ref={containerRef}
+        className="absolute inset-0 flex items-center justify-center overflow-hidden"
+        style={{ padding: "80px 80px" }}
+      >
         <div
-          className={`relative max-w-full max-h-full transition-all duration-500 ease-out ${
-            isZoomed
-              ? "transform scale-150 cursor-zoom-out"
-              : "cursor-zoom-in hover:scale-105"
-          } ${
-            imageLoaded
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+          ref={imageRef}
+          className={`relative transition-all duration-300 ease-out ${
+            isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
           }`}
-          onClick={toggleZoom}
+          style={{
+            transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)`,
+            transformOrigin: "center center",
+          }}
+          onClick={handleZoom}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
         >
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-            <ProductImage
-              product={{
-                ...product,
-                image_url: productImages[currentIndex],
-              }}
-              imageProps={{
-                className:
-                  "w-full h-full object-contain max-w-[70vw] max-h-[60vh]",
-                style: {
-                  filter: "drop-shadow(0 25px 50px rgba(0,0,0,0.3))",
-                },
-              }}
-            />
-          </div>
+          <ProductImage
+            product={{
+              ...product,
+              image_url: productImages[currentIndex],
+            }}
+            imageProps={{
+              src: productImages[currentIndex],
+              className:
+                "max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain select-none",
+              draggable: false,
+              style: {
+                maxWidth: "calc(100vw - 160px)",
+                maxHeight: "calc(100vh - 160px)",
+              },
+            }}
+          />
         </div>
       </div>
 
-      {/* Thumbnail strip */}
+      {/* Image counter */}
       {productImages.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-          <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-3">
-            <div className="flex space-x-2 max-w-md overflow-x-auto">
-              {productImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToImage(index)}
-                  className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                    index === currentIndex
-                      ? "border-white shadow-lg"
-                      : "border-white/30 hover:border-white/60"
-                  }`}
-                >
-                  <ProductImage
-                    product={product}
-                    imageProps={{
-                      src: image,
-                      alt: `${product.name} thumbnail ${index + 1}`,
-                      className: "w-full h-full object-cover",
-                    }}
-                  />
-
-                  {/* Active indicator */}
-                  {index === currentIndex && (
-                    <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
-                  )}
-                </button>
-              ))}
-            </div>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+          <div className="text-black/60 text-sm font-light tracking-wide">
+            {currentIndex + 1} / {productImages.length}
           </div>
         </div>
       )}
 
-      {/* Instructions */}
-      <div className="absolute bottom-20 left-6 text-white/40 text-xs space-y-1">
-        <p>← → Navigate</p>
-        <p>Space Bar: Zoom</p>
-        <p>Esc: Close</p>
-      </div>
+      {/* Minimal dots indicator */}
+      {productImages.length > 1 && productImages.length <= 6 && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+          <div className="flex space-x-2">
+            {productImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index === currentIndex
+                    ? "bg-black"
+                    : "bg-black/20 hover:bg-black/40"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+      {/* Instructions overlay */}
+      <div className="absolute bottom-6 right-6 text-black/40 text-xs font-light tracking-wide space-y-1 z-20">
+        <p>Click to {isZoomed ? "zoom out" : "zoom in"}</p>
+        {isZoomed && <p>Drag or scroll to pan</p>}
+      </div>
     </div>
   );
 };

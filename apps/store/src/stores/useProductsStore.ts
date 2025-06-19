@@ -21,7 +21,10 @@ const createCacheKey = (filters: ProductFilters = {}) => {
   return JSON.stringify(key);
 };
 
-export type Product = Omit<DBProduct, "category_id"> & { category?: string };
+export type Product = Omit<DBProduct, "category_id"> & {
+  category?: string;
+  sku: string;
+};
 
 interface ProductsList {
   products: Product[];
@@ -45,7 +48,6 @@ interface ProductsState {
 
   // Actions
   getProduct: (id: string, forceRefresh?: boolean) => Promise<Product | null>;
-  getProductSKU: (id: string) => Promise<string | null>;
   getProducts: (
     filters?: ProductFilters,
     forceRefresh?: boolean
@@ -120,10 +122,11 @@ export const useProductsStore = create<ProductsState>()(
 
         try {
           const product = await SupabaseAPI.getProductById(id);
+          const sku = product.id.slice(-8).toUpperCase();
 
           set((state) => ({
             products: product
-              ? { ...state.products, [id]: product }
+              ? { ...state.products, [id]: { ...product, sku } }
               : state.products,
             productLoadingStates: {
               ...state.productLoadingStates,
@@ -205,7 +208,12 @@ export const useProductsStore = create<ProductsState>()(
         }));
 
         try {
-          const products = await SupabaseAPI.getProducts(filters);
+          const products = (await SupabaseAPI.getProducts(filters)).map(
+            (product) => {
+              const sku = product.id.slice(-8).toUpperCase();
+              return { ...product, sku };
+            }
+          );
           const hasMore = products.length === (filters.limit || 50);
 
           set((state) => ({
@@ -250,14 +258,6 @@ export const useProductsStore = create<ProductsState>()(
         }
       },
 
-      getProductSKU: async (id: string) => {
-        return get()
-          .getProduct(id)
-          .then((product) => {
-            return product ? product.id.slice(-8).toUpperCase() : null;
-          });
-      },
-
       searchProducts: async (searchTerm: string, forceRefresh = false) => {
         return get().getProducts({ searchTerm }, forceRefresh);
       },
@@ -284,7 +284,12 @@ export const useProductsStore = create<ProductsState>()(
         };
 
         try {
-          const newProducts = await SupabaseAPI.getProducts(newFilters);
+          const newProducts = (await SupabaseAPI.getProducts(newFilters)).map(
+            (product) => {
+              const sku = product.id.slice(-8).toUpperCase();
+              return { ...product, sku };
+            }
+          );
           const hasMore = newProducts.length === (filters.limit || 50);
 
           set((state) => ({
