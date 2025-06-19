@@ -309,15 +309,12 @@ const ProductImageCarousel: FC<Props> = ({
               ...product,
               image_url: productImages[currentIndex],
             }}
-            imageProps={{
-              src: productImages[currentIndex],
-              className:
-                "max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain select-none",
-              draggable: false,
-              style: {
-                maxWidth: "calc(100vw - 160px)",
-                maxHeight: "calc(100vh - 160px)",
-              },
+            src={productImages[currentIndex]}
+            className="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain select-none"
+            draggable={false}
+            style={{
+              maxWidth: "calc(100vw - 160px)",
+              maxHeight: "calc(100vh - 160px)",
             }}
           />
         </div>

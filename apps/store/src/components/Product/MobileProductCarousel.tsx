@@ -163,10 +163,8 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
                   ...product,
                   image_url: image,
                 }}
-                imageProps={{
-                  className: "w-full h-full object-cover object-center",
-                  draggable: false,
-                }}
+                draggable={false}
+                className="w-full h-full object-cover object-center"
               />
 
               {/* Hover overlay */}
@@ -224,12 +222,10 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
               >
                 <ProductImage
                   product={product}
-                  imageProps={{
-                    src: image,
-                    alt: `${product.name} thumbnail ${index + 1}`,
-                    className: "w-full h-full object-cover",
-                    draggable: false,
-                  }}
+                  src={image}
+                  alt={`${product.name} thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  draggable={false}
                 />
                 {index === currentIndex && (
                   <div className="absolute inset-0 bg-neutral-900/10" />
@@ -239,16 +235,6 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
           </div>
         </div>
       )}
-
-      <style>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };

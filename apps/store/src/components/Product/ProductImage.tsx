@@ -1,14 +1,12 @@
 import { Product } from "@/stores";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import ProductImagePlaceholder from "./ImagePlaceholder";
 
-const ProductImage = ({
-  product,
-  imageProps,
-}: {
+type ProductImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   product: Product;
-  imageProps?: React.ImgHTMLAttributes<HTMLImageElement>;
-}) => {
+};
+
+const ProductImage: FC<ProductImageProps> = ({ product, ...imageProps }) => {
   const [loadingError, setLoadingError] = useState(false);
   useEffect(() => {
     setLoadingError(false);

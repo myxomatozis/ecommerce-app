@@ -194,10 +194,7 @@ const ProductDetailPage: React.FC = () => {
                       ...product,
                       image_url: image,
                     }}
-                    imageProps={{
-                      className:
-                        "w-full h-full object-cover transition-transform duration-700",
-                    }}
+                    className="w-full h-full object-cover transition-transform duration-700"
                   />
 
                   {/* Hover overlay */}
