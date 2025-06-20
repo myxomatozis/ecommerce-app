@@ -12,7 +12,8 @@
     "@thefolk/config": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "lucide-react": "^0.513.0"
+    "lucide-react": "^0.513.0",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^8.6.14",
