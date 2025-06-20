@@ -16,7 +16,7 @@ const SizeGuideButton: React.FC<SizeGuideButtonProps> = ({
   productCategory,
   productType,
   variant = "ghost",
-  size = "sm",
+  size = "xs",
   className = "",
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);

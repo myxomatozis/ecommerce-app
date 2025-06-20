@@ -12,20 +12,17 @@ export default {
     },
     extend: {
       fontFamily: {
-        // TOTEME Sans - actual font from website
         sans: [
-          "TOTEME Sans",
+          "Manrope",
           "Helvetica Neue",
           "Helvetica",
           "Arial",
           "system-ui",
           "sans-serif",
         ],
-        // Brand display font
-        display: ["TOTEME Sans", "Helvetica Neue", "system-ui", "sans-serif"],
+        display: ["Manrope", "Helvetica Neue", "system-ui", "sans-serif"],
       },
       colors: {
-        // TOTEME inspired ultra-minimal palette
         neutral: {
           50: "#fafaf9",
           100: "#f5f5f4",
@@ -52,7 +49,6 @@ export default {
           900: "#1c1917",
           950: "#0c0a09",
         },
-        // Warm off-whites like TOTEME
         cream: {
           50: "#fefefe",
           100: "#fefefe",
@@ -122,7 +118,6 @@ export default {
         "mobile-sm": "18rem",
         "mobile-md": "20rem",
       },
-      // Sharp edges like TOTEME's aesthetic
       borderRadius: {
         none: "0px",
         sm: "0px",
@@ -134,7 +129,6 @@ export default {
         "3xl": "6px",
         full: "9999px",
       },
-      // TOTEME Sans inspired typography
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1.5", letterSpacing: "0.05em" }],
         sm: ["0.875rem", { lineHeight: "1.6", letterSpacing: "0.025em" }],
@@ -150,7 +144,6 @@ export default {
         "8xl": ["6rem", { lineHeight: "1", letterSpacing: "-0.04em" }],
         "9xl": ["8rem", { lineHeight: "1", letterSpacing: "-0.045em" }],
       },
-      // Wide spacing for brand headers like TOTEME
       letterSpacing: {
         tighter: "-0.05em",
         tight: "-0.025em",
@@ -159,7 +152,7 @@ export default {
         wider: "0.05em",
         widest: "0.1em",
         "ultra-wide": "0.15em",
-        "mega-wide": "0.25em", // For "THE FOLK" style headers
+        "mega-wide": "0.25em",
       },
       lineHeight: {
         3: ".75rem",
@@ -215,16 +208,15 @@ export default {
         "scale-in": "scaleIn 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
         float: "float 3s ease-in-out infinite",
       },
-      // Product image ratios like TOTEME
       aspectRatio: {
         "4/5": "4 / 5",
         "3/4": "3 / 4",
         "5/6": "5 / 6",
+        "2.5/4": "2.5 / 4",
       },
     },
   },
   plugins: [
-    // Add plugins for enhanced functionality
     require("@tailwindcss/typography"),
     require("@tailwindcss/forms"),
     require("@tailwindcss/aspect-ratio"),

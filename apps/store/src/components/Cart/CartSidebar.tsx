@@ -160,20 +160,24 @@ const CartSidebar: React.FC = () => {
               {cartSummary.shipping > 0 && (
                 <div className="p-4 bg-gray-50 border-b border-gray-100">
                   <div className="text-center text-sm text-gray-600">
-                    Add
-                    {formatPrice(100 - subtotal, config.storeCurrency)} more for
-                    free shipping
+                    Add{" "}
+                    {formatPrice(
+                      config.freeShippingThreshold - subtotal,
+                      config.storeCurrency
+                    )}{" "}
+                    more for free shipping
                   </div>
                 </div>
               )}
 
-              {cartSummary.shipping === 0 && subtotal >= 100 && (
-                <div className="p-4 bg-gray-50 border-b border-gray-100">
-                  <div className="text-center text-sm text-gray-600">
-                    You qualify for free shipping
+              {cartSummary.shipping === 0 &&
+                subtotal >= config.freeShippingThreshold && (
+                  <div className="p-4 bg-gray-50 border-b border-gray-100">
+                    <div className="text-center text-sm text-gray-600">
+                      You qualify for free shipping
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="p-6 space-y-4">
                 {/* Summary */}
