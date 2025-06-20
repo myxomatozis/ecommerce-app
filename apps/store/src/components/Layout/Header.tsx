@@ -215,9 +215,11 @@ const Header: React.FC = () => {
                   max={9}
                   size="sm"
                   className={`top-0 right-1 ${
-                    isHomePage && isScrolled
-                      ? "bg-neutral-900"
-                      : "bg-white !text-black border-white"
+                    isHomePage
+                      ? isScrolled
+                        ? "bg-neutral-900"
+                        : "bg-white !text-black border-white"
+                      : ""
                   }`}
                 />
               </Button>

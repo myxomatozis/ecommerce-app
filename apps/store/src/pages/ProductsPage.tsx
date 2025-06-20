@@ -176,7 +176,7 @@ const ProductsPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="xs"
                   leftIcon={<SlidersHorizontal size={16} />}
                   onClick={() => setShowMobileFilters(!showMobileFilters)}
                 >

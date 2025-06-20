@@ -17,9 +17,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <ProductImage product={product} />
         </Link>
 
-        {/* Minimal hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-
         {/* Out of stock overlay */}
         {product.stock_quantity === 0 && (
           <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
