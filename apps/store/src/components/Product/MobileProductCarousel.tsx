@@ -28,14 +28,19 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   const [lastPinchDistance, setLastPinchDistance] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
 
+  // Double tap states
+  const [lastTapTime, setLastTapTime] = useState(0);
+  const [tapCount, setTapCount] = useState(0);
+
   const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(null);
   const isVerticalScrollRef = useRef(false);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tapTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   // Helper function to calculate distance between two touch points
-  const getDistance = (touch1: globalThis.Touch, touch2: globalThis.Touch) => {
+  const getDistance = (touch1: Touch, touch2: Touch) => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
@@ -54,6 +59,41 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   useEffect(() => {
     resetZoom();
   }, [currentIndex, resetZoom]);
+
+  // Double tap to zoom out detection
+  const handleDoubleTap = useCallback(() => {
+    if (scale > 1) {
+      resetZoom();
+    }
+  }, [scale, resetZoom]);
+
+  const handleTap = useCallback(() => {
+    const currentTime = Date.now();
+    const timeDiff = currentTime - lastTapTime;
+
+    if (timeDiff < 300 && tapCount === 1) {
+      // Double tap detected
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+      }
+      handleDoubleTap();
+      setTapCount(0);
+    } else {
+      // First tap
+      setTapCount(1);
+      setLastTapTime(currentTime);
+
+      // Clear any existing timeout
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+      }
+
+      // Reset tap count after timeout
+      tapTimeoutRef.current = setTimeout(() => {
+        setTapCount(0);
+      }, 300);
+    }
+  }, [lastTapTime, tapCount, handleDoubleTap]);
 
   // Enhanced touch/mouse event handlers with better sensitivity
   const handleStart = useCallback((clientX: number, clientY: number) => {
@@ -193,8 +233,9 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   };
 
   // Enhanced touch events with pinch-to-zoom support
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touches = e.touches as unknown as TouchList;
+  const handleTouchStart = (e: TouchEvent | React.TouchEvent) => {
+    const touches =
+      (e as TouchEvent).touches ?? (e as React.TouchEvent).touches;
 
     if (touches.length === 1) {
       // Single touch - handle swipe
@@ -224,8 +265,9 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const touches = e.touches as unknown as TouchList;
+  const handleTouchMove = (e: TouchEvent | React.TouchEvent) => {
+    const touches =
+      (e as TouchEvent).touches ?? (e as React.TouchEvent).touches;
 
     if (touches.length === 1 && !isPinching) {
       if (scale <= 1 && isDragging) {
@@ -244,12 +286,24 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
           }
         }
       } else if (scale > 1 && isPanning) {
-        // Single touch panning when zoomed
+        // When zoomed in, check if this is a clear vertical scroll gesture
+        const deltaX = touches[0].clientX - startX;
+        const deltaY = touches[0].clientY - startY;
+        const absDeltaX = Math.abs(deltaX);
+        const absDeltaY = Math.abs(deltaY);
+
+        // If it's a clear vertical gesture, allow page scrolling
+        if (absDeltaY > 20 && absDeltaY > absDeltaX * 2) {
+          setIsPanning(false);
+          return; // Don't prevent default, allow page scroll
+        }
+
+        // Otherwise, handle as image panning
         const newPanX = touches[0].clientX - startX;
         const newPanY = touches[0].clientY - startY;
 
         // Constrain panning to image bounds
-        const maxPanX = (scale - 1) * 150; // Adjust based on image size
+        const maxPanX = (scale - 1) * 150;
         const maxPanY = (scale - 1) * 150;
 
         setPanX(Math.max(-maxPanX, Math.min(maxPanX, newPanX)));
@@ -277,8 +331,9 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touches = e.touches as unknown as TouchList;
+  const handleTouchEnd = (e: TouchEvent | React.TouchEvent) => {
+    const touches =
+      (e as TouchEvent).touches ?? (e as React.TouchEvent).touches;
 
     if (touches.length === 0) {
       // All fingers lifted
@@ -295,6 +350,12 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
       }
 
       if (isDragging && scale <= 1) {
+        // Check if this was a tap (minimal movement)
+        const wasATap =
+          Math.abs(velocity) < 0.1 && !isVerticalScrollRef.current;
+        if (wasATap) {
+          handleTap();
+        }
         handleEnd();
       }
     } else if (touches.length === 1 && isPinching) {
@@ -313,6 +374,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
     if (!isDragging && Math.abs(velocity) < 0.1) {
       // Disabled: onImageClick(index);
       // Mobile users interact with the carousel directly rather than opening a modal
+      // Double tap to zoom out is handled in handleTap
     }
   };
 
@@ -348,11 +410,14 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
     return () => carousel.removeEventListener("scroll", handleScroll);
   }, [isDragging]);
 
-  // Cleanup animation frame on unmount
+  // Cleanup animation frame and timeouts on unmount
   useEffect(() => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+      }
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
       }
     };
   }, []);
@@ -373,8 +438,8 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             // Enhanced CSS for better touch performance and zoom support
-            // Allow vertical scrolling unless we're zoomed in or pinching
-            touchAction: scale > 1 || isPinching ? "none" : "pan-y pinch-zoom",
+            // Allow vertical scrolling unless actively pinching
+            touchAction: isPinching ? "none" : "pan-y pinch-zoom",
             WebkitOverflowScrolling: "touch",
             overflowX: scale > 1 ? "hidden" : "auto",
           }}
