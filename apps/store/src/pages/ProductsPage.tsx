@@ -24,6 +24,7 @@ const ProductsPage: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [searchInput, setSearchInput] = useState("");
 
   const ITEMS_PER_PAGE = 16;
@@ -133,13 +134,18 @@ const ProductsPage: React.FC = () => {
     { value: "newest", label: "Newest" },
   ];
 
+  const hasActiveFilters =
+    currentFilters.searchTerm ||
+    currentFilters.categorySlug ||
+    currentFilters.sortBy !== "name";
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header Section */}
       <div className="border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="text-center">
-            <h1 className="text-2xl sm:text-3xl font-light text-neutral-900 tracking-wide">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-light text-neutral-900 tracking-wide">
               Collection
             </h1>
           </div>
@@ -147,177 +153,323 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Search & Filters Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          {/* Top Bar - Original Layout */}
-          <div className="flex items-center gap-4 mb-6">
-            {/* Left: Filter Controls */}
-            <div className="flex items-center gap-4 w-[33.33%]">
-              <Button
-                variant="ghost"
-                size="sm"
-                leftIcon={<SlidersHorizontal size={16} />}
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                Filters
-              </Button>
-
-              {(currentFilters.searchTerm ||
-                currentFilters.categorySlug ||
-                currentFilters.sortBy !== "name") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchInput("");
-                    updateParams({ search: null, category: null, sort: null });
-                    setShowFilters(false);
-                  }}
-                  className="text-neutral-500 hover:text-neutral-700 font-light"
-                >
-                  Clear All
-                </Button>
-              )}
-            </div>
-
-            {/* Center: Search Bar */}
-            <div className="flex-1 flex justify-center w-[33.33%]">
-              <div className="relative max-w-sm w-full">
+      <div className="bg-neutral-50/30 border-b border-neutral-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Mobile Layout */}
+          <div className="block lg:hidden py-4">
+            {/* Top Row - Search */}
+            <div className="mb-4">
+              <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search products..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  leftIcon={<Search size={16} />}
-                  className="border-neutral-200 focus:border-neutral-400 text-sm font-light"
+                  leftIcon={<Search size={18} />}
+                  className="border-neutral-200 focus:border-neutral-400 text-base font-light h-12 bg-white"
                 />
               </div>
             </div>
 
-            {/* Right: Product Count */}
-            <div className="flex-shrink-0 w-[33.33%] text-right">
-              {!loading && products.length > 0 && (
-                <p className="text-sm text-neutral-500 font-light">
-                  {products.length} {products.length === 1 ? "item" : "items"}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Expandable Filter Controls */}
-          {showFilters && (
-            <div className="bg-neutral-50 p-6 mb-8 border border-neutral-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-light text-neutral-900">Filter Products</h3>
+            {/* Bottom Row - Filters & Results Count */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowFilters(false)}
-                  className="text-neutral-500 hover:text-neutral-700"
+                  leftIcon={<SlidersHorizontal size={16} />}
+                  onClick={() => setShowMobileFilters(!showMobileFilters)}
                 >
-                  <X size={16} />
+                  Filters
+                  {hasActiveFilters && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-neutral-900 rounded-full"></div>
+                  )}
                 </Button>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchInput("");
+                      updateParams({
+                        search: null,
+                        category: null,
+                        sort: null,
+                      });
+                      setShowMobileFilters(false);
+                    }}
+                    className="text-neutral-500 hover:text-neutral-700 font-light text-xs px-2"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-light text-neutral-700 mb-2">
-                    Category
-                  </label>
-                  <Dropdown
-                    options={[
-                      { value: "", label: "All Categories" },
-                      ...categories.map((cat) => ({
-                        value: cat.slug,
-                        label: cat.name,
-                      })),
-                    ]}
-                    value={currentFilters.categorySlug || ""}
-                    onChange={(category) =>
-                      updateParams({ category: category || null })
-                    }
-                    placeholder="All Categories"
-                    disabled={categoriesLoading}
-                    size="md"
-                    fullWidth
+              <div className="text-right">
+                {!loading && products.length > 0 && (
+                  <p className="text-sm text-neutral-500 font-light">
+                    {products.length} {products.length === 1 ? "item" : "items"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout - Original 3-column structure */}
+          <div className="hidden lg:block py-6">
+            <div className="flex items-center gap-4 mb-6">
+              {/* Left: Filter Controls */}
+              <div className="flex items-center gap-4 w-[33.33%]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<SlidersHorizontal size={16} />}
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  Filters
+                </Button>
+
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchInput("");
+                      updateParams({
+                        search: null,
+                        category: null,
+                        sort: null,
+                      });
+                      setShowFilters(false);
+                    }}
+                    className="text-neutral-500 hover:text-neutral-700 font-light"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
+
+              {/* Center: Search Bar */}
+              <div className="flex-1 flex justify-center w-[33.33%]">
+                <div className="relative max-w-sm w-full">
+                  <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    leftIcon={<Search size={16} />}
+                    className="border-neutral-200 focus:border-neutral-400 text-sm font-light"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-light text-neutral-700 mb-2">
-                    Sort By
-                  </label>
-                  <Dropdown
-                    options={sortOptions}
-                    value={currentFilters.sortBy || "name"}
-                    onChange={(sort) =>
-                      updateParams({ sort: sort === "name" ? null : sort })
-                    }
-                    size="md"
-                    fullWidth
-                  />
+              {/* Right: Product Count */}
+              <div className="flex-shrink-0 w-[33.33%] text-right">
+                {!loading && products.length > 0 && (
+                  <p className="text-sm text-neutral-500 font-light">
+                    {products.length} {products.length === 1 ? "item" : "items"}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Expandable Filter Controls */}
+            {showFilters && (
+              <div className="bg-neutral-50 p-6 mb-8 border border-neutral-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-light text-neutral-900">
+                    Filter Products
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilters(false)}
+                    className="text-neutral-500 hover:text-neutral-700"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-light text-neutral-700 mb-2">
+                      Category
+                    </label>
+                    <Dropdown
+                      options={[
+                        { value: "", label: "All Categories" },
+                        ...categories.map((cat) => ({
+                          value: cat.slug,
+                          label: cat.name,
+                        })),
+                      ]}
+                      value={currentFilters.categorySlug || ""}
+                      onChange={(category) =>
+                        updateParams({ category: category || null })
+                      }
+                      placeholder="All Categories"
+                      disabled={categoriesLoading}
+                      size="md"
+                      fullWidth
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-light text-neutral-700 mb-2">
+                      Sort By
+                    </label>
+                    <Dropdown
+                      options={sortOptions}
+                      value={currentFilters.sortBy || "name"}
+                      onChange={(sort) =>
+                        updateParams({ sort: sort === "name" ? null : sort })
+                      }
+                      size="md"
+                      fullWidth
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Filter Modal/Drawer */}
+          {showMobileFilters && (
+            <div className="block lg:hidden">
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-50"
+                onClick={() => setShowMobileFilters(false)}
+              >
+                <div
+                  className="fixed bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 max-h-[80vh] overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-light text-neutral-900">
+                      Filter & Sort
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMobileFilters(false)}
+                      className="text-neutral-500 hover:text-neutral-700"
+                    >
+                      <X size={20} />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-base font-light text-neutral-700 mb-3">
+                        Category
+                      </label>
+                      <Dropdown
+                        options={[
+                          { value: "", label: "All Categories" },
+                          ...categories.map((cat) => ({
+                            value: cat.slug,
+                            label: cat.name,
+                          })),
+                        ]}
+                        value={currentFilters.categorySlug || ""}
+                        onChange={(category) =>
+                          updateParams({ category: category || null })
+                        }
+                        placeholder="All Categories"
+                        disabled={categoriesLoading}
+                        size="lg"
+                        fullWidth
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-base font-light text-neutral-700 mb-3">
+                        Sort By
+                      </label>
+                      <Dropdown
+                        options={sortOptions}
+                        value={currentFilters.sortBy || "name"}
+                        onChange={(sort) =>
+                          updateParams({ sort: sort === "name" ? null : sort })
+                        }
+                        size="lg"
+                        fullWidth
+                      />
+                    </div>
+
+                    <div className="pt-4 border-t border-neutral-200">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        onClick={() => setShowMobileFilters(false)}
+                        className="w-full font-light"
+                      >
+                        Apply Filters
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Active Filters Badges */}
-          {(currentFilters.searchTerm ||
-            currentFilters.categorySlug ||
-            currentFilters.sortBy !== "name") && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {currentFilters.searchTerm && (
-                <Badge
-                  variant="outline"
-                  size="sm"
-                  removable
-                  onRemove={() => {
-                    setSearchInput("");
-                    updateParams({ search: null });
-                  }}
-                  className="font-light"
-                >
-                  Search: {currentFilters.searchTerm}
-                </Badge>
-              )}
-              {currentFilters.categorySlug && (
-                <Badge
-                  variant="outline"
-                  size="sm"
-                  removable
-                  onRemove={() => updateParams({ category: null })}
-                  className="font-light"
-                >
-                  Category:{" "}
-                  {
-                    categories.find(
-                      (c) => c.slug === currentFilters.categorySlug
-                    )?.name
-                  }
-                </Badge>
-              )}
-              {currentFilters.sortBy !== "name" && (
-                <Badge
-                  variant="outline"
-                  size="sm"
-                  removable
-                  onRemove={() => updateParams({ sort: null })}
-                  className="font-light"
-                >
-                  Sort:{" "}
-                  {
-                    sortOptions.find((s) => s.value === currentFilters.sortBy)
-                      ?.label
-                  }
-                </Badge>
-              )}
+          {hasActiveFilters && (
+            <div className="pb-4 lg:pb-0">
+              <div className="flex flex-wrap gap-2">
+                {currentFilters.searchTerm && (
+                  <Badge
+                    variant="outline"
+                    size="sm"
+                    removable
+                    onRemove={() => {
+                      setSearchInput("");
+                      updateParams({ search: null });
+                    }}
+                    className="font-light"
+                  >
+                    Search: {currentFilters.searchTerm}
+                  </Badge>
+                )}
+                {currentFilters.categorySlug && (
+                  <Badge
+                    variant="outline"
+                    size="sm"
+                    removable
+                    onRemove={() => updateParams({ category: null })}
+                    className="font-light"
+                  >
+                    Category:{" "}
+                    {
+                      categories.find(
+                        (c) => c.slug === currentFilters.categorySlug
+                      )?.name
+                    }
+                  </Badge>
+                )}
+                {currentFilters.sortBy !== "name" && (
+                  <Badge
+                    variant="outline"
+                    size="sm"
+                    removable
+                    onRemove={() => updateParams({ sort: null })}
+                    className="font-light"
+                  >
+                    Sort:{" "}
+                    {
+                      sortOptions.find((s) => s.value === currentFilters.sortBy)
+                        ?.label
+                    }
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Spinner size="lg" />
@@ -361,7 +513,7 @@ const ProductsPage: React.FC = () => {
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 xl:gap-12">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -369,7 +521,7 @@ const ProductsPage: React.FC = () => {
 
             {/* Load More Button */}
             {hasMore && (
-              <div className="text-center mt-16">
+              <div className="text-center mt-12 lg:mt-16">
                 <Button
                   variant="ghost"
                   onClick={handleLoadMore}

@@ -35,7 +35,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Helper function to calculate distance between two touch points
-  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
+  const getDistance = (touch1: globalThis.Touch, touch2: globalThis.Touch) => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
@@ -78,37 +78,55 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   }, []);
 
   const handleMove = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, preventDefault = false) => {
       if (!isDragging || !carouselRef.current) return;
 
       const deltaX = clientX - startX;
       const deltaY = clientY - startY;
       const currentTime = Date.now();
 
-      // Detect if this is a vertical scroll gesture
-      if (
-        !isVerticalScrollRef.current &&
-        Math.abs(deltaY) > Math.abs(deltaX) &&
-        Math.abs(deltaY) > 10
-      ) {
-        isVerticalScrollRef.current = true;
-        setIsDragging(false);
-        return;
+      // Improved vertical scroll detection - more generous threshold
+      if (!isVerticalScrollRef.current) {
+        const horizontalDistance = Math.abs(deltaX);
+        const verticalDistance = Math.abs(deltaY);
+
+        // Only consider it a horizontal gesture if horizontal movement is significantly more than vertical
+        if (
+          verticalDistance > 15 &&
+          verticalDistance > horizontalDistance * 1.5
+        ) {
+          isVerticalScrollRef.current = true;
+          setIsDragging(false);
+          return;
+        }
+
+        // Only start preventing default once we're sure it's a horizontal gesture
+        if (
+          horizontalDistance > 15 &&
+          horizontalDistance > verticalDistance * 1.5
+        ) {
+          preventDefault = true;
+        }
       }
 
-      // Calculate velocity for momentum scrolling
-      if (currentTime - lastMoveTime > 0) {
-        setVelocity((clientX - lastMoveX) / (currentTime - lastMoveTime));
+      // Only handle horizontal movement if we're sure it's not vertical scrolling
+      if (!isVerticalScrollRef.current && Math.abs(deltaX) > 5) {
+        // Calculate velocity for momentum scrolling
+        if (currentTime - lastMoveTime > 0) {
+          setVelocity((clientX - lastMoveX) / (currentTime - lastMoveTime));
+        }
+        setLastMoveTime(currentTime);
+        setLastMoveX(clientX);
+
+        // Reduced sensitivity multiplier (was 2, now 1.2 for better control)
+        const walk = deltaX * 1.2;
+        carouselRef.current.scrollLeft = scrollLeft - walk;
+
+        // Only prevent default if we're handling horizontal movement
+        if (preventDefault) {
+          event?.preventDefault();
+        }
       }
-      setLastMoveTime(currentTime);
-      setLastMoveX(clientX);
-
-      // Reduced sensitivity multiplier (was 2, now 1.2 for better control)
-      const walk = deltaX * 1.2;
-      carouselRef.current.scrollLeft = scrollLeft - walk;
-
-      // Prevent default to avoid page scrolling
-      event?.preventDefault();
     },
     [isDragging, startX, startY, scrollLeft, lastMoveTime, lastMoveX]
   );
@@ -161,7 +179,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     e.preventDefault();
-    handleMove(e.clientX, e.clientY);
+    handleMove(e.clientX, e.clientY, true); // Always prevent default for mouse events
   };
 
   const handleMouseUp = () => {
@@ -176,7 +194,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
 
   // Enhanced touch events with pinch-to-zoom support
   const handleTouchStart = (e: React.TouchEvent) => {
-    const touches = e.touches;
+    const touches = e.touches as unknown as TouchList;
 
     if (touches.length === 1) {
       // Single touch - handle swipe
@@ -200,17 +218,31 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
       if (carouselRef.current) {
         carouselRef.current.style.overflowX = "hidden";
       }
+
+      // Prevent default for pinch gestures
+      e.preventDefault();
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    const touches = e.touches;
+    const touches = e.touches as unknown as TouchList;
 
     if (touches.length === 1 && !isPinching) {
-      if (scale <= 1 && isDragging && !isVerticalScrollRef.current) {
+      if (scale <= 1 && isDragging) {
         // Single touch swiping (only when not zoomed)
+        // Let handleMove decide whether to preventDefault based on gesture direction
         handleMove(touches[0].clientX, touches[0].clientY);
-        e.preventDefault();
+
+        // Only prevent default if we've determined this is a horizontal gesture
+        if (!isVerticalScrollRef.current) {
+          const deltaX = Math.abs(touches[0].clientX - startX);
+          const deltaY = Math.abs(touches[0].clientY - startY);
+
+          // Only prevent if horizontal movement is clearly dominant
+          if (deltaX > 15 && deltaX > deltaY * 1.5) {
+            e.preventDefault();
+          }
+        }
       } else if (scale > 1 && isPanning) {
         // Single touch panning when zoomed
         const newPanX = touches[0].clientX - startX;
@@ -246,7 +278,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const touches = e.touches;
+    const touches = e.touches as unknown as TouchList;
 
     if (touches.length === 0) {
       // All fingers lifted
@@ -328,7 +360,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   if (productImages.length === 0) return null;
 
   return (
-    <div className="lg:hidden bg-white">
+    <div className="lg:hidden bg-white" style={{ touchAction: "pan-y" }}>
       {/* Main Carousel */}
       <div
         ref={containerRef}
@@ -341,7 +373,8 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             // Enhanced CSS for better touch performance and zoom support
-            touchAction: scale > 1 ? "none" : "pan-x",
+            // Allow vertical scrolling unless we're zoomed in or pinching
+            touchAction: scale > 1 || isPinching ? "none" : "pan-y pinch-zoom",
             WebkitOverflowScrolling: "touch",
             overflowX: scale > 1 ? "hidden" : "auto",
           }}
