@@ -41,14 +41,6 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // Helper function to get center point between two touches
-  const getCenter = (touch1: React.Touch, touch2: React.Touch) => {
-    return {
-      x: (touch1.clientX + touch2.clientX) / 2,
-      y: (touch1.clientY + touch2.clientY) / 2,
-    };
-  };
-
   // Reset zoom state
   const resetZoom = useCallback(() => {
     setScale(1);
@@ -283,7 +275,7 @@ const MobileProductCarousel: React.FC<MobileProductCarouselProps> = ({
   };
 
   // Handle image click (disabled on mobile to prevent modal opening)
-  const handleImageClick = (index: number) => {
+  const handleImageClick = (_index: number) => {
     // On mobile, we disable modal opening - carousel is the main image viewing experience
     // Only allow click-through if not dragging and velocity is minimal
     if (!isDragging && Math.abs(velocity) < 0.1) {

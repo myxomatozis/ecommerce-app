@@ -34,7 +34,6 @@ import {
   Car,
   Plane,
 } from "lucide-react";
-import React from "react";
 
 // Large options array to test scrolling
 const countryOptions: DropdownOption[] = [
@@ -708,6 +707,7 @@ export const PerformanceTest: Story = {
         value: `option-${i}`,
         label: `Option ${i + 1}`,
         description: `Description for option ${i + 1}`,
+        // @ts-expect-error
         icon: React.createElement(icons[i % icons.length], { size: 16 }),
         group: i < count / 2 ? "Group A" : "Group B",
       }));

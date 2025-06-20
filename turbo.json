@@ -15,6 +15,16 @@
       "persistent": true,
       "dependsOn": ["^build"]
     },
+    "storybook:build": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "storybook:static": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^storybook:build"]
+    },
     "lint": {},
     "type-check": {
       "dependsOn": ["^type-check"]

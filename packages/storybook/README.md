@@ -44,7 +44,7 @@ Build the static Storybook for deployment:
 
 ```bash
 # From the storybook package
-pnpm build-storybook
+pnpm storybook:build
 
 # Or using turbo from root
 pnpm turbo build --filter=@thefolk/storybook
