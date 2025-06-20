@@ -180,10 +180,11 @@ const Header: React.FC = () => {
             {/* Actions */}
             <div className="flex items-center space-x-4">
               {/* Search Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`
+              <span className="hidden lg:flex items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`
                   p-2 transition-colors duration-300
                   ${
                     isHomePage && !isScrolled && !isProductDetailPage
@@ -191,9 +192,10 @@ const Header: React.FC = () => {
                       : "text-neutral-600 hover:text-neutral-900"
                   }
                 `}
-              >
-                <Search size={18} />
-              </Button>
+                >
+                  <Search size={24} />
+                </Button>
+              </span>
 
               {/* Cart */}
               <Button
