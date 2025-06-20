@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button, Spinner, CategoryBadge, StatusBadge } from "@thefolk/ui";
 import { Product, useAppData, useCartStore } from "@/stores";
-import { formatPrice } from "@thefolk/utils";
+import { formatPrice, getCurrencySymbol } from "@thefolk/utils";
 import { config } from "@/config";
 import { SizeGuideButton } from "@/components/SizeGuide";
 import ProductImage from "@/components/Product/ProductImage";
@@ -130,7 +130,7 @@ const ProductDetailPage: React.FC = () => {
     {
       icon: Truck,
       title: "Free Shipping",
-      description: "On orders over $100",
+      description: `Free shipping on orders over ${getCurrencySymbol(config.storeCurrency)}${config.freeShippingThreshold}`,
     },
     {
       icon: RefreshCw,
@@ -147,14 +147,7 @@ const ProductDetailPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Mobile Product Carousel */}
-      <MobileProductCarousel
-        product={product}
-        productImages={productImages}
-        onImageClick={(index) => {
-          setSelectedImage(index);
-          setIsCarouselOpen(true);
-        }}
-      />
+      <MobileProductCarousel product={product} productImages={productImages} />
 
       {/* Product Content - Desktop Layout */}
       <div className="max-w-7xl mx-auto">
@@ -341,7 +334,6 @@ const ProductDetailPage: React.FC = () => {
                         variant="outline"
                         size="lg"
                         fullWidth
-                        className="h-11 text-sm font-medium"
                       >
                         View Bag
                       </Button>
