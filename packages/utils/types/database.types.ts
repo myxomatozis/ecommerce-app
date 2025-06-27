@@ -42,6 +42,7 @@ export type Database = {
           product_id: string | null
           quantity: number
           session_id: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -50,6 +51,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           session_id: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -58,6 +60,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           session_id?: string
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -65,6 +68,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -109,6 +119,9 @@ export type Database = {
           product_price: number
           quantity: number
           total_price: number | null
+          variant_id: string | null
+          variant_options: Json | null
+          variant_sku: string | null
         }
         Insert: {
           created_at?: string | null
@@ -119,6 +132,9 @@ export type Database = {
           product_price: number
           quantity?: number
           total_price?: number | null
+          variant_id?: string | null
+          variant_options?: Json | null
+          variant_sku?: string | null
         }
         Update: {
           created_at?: string | null
@@ -129,6 +145,9 @@ export type Database = {
           product_price?: number
           quantity?: number
           total_price?: number | null
+          variant_id?: string | null
+          variant_options?: Json | null
+          variant_sku?: string | null
         }
         Relationships: [
           {
@@ -143,6 +162,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -218,6 +244,165 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      product_option_values: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          hex_color: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          option_id: string
+          position: number | null
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          hex_color?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          option_id: string
+          position?: number | null
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          hex_color?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          option_id?: string
+          position?: number | null
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_option_values_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "product_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_options: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          name: string
+          position: number | null
+          product_id: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name: string
+          position?: number | null
+          product_id: string
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name?: string
+          position?: number | null
+          product_id?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          barcode: string | null
+          created_at: string | null
+          dimensions_cm: Json | null
+          id: string
+          image_url: string | null
+          images_gallery: string[] | null
+          is_active: boolean | null
+          is_available: boolean | null
+          low_stock_threshold: number | null
+          metadata: Json | null
+          price_adjustment: number | null
+          product_id: string
+          sku: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+          weight_grams: number | null
+        }
+        Insert: {
+          barcode?: string | null
+          created_at?: string | null
+          dimensions_cm?: Json | null
+          id?: string
+          image_url?: string | null
+          images_gallery?: string[] | null
+          is_active?: boolean | null
+          is_available?: boolean | null
+          low_stock_threshold?: number | null
+          metadata?: Json | null
+          price_adjustment?: number | null
+          product_id: string
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          weight_grams?: number | null
+        }
+        Update: {
+          barcode?: string | null
+          created_at?: string | null
+          dimensions_cm?: Json | null
+          id?: string
+          image_url?: string | null
+          images_gallery?: string[] | null
+          is_active?: boolean | null
+          is_available?: boolean | null
+          low_stock_threshold?: number | null
+          metadata?: Json | null
+          price_adjustment?: number | null
+          product_id?: string
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          weight_grams?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -331,6 +516,42 @@ export type Database = {
           },
         ]
       }
+      variant_option_values: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_value_id: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_value_id: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_value_id?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variant_option_values_option_value_id_fkey"
+            columns: ["option_value_id"]
+            isOneToOne: false
+            referencedRelation: "product_option_values"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_option_values_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -344,28 +565,9 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      cleanup_orphaned_product_images: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
       clear_cart: {
         Args: { session_id_param: string }
         Returns: number
-      }
-      create_order: {
-        Args: {
-          p_user_id: string
-          p_total_amount: number
-          p_shipping_amount: number
-          p_tax_amount: number
-          p_shipping_address: Json
-          p_billing_address?: Json
-        }
-        Returns: {
-          id: string
-          external_id: string
-          created_at: string
-        }[]
       }
       create_order_from_cart: {
         Args: {
@@ -379,6 +581,16 @@ export type Database = {
           currency_param?: string
         }
         Returns: string
+      }
+      find_variant_by_options: {
+        Args: { product_id_param: string; option_value_ids: string[] }
+        Returns: {
+          variant_id: string
+          sku: string
+          price: number
+          stock_quantity: number
+          is_available: boolean
+        }[]
       }
       generate_order_external_id: {
         Args: Record<PropertyKey, never>
@@ -396,6 +608,9 @@ export type Database = {
           total_price: number
           image_url: string
           stripe_price_id: string
+          variant_id: string
+          variant_sku: string
+          variant_options: Json
         }[]
       }
       get_cart_summary: {
@@ -406,40 +621,6 @@ export type Database = {
           shipping: number
           tax: number
           discount: number
-        }[]
-      }
-      get_order: {
-        Args: { order_uuid: string }
-        Returns: {
-          id: string
-          external_id: string
-          user_id: string
-          status: string
-          total_amount: number
-          shipping_amount: number
-          tax_amount: number
-          stripe_session_id: string
-          shipping_address: Json
-          billing_address: Json
-          created_at: string
-          updated_at: string
-        }[]
-      }
-      get_order_by_external_id: {
-        Args: { ext_id: string }
-        Returns: {
-          id: string
-          external_id: string
-          user_id: string
-          status: string
-          total_amount: number
-          shipping_amount: number
-          tax_amount: number
-          stripe_session_id: string
-          shipping_address: Json
-          billing_address: Json
-          created_at: string
-          updated_at: string
         }[]
       }
       get_order_by_stripe_session: {
@@ -483,29 +664,33 @@ export type Database = {
           metadata: Json
           created_at: string
           updated_at: string
+          has_variants: boolean
+          variants: Json
+          options: Json
         }[]
       }
-      get_product_images_count: {
-        Args: { product_id: string }
-        Returns: number
+      get_product_options: {
+        Args: { product_id_param: string }
+        Returns: {
+          option_id: string
+          option_name: string
+          option_display_name: string
+          option_type: string
+          option_position: number
+          is_required: boolean
+          option_values: Json
+        }[]
       }
       get_products: {
-        Args:
-          | {
-              category_slug_param?: string
-              search_term?: string
-              min_price?: number
-              max_price?: number
-              sort_by?: string
-              limit_count?: number
-              offset_count?: number
-            }
-          | {
-              p_category?: string
-              p_search?: string
-              p_limit?: number
-              p_offset?: number
-            }
+        Args: {
+          category_slug_param?: string
+          search_term?: string
+          min_price?: number
+          max_price?: number
+          sort_by?: string
+          limit_count?: number
+          offset_count?: number
+        }
         Returns: {
           id: string
           name: string
@@ -516,32 +701,32 @@ export type Database = {
           images_gallery: string[]
           stripe_price_id: string
           stock_quantity: number
+          category: string
+          rating: number
+          reviews_count: number
           is_active: boolean
           metadata: Json
           created_at: string
           updated_at: string
-          category: string
-          rating: number
-          reviews_count: number
         }[]
       }
       remove_cart_item: {
-        Args: { session_id_param: string; product_id_param: string }
+        Args: {
+          session_id_param: string
+          product_id_param: string
+          variant_id_param?: string
+        }
         Returns: boolean
       }
       remove_image_from_gallery: {
         Args: { product_id: string; image_url: string }
         Returns: boolean
       }
-      reorder_product_images: {
-        Args: { product_id: string; new_order: number[] }
-        Returns: Record<string, unknown>
-      }
-      update_product_images_gallery: {
-        Args: { product_id: string; new_images_gallery: string[] }
-        Returns: boolean
-      }
       update_product_rating: {
+        Args: { product_id_param: string }
+        Returns: undefined
+      }
+      update_product_stock: {
         Args: { product_id_param: string }
         Returns: undefined
       }
@@ -550,15 +735,9 @@ export type Database = {
           session_id_param: string
           product_id_param: string
           quantity_param: number
+          variant_id_param?: string
         }
         Returns: string
-      }
-      validate_product_image_urls: {
-        Args: { product_id: string }
-        Returns: {
-          valid_urls: string[]
-          invalid_urls: string[]
-        }[]
       }
     }
     Enums: {

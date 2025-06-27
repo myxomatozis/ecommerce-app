@@ -128,7 +128,7 @@ export const useProductsStore = create<ProductsState>()(
 
         try {
           const product = await SupabaseAPI.getProductById(id);
-          const sku = product.id.slice(-8).toUpperCase();
+          const sku = product?.id.slice(-8).toUpperCase() || "";
 
           set((state) => ({
             products: product
